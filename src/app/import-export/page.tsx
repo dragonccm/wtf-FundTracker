@@ -31,7 +31,6 @@ export default function ImportExportPage() {
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
   const [rawRows, setRawRows] = useState<RawExcelRow[]>([]);
 
-  // Column Mappings
   const [columnMapping, setColumnMapping] = useState<{ [key: string]: string }>({
     date: '',
     fundCode: '',
@@ -46,7 +45,6 @@ export default function ImportExportPage() {
   const [targetPortfolioId, setTargetPortfolioId] = useState<string>(portfolios[0]?.id || 'p_main');
   const [validatedRows, setValidatedRows] = useState<ValidatedRow[]>([]);
 
-  // Step 1: Read File
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -74,7 +72,6 @@ export default function ImportExportPage() {
           });
           setRawRows(dataRows);
 
-          // Auto-guess mapping
           const autoMap: { [key: string]: string } = {};
           headers.forEach((h) => {
             const lower = h.toLowerCase();
@@ -98,7 +95,6 @@ export default function ImportExportPage() {
     reader.readAsArrayBuffer(file);
   };
 
-  // Step 2: Validate Data based on Mapping
   const handleValidateMapping = () => {
     const validFunds = new Set(funds.map((f) => f.code.toUpperCase()));
 
@@ -166,7 +162,6 @@ export default function ImportExportPage() {
     setStep(3);
   };
 
-  // Step 3: Execute Bulk Import
   const handleExecuteImport = () => {
     const validOnly = validatedRows.filter((r) => r.isValid);
     if (validOnly.length === 0) {
@@ -196,7 +191,6 @@ export default function ImportExportPage() {
     setFileName('');
   };
 
-  // Export functions
   const exportTransactionsToExcel = () => {
     const dataToExport = transactions.map((t, idx) => ({
       STT: idx + 1,
@@ -241,73 +235,64 @@ export default function ImportExportPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#1F1F1F' }}>
-          Import & Export Dữ Liệu Excel
+        <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#E2E2E6' }}>
+          Import & Export Excel
         </h1>
-        <p style={{ fontSize: '13px', color: '#74777F', marginTop: '2px' }}>
-          Đồng bộ giao dịch hàng loạt từ file Excel cá nhân hoặc xuất báo cáo danh mục ra file .xlsx
+        <p style={{ fontSize: '13px', color: '#909299', marginTop: '2px' }}>
+          Đồng bộ giao dịch hàng loạt từ file Excel cá nhân
         </p>
       </div>
 
-      {/* 1. Export Section - M3 Tonal Action Cards */}
-      <div className="m3-card-white">
-        <h3 style={{ fontSize: '15px', fontWeight: 800, marginBottom: '12px', color: '#1F1F1F', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span className="material-symbols-outlined" style={{ color: '#0B57D0', fontSize: '20px' }}>
-            download
-          </span>
-          Xuất Báo Cáo Ra Excel (.xlsx)
+      {/* 1. Export Section - Pixel Action Tiles */}
+      <div className="m3-card-dark">
+        <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px', color: '#909299', textTransform: 'uppercase' }}>
+          Xuất Báo Cáo Excel
         </h3>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button
             onClick={exportTransactionsToExcel}
-            className="m3-btn-tonal"
+            className="m3-pill-btn"
             style={{
               justifyContent: 'flex-start',
-              padding: '14px 16px',
-              borderRadius: '16px',
-              textAlign: 'left',
+              padding: '12px 16px',
+              borderRadius: '20px',
+              backgroundColor: '#191B1F',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#0B57D0' }}>
-              table_chart
-            </span>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800 }}>Xuất Toàn Bộ Lịch Sử Giao Dịch</div>
-              <div style={{ fontSize: '11px', color: '#74777F', fontWeight: 500 }}>Bao gồm ngày, loại lệnh, số tiền, giá NAV, phí</div>
+            <div className="m3-icon-badge-blue" style={{ width: '34px', height: '34px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>table_chart</span>
+            </div>
+            <div style={{ textAlign: 'left', flex: 1 }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>Xuất Toàn Bộ Giao Dịch (.xlsx)</div>
+              <div style={{ fontSize: '11px', color: '#909299' }}>Bao gồm ngày, loại lệnh, số tiền, giá NAV, phí</div>
             </div>
           </button>
 
           <button
             onClick={exportHoldingsToExcel}
-            className="m3-btn-tonal"
+            className="m3-pill-btn"
             style={{
               justifyContent: 'flex-start',
-              padding: '14px 16px',
-              borderRadius: '16px',
-              textAlign: 'left',
-              backgroundColor: '#F0F4F9',
-              borderColor: '#E1E7F0',
-              color: '#1F1F1F',
+              padding: '12px 16px',
+              borderRadius: '20px',
+              backgroundColor: '#191B1F',
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '22px', color: '#0B57D0' }}>
-              pie_chart
-            </span>
-            <div>
-              <div style={{ fontSize: '13px', fontWeight: 800 }}>Xuất Báo Cáo Danh Mục & Lãi Lỗ</div>
-              <div style={{ fontSize: '11px', color: '#74777F', fontWeight: 500 }}>Bao gồm giá vốn bình quân, NAV hiện tại, ROI %</div>
+            <div className="m3-icon-badge-cyan" style={{ width: '34px', height: '34px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>pie_chart</span>
+            </div>
+            <div style={{ textAlign: 'left', flex: 1 }}>
+              <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>Xuất Báo Cáo Danh Mục (.xlsx)</div>
+              <div style={{ fontSize: '11px', color: '#909299' }}>Bao gồm giá vốn bình quân, NAV hiện tại, ROI %</div>
             </div>
           </button>
         </div>
       </div>
 
-      {/* 2. Import Section - M3 Stepper & Dropzone */}
-      <div className="m3-card-white">
-        <h3 style={{ fontSize: '15px', fontWeight: 800, marginBottom: '14px', color: '#1F1F1F', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span className="material-symbols-outlined" style={{ color: '#0B57D0', fontSize: '20px' }}>
-            upload_file
-          </span>
+      {/* 2. Import Section - Pixel Stepper & Dropzone */}
+      <div className="m3-card-dark">
+        <h3 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '12px', color: '#909299', textTransform: 'uppercase' }}>
           Nhập Giao Dịch Từ Excel (Import)
         </h3>
 
@@ -323,10 +308,9 @@ export default function ImportExportPage() {
               style={{
                 flex: 1,
                 padding: '8px 10px',
-                borderRadius: '12px',
-                backgroundColor: step === s.num ? '#D3E3FD' : '#F7F9FC',
-                color: step === s.num ? '#041E49' : '#74777F',
-                border: '1px solid #E1E7F0',
+                borderRadius: '16px',
+                backgroundColor: step === s.num ? '#282B31' : '#191B1F',
+                color: step === s.num ? '#A8C7FA' : '#909299',
                 fontSize: '11px',
                 fontWeight: 800,
                 textAlign: 'center',
@@ -341,12 +325,13 @@ export default function ImportExportPage() {
                   width: '18px',
                   height: '18px',
                   borderRadius: '50%',
-                  backgroundColor: step === s.num ? '#0B57D0' : '#C4C6D0',
-                  color: '#FFFFFF',
+                  backgroundColor: step === s.num ? '#A8C7FA' : '#44474E',
+                  color: step === s.num ? '#041E49' : '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '10px',
+                  fontWeight: 900,
                 }}
               >
                 {s.num}
@@ -360,35 +345,21 @@ export default function ImportExportPage() {
         {step === 1 && (
           <div
             style={{
-              border: '2px dashed #C4C6D0',
-              borderRadius: '20px',
-              padding: '36px 16px',
+              border: '2px dashed #44474E',
+              borderRadius: '24px',
+              padding: '32px 16px',
               textAlign: 'center',
-              backgroundColor: '#F7F9FC',
+              backgroundColor: '#191B1F',
             }}
           >
-            <div
-              style={{
-                width: '56px',
-                height: '56px',
-                borderRadius: '16px',
-                backgroundColor: '#D3E3FD',
-                color: '#0B57D0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 12px auto',
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>
-                cloud_upload
-              </span>
+            <div className="m3-icon-badge-blue" style={{ width: '52px', height: '52px', margin: '0 auto 12px auto' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>cloud_upload</span>
             </div>
-            <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#1F1F1F', marginBottom: '4px' }}>
+            <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#E2E2E6', marginBottom: '4px' }}>
               Kéo & Thả File Excel Giao Dịch vào đây
             </h4>
-            <p style={{ fontSize: '12px', color: '#74777F', marginBottom: '16px' }}>
-              Hỗ trợ định dạng .xlsx, .xls, .csv từ ứng dụng chứng chỉ quỹ
+            <p style={{ fontSize: '12px', color: '#909299', marginBottom: '16px' }}>
+              Hỗ trợ định dạng .xlsx, .xls, .csv
             </p>
             <input
               type="file"
@@ -399,25 +370,25 @@ export default function ImportExportPage() {
             />
             <label
               htmlFor="excel-upload-input"
-              className="m3-btn-filled"
+              className="m3-pill-btn-primary"
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
                 folder_open
               </span>
-              Chọn File Từ Máy Tính
+              Chọn File Từ Thiết Bị
             </label>
           </div>
         )}
 
         {/* Step 2: Mapping Columns */}
         {step === 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0B57D0' }}>
-              File đang mở: {fileName} ({rawRows.length} dòng)
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#A8C7FA' }}>
+              File: {fileName} ({rawRows.length} dòng)
             </div>
 
             <div className="m3-form-group">
-              <label className="m3-form-label">Danh mục nạp dữ liệu vào</label>
+              <label className="m3-form-label">Danh mục nạp vào</label>
               <select
                 value={targetPortfolioId}
                 onChange={(e) => setTargetPortfolioId(e.target.value)}
@@ -460,20 +431,20 @@ export default function ImportExportPage() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
               <button
                 onClick={() => setStep(1)}
-                className="m3-btn-outlined"
+                className="m3-pill-btn"
                 style={{ flex: 1 }}
               >
                 Quay lại
               </button>
               <button
                 onClick={handleValidateMapping}
-                className="m3-btn-filled"
+                className="m3-pill-btn-primary"
                 style={{ flex: 1 }}
               >
-                Tiếp Tục & Kiểm Tra →
+                Tiếp Tục →
               </button>
             </div>
           </div>
@@ -481,19 +452,19 @@ export default function ImportExportPage() {
 
         {/* Step 3: Validate & Import */}
         {step === 3 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
               <div>
-                <h4 style={{ fontSize: '14px', fontWeight: 800 }}>Kiểm Tra Dữ Liệu</h4>
-                <p style={{ fontSize: '11px', color: '#74777F' }}>
+                <h4 style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>Kiểm Tra Dữ Liệu</h4>
+                <p style={{ fontSize: '11px', color: '#909299' }}>
                   Hợp lệ: {validatedRows.filter((r) => r.isValid).length} dòng • Lỗi: {validatedRows.filter((r) => !r.isValid).length} dòng
                 </p>
               </div>
 
               <button
                 onClick={handleExecuteImport}
-                className="m3-btn-filled"
-                style={{ backgroundColor: '#137333' }}
+                className="m3-pill-btn-primary"
+                style={{ backgroundColor: '#85D397', color: '#003914' }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
                 Nạp {validatedRows.filter((r) => r.isValid).length} Giao Dịch
@@ -517,7 +488,7 @@ export default function ImportExportPage() {
                 </thead>
                 <tbody>
                   {validatedRows.map((r) => (
-                    <tr key={r.index} style={{ backgroundColor: r.isValid ? 'transparent' : '#FFDAD6' }}>
+                    <tr key={r.index} style={{ backgroundColor: r.isValid ? 'transparent' : 'rgba(255, 180, 171, 0.1)' }}>
                       <td>{r.index}</td>
                       <td>
                         <span className={r.isValid ? 'badge-positive' : 'badge-negative'}>
@@ -525,12 +496,12 @@ export default function ImportExportPage() {
                         </span>
                       </td>
                       <td>{r.date}</td>
-                      <td style={{ fontWeight: 800 }}>{r.fundCode}</td>
+                      <td style={{ fontWeight: 800, color: '#A8C7FA' }}>{r.fundCode}</td>
                       <td>{r.type}</td>
                       <td>{formatVND(r.amount)}</td>
                       <td>{formatVND(r.unitPrice)}</td>
                       <td>{r.units.toFixed(2)}</td>
-                      <td style={{ color: '#B3261E', fontWeight: 600 }}>{r.errorReason || '-'}</td>
+                      <td style={{ color: '#FFB4AB', fontWeight: 600 }}>{r.errorReason || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

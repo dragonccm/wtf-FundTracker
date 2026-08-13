@@ -9,7 +9,6 @@ export default function TransactionsPage() {
   const { transactions, funds, deleteTransaction, portfolios } = useAppStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Filters
   const [selectedFundFilter, setSelectedFundFilter] = useState('ALL');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,22 +25,22 @@ export default function TransactionsPage() {
     return true;
   });
 
-  const getFundColor = (code: string) => {
+  const getFundBadgeClass = (code: string) => {
     switch (code) {
       case 'VESAF':
-        return '#006837';
+        return 'm3-icon-badge-green';
       case 'DCBC':
-        return '#0B57D0';
+        return 'm3-icon-badge-blue';
       case 'DSI':
-        return '#C25400';
+        return 'm3-icon-badge-orange';
       case 'SSISCA':
-        return '#007791';
+        return 'm3-icon-badge-cyan';
       case 'TCBF':
-        return '#8021B1';
+        return 'm3-icon-badge-purple';
       case 'E1VFVN30':
-        return '#B3261E';
+        return 'm3-icon-badge-pink';
       default:
-        return '#0B57D0';
+        return 'm3-icon-badge-blue';
     }
   };
 
@@ -50,15 +49,15 @@ export default function TransactionsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#1F1F1F' }}>Sổ Giao Dịch CCQ</h1>
-          <p style={{ fontSize: '13px', color: '#74777F', marginTop: '2px' }}>
-            Xem toàn bộ lịch sử nạp tiền, mua/bán CCQ và phí giao dịch
+          <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#E2E2E6' }}>Sổ Giao Dịch CCQ</h1>
+          <p style={{ fontSize: '13px', color: '#909299', marginTop: '2px' }}>
+            Xem toàn bộ lịch sử nạp tiền, mua/bán CCQ và phí
           </p>
         </div>
 
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="m3-btn-filled"
+          className="m3-pill-btn-primary"
         >
           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
           Thêm Giao Dịch
@@ -66,7 +65,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filter Panel */}
-      <div className="m3-card-white" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="m3-card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* Type Filter Segmented Control */}
         <div className="m3-segmented-control">
           {[
@@ -117,14 +116,14 @@ export default function TransactionsPage() {
       </div>
 
       {/* Transaction List Mobile Cards */}
-      <div className="m3-card-white">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 800 }}>
+      <div className="m3-card-dark">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: '#909299', textTransform: 'uppercase' }}>
             Lịch Sử Giao Dịch ({filteredTx.length})
-          </h3>
+          </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {filteredTx.length > 0 ? (
             filteredTx.map((tx) => {
               const port = portfolios.find((p) => p.id === tx.portfolioId);
@@ -136,47 +135,33 @@ export default function TransactionsPage() {
                     flexDirection: 'column',
                     gap: '8px',
                     padding: '14px',
-                    borderRadius: '16px',
-                    backgroundColor: '#F7F9FC',
-                    border: '1px solid #E1E7F0',
+                    borderRadius: '18px',
+                    backgroundColor: '#191B1F',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div
-                        style={{
-                          width: '36px',
-                          height: '36px',
-                          borderRadius: '10px',
-                          backgroundColor: getFundColor(tx.fundCode),
-                          color: '#FFFFFF',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 900,
-                          fontSize: '12px',
-                        }}
-                      >
-                        {tx.fundCode.slice(0, 3)}
+                      <div className={getFundBadgeClass(tx.fundCode)}>
+                        <span style={{ fontWeight: 900, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
                       </div>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 900, color: '#1F1F1F' }}>{tx.fundCode}</span>
+                          <span style={{ fontSize: '14px', fontWeight: 900, color: '#E2E2E6' }}>{tx.fundCode}</span>
                           <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
                             {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
                           </span>
                         </div>
-                        <div style={{ fontSize: '11px', color: '#74777F' }}>
+                        <div style={{ fontSize: '11px', color: '#909299' }}>
                           {tx.date} • {port ? port.name : tx.portfolioId}
                         </div>
                       </div>
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: tx.type === 'BUY' ? '#1F1F1F' : '#B3261E' }}>
+                      <div style={{ fontSize: '14px', fontWeight: 900, color: tx.type === 'BUY' ? '#E2E2E6' : '#FFB4AB' }}>
                         {formatVND(tx.amount)}
                       </div>
-                      <div style={{ fontSize: '11px', color: '#74777F' }}>
+                      <div style={{ fontSize: '11px', color: '#909299' }}>
                         {tx.units.toLocaleString('vi-VN')} CCQ @ {formatVND(tx.unitPrice)}
                       </div>
                     </div>
@@ -188,11 +173,11 @@ export default function TransactionsPage() {
                       display: 'flex',
                       justifyContent: 'space-between',
                       alignItems: 'center',
-                      borderTop: '1px solid #E1E7F0',
+                      borderTop: '1px solid #282B31',
                       paddingTop: '6px',
                       marginTop: '4px',
                       fontSize: '11px',
-                      color: '#74777F',
+                      color: '#909299',
                     }}
                   >
                     <span>{tx.notes || 'Không có ghi chú'}</span>
@@ -206,7 +191,7 @@ export default function TransactionsPage() {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#B3261E',
+                        color: '#FFB4AB',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '2px',
@@ -224,7 +209,7 @@ export default function TransactionsPage() {
               );
             })
           ) : (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#74777F', fontSize: '13px' }}>
+            <div style={{ textAlign: 'center', padding: '32px 0', color: '#909299', fontSize: '13px' }}>
               Không tìm thấy giao dịch nào phù hợp.
             </div>
           )}

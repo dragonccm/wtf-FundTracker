@@ -83,7 +83,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.4)',
+        backgroundColor: 'rgba(0,0,0,0.7)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -95,9 +95,9 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         style={{
           width: '100%',
           maxWidth: '440px',
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#202328',
           borderRadius: '28px',
-          border: '1px solid #E1E7F0',
+          border: '1px solid #282B31',
           padding: '24px 20px',
           display: 'flex',
           flexDirection: 'column',
@@ -107,10 +107,10 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, color: '#0B57D0' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 900, color: '#E2E2E6' }}>
               Ghi Nhận Giao Dịch Mới
             </h2>
-            <p style={{ fontSize: '11px', color: '#74777F' }}>Thêm lệnh mua/bán chứng chỉ quỹ</p>
+            <p style={{ fontSize: '11px', color: '#909299' }}>Thêm lệnh mua/bán chứng chỉ quỹ</p>
           </div>
           <button
             onClick={onClose}
@@ -118,7 +118,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#74777F',
+              color: '#909299',
               padding: '4px',
               borderRadius: '50%',
               display: 'flex',
@@ -130,7 +130,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {/* M3 Segmented Control for Transaction Type */}
           <div className="m3-segmented-control">
             <button
@@ -138,7 +138,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               onClick={() => setType('BUY')}
               className={`m3-segment-btn ${type === 'BUY' ? 'active' : ''}`}
               style={{
-                color: type === 'BUY' ? '#137333' : '#74777F',
+                backgroundColor: type === 'BUY' ? '#A8C7FA' : 'transparent',
+                color: type === 'BUY' ? '#041E49' : '#909299',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
@@ -151,7 +152,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               onClick={() => setType('SELL')}
               className={`m3-segment-btn ${type === 'SELL' ? 'active' : ''}`}
               style={{
-                color: type === 'SELL' ? '#B3261E' : '#74777F',
+                backgroundColor: type === 'SELL' ? '#FFB4AB' : 'transparent',
+                color: type === 'SELL' ? '#690005' : '#909299',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
@@ -220,7 +222,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             <div className="m3-form-group">
-              <label className="m3-form-label">Giá NAV / CCQ</label>
+              <label className="m3-form-label">Giá NAV</label>
               <input
                 type="number"
                 step="0.01"
@@ -232,7 +234,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             </div>
 
             <div className="m3-form-group">
-              <label className="m3-form-label">Số lượng CCQ</label>
+              <label className="m3-form-label">Số CCQ</label>
               <input
                 type="number"
                 step="0.01"
@@ -258,7 +260,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             <label className="m3-form-label">Ghi chú</label>
             <input
               type="text"
-              placeholder="VD: Mua tích lũy định kỳ tháng..."
+              placeholder="VD: Mua tích lũy định kỳ..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="m3-input"
@@ -270,14 +272,14 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             <button
               type="button"
               onClick={onClose}
-              className="m3-btn-outlined"
+              className="m3-pill-btn"
               style={{ flex: 1 }}
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="m3-btn-filled"
+              className="m3-pill-btn-primary"
               style={{ flex: 1 }}
             >
               Lưu Giao Dịch

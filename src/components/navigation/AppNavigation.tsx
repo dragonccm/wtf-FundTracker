@@ -32,7 +32,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
     { href: '/import-export', label: 'Import / Export', icon: 'upload_file', desc: 'Đọc/Xuất dữ liệu Excel' },
     { href: '/funds', label: 'Tra cứu giá Quỹ', icon: 'finance_chip', desc: 'NAV lịch sử các quỹ VN' },
     { href: '/timeline', label: 'Lịch sử tài chính', icon: 'timeline', desc: 'Timeline sự kiện tài sản' },
-    { href: '/settings', label: 'Cài đặt & Tài khoản', icon: 'settings', desc: 'Đơn vị tiền, ngày tháng' },
+    { href: '/settings', label: 'Cài đặt & Tài khoản', icon: 'settings', desc: 'Đơn vị tiền, cấu hình' },
   ];
 
   const activePort = portfolios.find((p) => p.id === activePortfolioId);
@@ -43,7 +43,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
     addPortfolio({
       name: newPortName,
       description: newPortDesc,
-      color: '#0B57D0',
+      color: '#A8C7FA',
     });
     setNewPortName('');
     setNewPortDesc('');
@@ -55,49 +55,49 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#E9EEF6',
+        backgroundColor: '#0C0E10',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-start',
       }}
     >
-      {/* Mobile Frame Container - Google M3 Tonal Surface */}
+      {/* Mobile Frame Container - Google Pixel Material You Dark */}
       <div
         style={{
           width: '100%',
           maxWidth: '480px',
           minHeight: '100vh',
-          backgroundColor: '#F0F4F9',
+          backgroundColor: '#111315',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          borderLeft: '1px solid #E1E7F0',
-          borderRight: '1px solid #E1E7F0',
+          borderLeft: '1px solid #1E2024',
+          borderRight: '1px solid #1E2024',
         }}
       >
-        {/* Google M3 Top App Bar */}
+        {/* Pixel Top App Bar */}
         <header
           style={{
             position: 'sticky',
             top: 0,
             zIndex: 90,
-            backgroundColor: '#FFFFFF',
-            borderBottom: '1px solid #E1E7F0',
+            backgroundColor: '#111315',
             padding: '12px 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            borderBottom: '1px solid #1E2024',
           }}
         >
           {/* Left: Brand Logo & Title */}
           <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                backgroundColor: '#0B57D0',
-                color: '#FFFFFF',
+                width: '38px',
+                height: '38px',
+                borderRadius: '12px',
+                backgroundColor: '#A8C7FA',
+                color: '#041E49',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -108,39 +108,39 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               NKQ
             </div>
             <div>
-              <div style={{ fontSize: '15px', fontWeight: 900, color: '#0B57D0', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '15px', fontWeight: 900, color: '#E2E2E6', lineHeight: 1.2 }}>
                 Nhật Ký Quỹ
               </div>
-              <div style={{ fontSize: '10px', fontWeight: 600, color: '#74777F' }}>Fund Tracker</div>
+              <div style={{ fontSize: '10px', fontWeight: 600, color: '#909299' }}>Fund Tracker</div>
             </div>
           </Link>
 
           {/* Right: Portfolio Switcher Chip & User Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* M3 Portfolio Switcher Pill Button */}
+            {/* Pixel Portfolio Switcher Pill */}
             <button
               onClick={() => setIsPortfolioModalOpen(true)}
               style={{
-                padding: '6px 12px',
-                borderRadius: '20px',
-                border: '1px solid #C4C6D0',
-                backgroundColor: '#F7F9FC',
-                color: '#1F1F1F',
+                padding: '7px 14px',
+                borderRadius: '24px',
+                border: 'none',
+                backgroundColor: '#202328',
+                color: '#E2E2E6',
                 fontSize: '12px',
                 fontWeight: 800,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '6px',
                 cursor: 'pointer',
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#0B57D0' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#A8C7FA' }}>
                 folder
               </span>
               <span style={{ maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {activePortfolioId === 'ALL' ? 'Tất cả danh mục' : activePort?.name}
               </span>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#74777F' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#909299' }}>
                 expand_more
               </span>
             </button>
@@ -149,11 +149,11 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
             <Link
               href="/settings"
               style={{
-                width: '34px',
-                height: '34px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '2px solid #D3E3FD',
+                border: '2px solid #282B31',
                 display: 'block',
               }}
             >
@@ -169,7 +169,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
         {/* Main Content Area */}
         <main style={{ flex: 1, padding: '16px', paddingBottom: '110px' }}>{children}</main>
 
-        {/* Material 3 Floating Action Button (FAB) */}
+        {/* Pixel Floating Action Button (FAB) */}
         <button
           onClick={() => setIsAddTxOpen(true)}
           style={{
@@ -186,15 +186,15 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
           Giao Dịch
         </button>
 
-        {/* Material 3 Bottom Navigation Bar */}
+        {/* Pixel Bottom Navigation Bar */}
         <nav
           style={{
             position: 'fixed',
             bottom: 0,
             width: '100%',
             maxWidth: '480px',
-            backgroundColor: '#FFFFFF',
-            borderTop: '1px solid #E1E7F0',
+            backgroundColor: '#191B1F',
+            borderTop: '1px solid #202328',
             display: 'grid',
             gridTemplateColumns: 'repeat(5, 1fr)',
             padding: '8px 0 12px 0',
@@ -212,17 +212,17 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: '4px',
-                  color: isActive ? '#0B57D0' : '#74777F',
+                  color: isActive ? '#A8C7FA' : '#909299',
                   textDecoration: 'none',
                 }}
               >
-                {/* M3 Active Indicator Pill */}
+                {/* Pixel Active Indicator Pill */}
                 <div
                   style={{
                     width: '56px',
                     height: '30px',
                     borderRadius: '15px',
-                    backgroundColor: isActive ? '#D3E3FD' : 'transparent',
+                    backgroundColor: isActive ? '#A8C7FA' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -233,7 +233,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                     className="material-symbols-outlined"
                     style={{
                       fontSize: '22px',
-                      color: isActive ? '#041E49' : '#74777F',
+                      color: isActive ? '#041E49' : '#909299',
                     }}
                   >
                     {item.icon}
@@ -252,7 +252,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               flexDirection: 'column',
               alignItems: 'center',
               gap: '4px',
-              color: isMoreMenuOpen ? '#0B57D0' : '#74777F',
+              color: isMoreMenuOpen ? '#A8C7FA' : '#909299',
               background: 'none',
               border: 'none',
               cursor: 'pointer',
@@ -263,13 +263,19 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                 width: '56px',
                 height: '30px',
                 borderRadius: '15px',
-                backgroundColor: isMoreMenuOpen ? '#D3E3FD' : 'transparent',
+                backgroundColor: isMoreMenuOpen ? '#A8C7FA' : 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
+              <span
+                className="material-symbols-outlined"
+                style={{
+                  fontSize: '22px',
+                  color: isMoreMenuOpen ? '#041E49' : '#909299',
+                }}
+              >
                 widgets
               </span>
             </div>
@@ -287,7 +293,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.4)',
+              backgroundColor: 'rgba(0,0,0,0.6)',
               zIndex: 200,
               display: 'flex',
               alignItems: 'flex-end',
@@ -299,33 +305,33 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               style={{
                 width: '100%',
                 maxWidth: '480px',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#202328',
                 borderTopLeftRadius: '28px',
                 borderTopRightRadius: '28px',
                 padding: '24px 20px 32px 20px',
-                borderTop: '1px solid #E1E7F0',
+                borderTop: '1px solid #282B31',
               }}
             >
               <div
                 style={{
                   width: '36px',
                   height: '4px',
-                  backgroundColor: '#C4C6D0',
+                  backgroundColor: '#44474E',
                   borderRadius: '2px',
                   margin: '0 auto 20px auto',
                 }}
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#0B57D0' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#E2E2E6' }}>
                   Chọn Danh Mục Đầu Tư
                 </h3>
                 <button
                   onClick={() => setIsCreatePortModalOpen(true)}
                   style={{
-                    padding: '6px 12px',
-                    borderRadius: '12px',
-                    backgroundColor: '#D3E3FD',
+                    padding: '8px 14px',
+                    borderRadius: '16px',
+                    backgroundColor: '#A8C7FA',
                     color: '#041E49',
                     border: 'none',
                     fontSize: '12px',
@@ -355,24 +361,24 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '14px 16px',
-                    borderRadius: '16px',
-                    backgroundColor: activePortfolioId === 'ALL' ? '#D3E3FD' : '#F7F9FC',
-                    border: '1px solid #E1E7F0',
+                    borderRadius: '18px',
+                    backgroundColor: activePortfolioId === 'ALL' ? '#282B31' : '#191B1F',
+                    border: activePortfolioId === 'ALL' ? '1px solid #A8C7FA' : '1px solid #282B31',
                     cursor: 'pointer',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span className="material-symbols-outlined" style={{ color: '#0B57D0' }}>
-                      language
-                    </span>
+                    <div className="m3-icon-badge-blue">
+                      <span className="material-symbols-outlined">language</span>
+                    </div>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#1F1F1F' }}>Tất cả danh mục</div>
-                      <div style={{ fontSize: '11px', color: '#74777F' }}>Xem hợp nhất toàn bộ tài sản</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>Tất cả danh mục</div>
+                      <div style={{ fontSize: '11px', color: '#909299' }}>Hợp nhất toàn bộ tài sản</div>
                     </div>
                   </div>
 
                   {activePortfolioId === 'ALL' && (
-                    <span className="material-symbols-outlined" style={{ color: '#0B57D0', fontWeight: 900 }}>
+                    <span className="material-symbols-outlined" style={{ color: '#A8C7FA', fontWeight: 900 }}>
                       check
                     </span>
                   )}
@@ -393,26 +399,26 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         padding: '14px 16px',
-                        borderRadius: '16px',
-                        backgroundColor: isSelected ? '#D3E3FD' : '#F7F9FC',
-                        border: '1px solid #E1E7F0',
+                        borderRadius: '18px',
+                        backgroundColor: isSelected ? '#282B31' : '#191B1F',
+                        border: isSelected ? '1px solid #A8C7FA' : '1px solid #282B31',
                         cursor: 'pointer',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span className="material-symbols-outlined" style={{ color: '#0B57D0' }}>
-                          business_center
-                        </span>
+                        <div className="m3-icon-badge-cyan">
+                          <span className="material-symbols-outlined">business_center</span>
+                        </div>
                         <div>
-                          <div style={{ fontSize: '14px', fontWeight: 800, color: '#1F1F1F' }}>{p.name}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>{p.name}</div>
                           {p.description && (
-                            <div style={{ fontSize: '11px', color: '#74777F' }}>{p.description}</div>
+                            <div style={{ fontSize: '11px', color: '#909299' }}>{p.description}</div>
                           )}
                         </div>
                       </div>
 
                       {isSelected && (
-                        <span className="material-symbols-outlined" style={{ color: '#0B57D0', fontWeight: 900 }}>
+                        <span className="material-symbols-outlined" style={{ color: '#A8C7FA', fontWeight: 900 }}>
                           check
                         </span>
                       )}
@@ -433,7 +439,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.5)',
+              backgroundColor: 'rgba(0,0,0,0.7)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -441,44 +447,47 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               padding: '20px',
             }}
           >
-            <div className="m3-card-white" style={{ width: '100%', maxWidth: '420px', padding: '24px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#0B57D0', marginBottom: '14px' }}>
+            <div className="m3-card-dark" style={{ width: '100%', maxWidth: '420px', padding: '24px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#E2E2E6', marginBottom: '14px' }}>
                 Tạo Danh Mục Đầu Tư Mới
               </h3>
               <form onSubmit={handleCreatePortfolio} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#74777F' }}>Tên danh mục</label>
+                <div className="m3-form-group">
+                  <label className="m3-form-label">Tên danh mục</label>
                   <input
                     type="text"
                     required
                     placeholder="VD: Quỹ Mua Nhà, Quỹ Hưu Trí..."
                     value={newPortName}
                     onChange={(e) => setNewPortName(e.target.value)}
-                    style={{ width: '100%', marginTop: '4px', padding: '10px', borderRadius: '10px', border: '1px solid #C4C6D0' }}
+                    className="m3-input"
                   />
                 </div>
 
-                <div>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#74777F' }}>Mô tả ngắn</label>
+                <div className="m3-form-group">
+                  <label className="m3-form-label">Mô tả ngắn</label>
                   <textarea
                     placeholder="Mô tả chiến lược danh mục..."
                     value={newPortDesc}
                     onChange={(e) => setNewPortDesc(e.target.value)}
-                    style={{ width: '100%', marginTop: '4px', padding: '10px', borderRadius: '10px', border: '1px solid #C4C6D0', height: '70px' }}
+                    className="m3-textarea"
+                    style={{ height: '70px' }}
                   />
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                   <button
                     type="button"
                     onClick={() => setIsCreatePortModalOpen(false)}
-                    style={{ flex: 1, padding: '10px', borderRadius: '10px', border: '1px solid #C4C6D0', background: 'none' }}
+                    className="m3-pill-btn"
+                    style={{ flex: 1 }}
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    style={{ flex: 1, padding: '10px', borderRadius: '10px', border: 'none', backgroundColor: '#0B57D0', color: '#FFFFFF', fontWeight: 800 }}
+                    className="m3-pill-btn-primary"
+                    style={{ flex: 1 }}
                   >
                     Tạo Danh Mục
                   </button>
@@ -498,7 +507,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.4)',
+              backgroundColor: 'rgba(0,0,0,0.6)',
               zIndex: 200,
               display: 'flex',
               alignItems: 'flex-end',
@@ -510,63 +519,55 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               style={{
                 width: '100%',
                 maxWidth: '480px',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#202328',
                 borderTopLeftRadius: '28px',
                 borderTopRightRadius: '28px',
                 padding: '24px 20px 32px 20px',
-                borderTop: '1px solid #E1E7F0',
+                borderTop: '1px solid #282B31',
               }}
             >
               <div
                 style={{
                   width: '36px',
                   height: '4px',
-                  backgroundColor: '#C4C6D0',
+                  backgroundColor: '#44474E',
                   borderRadius: '2px',
                   margin: '0 auto 20px auto',
                 }}
               />
 
-              <h3 style={{ fontSize: '18px', fontWeight: 800, marginBottom: '16px', color: '#0B57D0' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: 900, marginBottom: '16px', color: '#E2E2E6' }}>
                 Tất Cả Chức Năng Mở Rộng
               </h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {moreNavItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setIsMoreMenuOpen(false)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '14px',
-                      padding: '12px 16px',
-                      borderRadius: '16px',
-                      backgroundColor: pathname === item.href ? '#D3E3FD' : '#F7F9FC',
-                      border: '1px solid #E1E7F0',
-                    }}
-                  >
-                    <div
+                {moreNavItems.map((item, idx) => {
+                  const badgeClasses = ['m3-icon-badge-blue', 'm3-icon-badge-cyan', 'm3-icon-badge-purple', 'm3-icon-badge-orange', 'm3-icon-badge-green'];
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMoreMenuOpen(false)}
                       style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '12px',
-                        backgroundColor: '#FFFFFF',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#0B57D0',
+                        gap: '14px',
+                        padding: '12px 16px',
+                        borderRadius: '18px',
+                        backgroundColor: pathname === item.href ? '#282B31' : '#191B1F',
+                        border: pathname === item.href ? '1px solid #A8C7FA' : '1px solid transparent',
                       }}
                     >
-                      <span className="material-symbols-outlined">{item.icon}</span>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '14px', fontWeight: 700, color: '#1F1F1F' }}>{item.label}</div>
-                      <div style={{ fontSize: '11px', color: '#74777F' }}>{item.desc}</div>
-                    </div>
-                  </Link>
-                ))}
+                      <div className={badgeClasses[idx % badgeClasses.length]}>
+                        <span className="material-symbols-outlined">{item.icon}</span>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>{item.label}</div>
+                        <div style={{ fontSize: '11px', color: '#909299' }}>{item.desc}</div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           </div>
