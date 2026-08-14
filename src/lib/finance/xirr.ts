@@ -53,16 +53,18 @@ export function calculateXIRR(cashFlows: CashFlow[], guess = 0.1): number {
     if (Math.abs(dNpv) < 1e-12) break;
 
     const newRate = rate - npv / dNpv;
+    const delta = newRate - rate;
 
     // Bounds check to avoid invalid math domain errors
+    if (!Number.isFinite(newRate)) break;
     if (newRate <= -0.99) {
       rate = (rate - 0.99) / 2;
     } else {
       rate = newRate;
     }
 
-    if (Math.abs(newRate - rate) < tolerance) {
-      return newRate * 100;
+    if (Math.abs(delta) < tolerance) {
+      return rate * 100;
     }
   }
 

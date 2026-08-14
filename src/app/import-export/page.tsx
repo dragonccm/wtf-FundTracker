@@ -200,7 +200,7 @@ export default function ImportExportPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
           Import & Export Dữ Liệu
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
@@ -210,7 +210,7 @@ export default function ImportExportPage() {
 
       {/* Export Section */}
       <div className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
           Sao Lưu Dữ Liệu (Export)
         </h2>
         <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>
@@ -225,10 +225,10 @@ export default function ImportExportPage() {
       {/* Import Section */}
       <div className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
             Nhập Giao Dịch Từ Excel (Import)
           </h2>
-          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>
+          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>
             Bước {step}/3
           </span>
         </div>
@@ -264,7 +264,7 @@ export default function ImportExportPage() {
               <div className="m3-icon-badge-blue" style={{ margin: '0 auto 12px auto' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>upload_file</span>
               </div>
-              <h4 style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+              <h4 style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
                 Chọn file Excel (.xlsx, .csv)
               </h4>
               <p style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '4px' }}>
@@ -277,7 +277,7 @@ export default function ImportExportPage() {
         {/* Step 2: Column Mapping */}
         {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
               Đang mở: <span style={{ color: 'var(--md-sys-color-primary)' }}>{fileName}</span> ({rawRows.length} dòng)
             </div>
 
@@ -383,7 +383,7 @@ export default function ImportExportPage() {
         {step === 3 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
                 Hợp lệ: {validatedRows.filter((r) => r.isValid).length} / {validatedRows.length} dòng
               </span>
             </div>
@@ -403,7 +403,7 @@ export default function ImportExportPage() {
                   {validatedRows.map((r) => (
                     <tr key={r.index}>
                       <td>{r.date}</td>
-                      <td style={{ fontWeight: 800 }}>{r.fundCode}</td>
+                      <td style={{ fontWeight: 500 }}>{r.fundCode}</td>
                       <td>{r.type}</td>
                       <td>{formatVND(r.amount)}</td>
                       <td>

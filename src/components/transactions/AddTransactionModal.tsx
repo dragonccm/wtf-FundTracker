@@ -108,7 +108,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
               Ghi Nhận Giao Dịch Mới
             </h2>
             <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>Thêm lệnh mua/bán chứng chỉ quỹ</p>

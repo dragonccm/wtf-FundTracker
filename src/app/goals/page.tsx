@@ -55,7 +55,7 @@ export default function GoalsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Mục Tiêu Tài Chính</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>Mục Tiêu Tài Chính</h1>
           <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             Đặt mục tiêu mua nhà, hưu trí, học phí cho con và theo dõi tiến độ
           </p>
@@ -77,7 +77,7 @@ export default function GoalsPage() {
             <span className="material-symbols-outlined" style={{ fontSize: '44px', color: 'var(--md-sys-color-outline)' }}>
               flag
             </span>
-            <h3 style={{ marginTop: '10px', fontSize: '15px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+            <h3 style={{ marginTop: '10px', fontSize: '15px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
               Chưa Có Mục Tiêu Tài Chính
             </h3>
             <p style={{ marginTop: '4px', fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', maxWidth: '320px', margin: '6px auto 16px auto' }}>
@@ -114,7 +114,7 @@ export default function GoalsPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</h3>
+                    <h3 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</h3>
                     <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
                       Hạn: {g.targetDate} ({monthsLeft} tháng)
                     </span>
@@ -122,7 +122,7 @@ export default function GoalsPage() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-primary)' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>
                     {completionPct.toFixed(1)}%
                   </span>
                   <button
@@ -156,19 +156,19 @@ export default function GoalsPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', backgroundColor: 'var(--md-sys-color-surface-container-low)', padding: '10px 12px', borderRadius: '14px', border: '1px solid var(--md-sys-color-outline-variant)' }}>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Đã tích lũy</div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.currentAmount)}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.currentAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Mục tiêu</div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.targetAmount)}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.targetAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Còn thiếu</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#BA1A1A' }}>{formatVND(remainingAmount)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#BA1A1A' }}>{formatVND(remainingAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Cần nạp / tháng</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--md-sys-color-primary)' }}>{formatVND(monthlyRequired)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{formatVND(monthlyRequired)}</div>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function GoalsPage() {
           }}
         >
           <div className="m3-card" style={{ width: '100%', maxWidth: '440px', padding: '24px 20px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
               Thêm Mục Tiêu Tài Chính
             </h2>
             <form onSubmit={handleCreateGoal} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

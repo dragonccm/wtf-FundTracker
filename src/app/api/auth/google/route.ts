@@ -4,10 +4,14 @@ export async function GET() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/callback/google`;
 
+  if (!clientId || !process.env.GOOGLE_CLIENT_SECRET) {
+    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login?error=GoogleNotConfigured`);
+  }
+
   const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
   const options = {
     redirect_uri: redirectUri,
-    client_id: clientId || '',
+    client_id: clientId,
     access_type: 'offline',
     response_type: 'code',
     prompt: 'consent',

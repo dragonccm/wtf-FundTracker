@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "db:local": "node scripts/local-mongodb.mjs",
+    "db:seed": "node scripts/seed-local-data.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -24,6 +26,7 @@
     "@types/react-dom": "^19.0.3",
     "eslint": "^9.20.0",
     "eslint-config-next": "^15.1.7",
+    "mongodb-memory-server": "^10.4.3",
     "typescript": "^5.7.3"
   }
 }

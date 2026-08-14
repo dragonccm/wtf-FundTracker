@@ -361,7 +361,7 @@ button, input, select, textarea {
   background: transparent;
   color: var(--md-sys-color-on-surface-variant);
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   border-radius: var(--md-sys-shape-corner-full);
   cursor: pointer;
   display: flex;
@@ -374,7 +374,7 @@ button, input, select, textarea {
 .m3-segment-btn.active {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 /* ==========================================================================
@@ -389,7 +389,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 10px 24px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -412,7 +412,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 8px 18px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -426,7 +426,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 8px 18px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   cursor: pointer;
@@ -502,7 +502,7 @@ button, input, select, textarea {
   border: none;
   color: inherit;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   padding: 10px 16px 10px 20px;
   display: flex;
   align-items: center;
@@ -561,7 +561,7 @@ button, input, select, textarea {
   color: var(--md-sys-color-on-surface-variant);
   padding: 8px 16px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -577,7 +577,7 @@ button, input, select, textarea {
 .m3-segmented-item.active {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
-  font-weight: 800;
+  font-weight: 500;
 }
 
 /* (8) & (9) M3 Standard & Extended FAB */
@@ -612,7 +612,7 @@ button, input, select, textarea {
   align-items: center;
   gap: 12px;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 500;
   box-shadow: var(--md-sys-elevation-3);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
@@ -645,7 +645,7 @@ button, input, select, textarea {
   color: var(--md-sys-color-on-secondary-container);
   border: none;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   box-shadow: var(--md-sys-elevation-2);
   cursor: pointer;
   animation: m3SpeedDialPop 0.2s cubic-bezier(0.2, 0, 0, 1) forwards;
@@ -703,7 +703,7 @@ button, input, select, textarea {
   border: none;
   color: var(--md-sys-color-on-surface);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   text-align: left;
   width: 100%;
@@ -722,7 +722,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 10px 20px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -742,7 +742,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 10px 22px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -764,7 +764,7 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   padding: 10px 20px;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -782,7 +782,7 @@ button, input, select, textarea {
 
 .m3-form-label {
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--md-sys-color-on-surface-variant);
 }
 
@@ -794,7 +794,7 @@ button, input, select, textarea {
   background-color: var(--md-sys-color-surface-container-lowest);
   color: var(--md-sys-color-on-surface);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   outline: none;
   transition: border-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
@@ -814,7 +814,7 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 800;
+  font-weight: 500;
   font-size: 14px;
   box-shadow: var(--md-sys-elevation-3);
   cursor: pointer;
@@ -869,7 +869,7 @@ button, input, select, textarea {
   padding: 8px 16px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   border: 1px solid var(--md-sys-color-outline-variant);
   background-color: var(--md-sys-color-surface-container-lowest);
@@ -889,7 +889,7 @@ button, input, select, textarea {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
   border-color: transparent;
-  font-weight: 800;
+  font-weight: 500;
   box-shadow: var(--md-sys-elevation-1);
 }
 
@@ -903,7 +903,7 @@ button, input, select, textarea {
   padding: 4px 10px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .badge-negative {
@@ -915,7 +915,7 @@ button, input, select, textarea {
   padding: 4px 10px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .badge-neutral {
@@ -927,7 +927,7 @@ button, input, select, textarea {
   padding: 4px 10px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 /* M3 Linear Progress Bar */
@@ -966,7 +966,7 @@ button, input, select, textarea {
 .m3-table th {
   background-color: var(--md-sys-color-surface-container-low);
   color: var(--md-sys-color-on-surface-variant);
-  font-weight: 800;
+  font-weight: 500;
   padding: 12px 14px;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
   white-space: nowrap;

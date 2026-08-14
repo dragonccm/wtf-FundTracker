@@ -1,55 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { UserModel } from '@/lib/db/models/User';
+import { hashPassword, setSessionCookie, verifyPassword } from '@/lib/auth/serverAuth';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
-
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: 'Vui lòng nhập địa chỉ email.' },
-        { status: 400 }
-      );
+    const { email, password } = await req.json();
+    if (!email || !password) {
+      return NextResponse.json({ success: false, error: 'Vui lòng nhập email và mật khẩu.' }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    await connectToDatabase();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const connection = await connectToDatabase();
+    if (!connection) {
+      return NextResponse.json({ success: false, error: 'Không thể kết nối cơ sở dữ liệu.' }, { status: 503 });
+    }
 
     const user = await UserModel.findOne({ email: normalizedEmail });
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Tài khoản không tồn tại trên hệ thống.' },
-        { status: 404 }
-      );
+    if (!user || !verifyPassword(String(password), user.password)) {
+      return NextResponse.json({ success: false, error: 'Email hoặc mật khẩu không đúng.' }, { status: 401 });
     }
 
-    if (password && user.password && user.password !== password) {
-      return NextResponse.json(
-        { success: false, error: 'Mật khẩu không chính xác.' },
-        { status: 401 }
-      );
+    if (user.password && !user.password.startsWith('scrypt$')) {
+      user.password = hashPassword(String(password));
+      await user.save();
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         avatarUrl: user.avatarUrl,
-        provider: user.provider,
         currency: user.currency,
         dateFormat: user.dateFormat,
-        createdAt: user.createdAt,
+        createdAt: user.createdAt.toISOString(),
       },
     });
-  } catch (error: any) {
+    return setSessionCookie(response, user.email);
+  } catch (error) {
     console.error('Login API Error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Lỗi xử lý đăng nhập.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Không thể đăng nhập lúc này.' }, { status: 500 });
   }
 }

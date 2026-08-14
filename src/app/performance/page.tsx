@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { formatVND, formatPercent } from '@/lib/finance/portfolio';
 import {
@@ -16,8 +16,6 @@ import {
 
 export default function PerformancePage() {
   const { metrics, holdings } = useAppStore();
-  const [timeframe, setTimeframe] = useState<'6M' | 'YTD' | '1Y' | 'ALL'>('ALL');
-
   const comparisonData = holdings.map((h) => ({
     name: h.fundCode,
     invested: Number((h.totalCost / 1e6).toFixed(2)),
@@ -48,26 +46,12 @@ export default function PerformancePage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
           Hiệu Suất & Tỷ Suất XIRR
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
           Đo lường lợi nhuận thực tế theo dòng tiền nạp/rút chính xác
         </p>
-      </div>
-
-      {/* Segmented Control */}
-      <div className="m3-segmented-control">
-        {(['6M', 'YTD', '1Y', 'ALL'] as const).map((tf) => (
-          <button
-            key={tf}
-            type="button"
-            onClick={() => setTimeframe(tf)}
-            className={`m3-segment-btn ${timeframe === tf ? 'active' : ''}`}
-          >
-            {tf}
-          </button>
-        ))}
       </div>
 
       {/* 1. XIRR Hero Card */}
@@ -76,13 +60,13 @@ export default function PerformancePage() {
           <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--md-sys-color-primary)' }}>
             auto_graph
           </span>
-          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Extended Internal Rate of Return
           </span>
         </div>
 
         <div>
-          <div style={{ fontSize: '38px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', letterSpacing: '-0.5px', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '38px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', letterSpacing: '-0.5px', lineHeight: 1.1 }}>
             {formatPercent(metrics.xirrPercent)} / năm
           </div>
           <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '8px', lineHeight: 1.5 }}>
@@ -104,13 +88,13 @@ export default function PerformancePage() {
         >
           <div>
             <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Lợi nhuận gộp (PnL)</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: metrics.totalPnL >= 0 ? '#198754' : '#BA1A1A' }}>
+            <div style={{ fontSize: '18px', fontWeight: 500, color: metrics.totalPnL >= 0 ? '#198754' : '#BA1A1A' }}>
               {formatVND(metrics.totalPnL)}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Tỷ suất ROI giản đơn</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: metrics.totalPnLPercent >= 0 ? '#198754' : '#BA1A1A' }}>
+            <div style={{ fontSize: '18px', fontWeight: 500, color: metrics.totalPnLPercent >= 0 ? '#198754' : '#BA1A1A' }}>
               {formatPercent(metrics.totalPnLPercent)}
             </div>
           </div>
@@ -119,7 +103,7 @@ export default function PerformancePage() {
 
       {/* 2. Chart: Invested vs Market Value */}
       <div className="m3-card">
-        <h3 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
           So Sánh Vốn Đầu Tư & Giá Trị Hiện Tại (Triệu VND)
         </h3>
 
@@ -158,7 +142,7 @@ export default function PerformancePage() {
 
       {/* 3. Holdings Performance Table */}
       <div className="m3-card">
-        <h3 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginBottom: '12px' }}>
           Chi Tiết Hiệu Suất Từng Quỹ
         </h3>
 
@@ -179,14 +163,14 @@ export default function PerformancePage() {
                   <td>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div className={getFundBadgeClass(h.fundCode)} style={{ width: '28px', height: '28px' }}>
-                        <span style={{ fontSize: '10px', fontWeight: 900 }}>{h.fundCode.slice(0, 3)}</span>
+                        <span style={{ fontSize: '10px', fontWeight: 500 }}>{h.fundCode.slice(0, 3)}</span>
                       </div>
-                      <span style={{ fontWeight: 800 }}>{h.fundCode}</span>
+                      <span style={{ fontWeight: 500 }}>{h.fundCode}</span>
                     </div>
                   </td>
                   <td>{formatVND(h.totalCost)}</td>
-                  <td style={{ fontWeight: 800 }}>{formatVND(h.currentValue)}</td>
-                  <td style={{ color: h.unrealizedPnL >= 0 ? '#198754' : '#BA1A1A', fontWeight: 800 }}>
+                  <td style={{ fontWeight: 500 }}>{formatVND(h.currentValue)}</td>
+                  <td style={{ color: h.unrealizedPnL >= 0 ? '#198754' : '#BA1A1A', fontWeight: 500 }}>
                     {h.unrealizedPnL >= 0 ? '+' : ''}{formatVND(h.unrealizedPnL)}
                   </td>
                   <td>

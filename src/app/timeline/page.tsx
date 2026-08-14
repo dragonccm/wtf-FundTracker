@@ -15,7 +15,7 @@ export default function TimelinePage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Header */}
       <div>
-        <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Lịch Sử Dòng Tiền</h1>
+        <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>Lịch Sử Dòng Tiền</h1>
         <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
           Dòng thời gian ghi nhận chi tiết mọi sự kiện giao dịch nạp/rút CCQ
         </p>
@@ -56,7 +56,7 @@ export default function TimelinePage() {
                   boxShadow: 'var(--md-sys-elevation-1)',
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '12px', fontWeight: 900 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '12px', fontWeight: 500 }}>
                   {tx.type === 'BUY' ? 'add' : 'remove'}
                 </span>
               </div>
@@ -75,11 +75,11 @@ export default function TimelinePage() {
                     <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
                       {tx.type === 'BUY' ? 'MUA CCQ' : 'BÁN CCQ'}
                     </span>
-                    <span style={{ fontWeight: 900, fontSize: '14px', color: 'var(--md-sys-color-primary)' }}>
+                    <span style={{ fontWeight: 500, fontSize: '14px', color: 'var(--md-sys-color-primary)' }}>
                       {tx.fundCode}
                     </span>
                   </div>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 500, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>calendar_today</span>
                     {tx.date}
                   </span>
@@ -88,11 +88,11 @@ export default function TimelinePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '12px' }}>
                   <div>
                     <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị giao dịch</div>
-                    <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Khối lượng CCQ</div>
-                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--md-sys-color-on-surface)' }}>{tx.units.toLocaleString('vi-VN')} CCQ</div>
+                    <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{tx.units.toLocaleString('vi-VN')} CCQ</div>
                   </div>
                 </div>
 

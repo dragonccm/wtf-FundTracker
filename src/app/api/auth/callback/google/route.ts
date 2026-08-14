@@ -1,73 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/db/mongodb';
+import { UserModel } from '@/lib/db/models/User';
+import { setSessionCookie } from '@/lib/auth/serverAuth';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const code = searchParams.get('code');
   const error = searchParams.get('error');
-
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   if (error || !code) {
-    return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error || 'No code provided')}`);
+    return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(error || 'GoogleAuthFailed')}`);
   }
 
   try {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirectUri = `${appUrl}/api/auth/callback/google`;
+    if (!clientId || !clientSecret) throw new Error('GoogleNotConfigured');
 
-    // Exchange authorization code for tokens
+    const redirectUri = `${appUrl}/api/auth/callback/google`;
     const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         code,
-        client_id: clientId || '',
-        client_secret: clientSecret || '',
+        client_id: clientId,
+        client_secret: clientSecret,
         redirect_uri: redirectUri,
         grant_type: 'authorization_code',
       }),
     });
-
+    if (!tokenResponse.ok) throw new Error('TokenExchangeFailed');
     const tokenData = await tokenResponse.json();
 
-    if (!tokenData.access_token) {
-      console.error('Google Token Error:', tokenData);
-      return NextResponse.redirect(`${appUrl}/login?error=TokenExchangeFailed`);
+    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    });
+    if (!userResponse.ok) throw new Error('GoogleProfileFailed');
+    const googleUser = await userResponse.json();
+    const email = String(googleUser.email || '').trim().toLowerCase();
+    if (!email) throw new Error('GoogleEmailMissing');
+    const name = String(googleUser.name || email.split('@')[0]);
+    const avatarUrl = String(googleUser.picture || '');
+
+    const connection = await connectToDatabase();
+    if (connection) {
+      await UserModel.findOneAndUpdate(
+        { email },
+        {
+          $set: { name, avatarUrl, provider: 'google' },
+          $setOnInsert: { id: `usr_g_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    } else {
+      console.warn('Google login is continuing with local persistence because MongoDB is unavailable.');
     }
 
-    // Fetch user profile from Google UserInfo API
-    const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
-      },
+    return setSessionCookie(NextResponse.redirect(`${appUrl}/login/success`), {
+      email,
+      name,
+      avatarUrl,
+      storageMode: connection ? 'cloud' : 'local',
     });
-
-    const googleUser = await userResponse.json();
-
-    // Redirect to login callback landing page with user info
-    const redirectUrl = new URL(`${appUrl}/login/success`, req.url);
-    redirectUrl.searchParams.set('email', googleUser.email || '');
-    redirectUrl.searchParams.set('name', googleUser.name || '');
-    redirectUrl.searchParams.set('avatar', googleUser.picture || '');
-
-    const response = NextResponse.redirect(redirectUrl.toString());
-
-    // Save auth session cookie
-    response.cookies.set('nhatkyquy_session', JSON.stringify({
-      email: googleUser.email,
-      name: googleUser.name,
-      avatar: googleUser.picture,
-    }), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
-
-    return response;
-  } catch (err: any) {
-    console.error('OAuth Callback Exception:', err);
-    return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(err.message)}`);
+  } catch (caught) {
+    const message = caught instanceof Error ? caught.message : 'GoogleAuthFailed';
+    console.error('OAuth Callback Exception:', caught);
+    return NextResponse.redirect(`${appUrl}/login?error=${encodeURIComponent(message)}`);
   }
 }

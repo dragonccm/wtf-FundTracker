@@ -225,7 +225,7 @@ export default function M3SearchBar({
                   outline: 'none',
                   backgroundColor: 'transparent',
                   fontSize: '16px',
-                  fontWeight: 600,
+                  fontWeight: 500,
                   color: 'var(--md-sys-color-on-surface)',
                 }}
               />
@@ -291,7 +291,7 @@ export default function M3SearchBar({
               {!trimmed && (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       Tìm Kiếm Gần Đây
                     </span>
                     {recentSearches.length > 0 && (
@@ -302,7 +302,7 @@ export default function M3SearchBar({
                           background: 'none',
                           border: 'none',
                           fontSize: '12px',
-                          fontWeight: 700,
+                          fontWeight: 500,
                           color: 'var(--md-sys-color-primary)',
                           cursor: 'pointer',
                         }}
@@ -335,7 +335,7 @@ export default function M3SearchBar({
                           <span className="material-symbols-outlined" style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: '20px' }}>
                             history
                           </span>
-                          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', flex: 1 }}>
+                          <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', flex: 1 }}>
                             {item}
                           </span>
                           <span className="material-symbols-outlined" style={{ color: 'var(--md-sys-color-outline)', fontSize: '18px' }}>
@@ -354,7 +354,7 @@ export default function M3SearchBar({
                   {/* Category 1: Chứng Chỉ Quỹ */}
                   {matchedFunds.length > 0 && (
                     <div>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Chứng Chỉ Quỹ ({matchedFunds.length})
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
@@ -375,16 +375,16 @@ export default function M3SearchBar({
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                               <div className="m3-icon-badge-blue" style={{ width: '36px', height: '36px' }}>
-                                <span style={{ fontWeight: 900, fontSize: '11px' }}>{f.code.slice(0, 3)}</span>
+                                <span style={{ fontWeight: 500, fontSize: '11px' }}>{f.code.slice(0, 3)}</span>
                               </div>
                               <div>
-                                <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{f.code}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{f.code}</div>
                                 <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>{f.company} • {f.category}</div>
                               </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(f.nav)}</div>
-                              <span style={{ fontSize: '10px', color: 'var(--md-sys-color-primary)', fontWeight: 700 }}>Xem chi tiết →</span>
+                              <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(f.nav)}</div>
+                              <span style={{ fontSize: '10px', color: 'var(--md-sys-color-primary)', fontWeight: 500 }}>Xem chi tiết →</span>
                             </div>
                           </div>
                         ))}
@@ -395,7 +395,7 @@ export default function M3SearchBar({
                   {/* Category 2: Giao Dịch */}
                   {matchedTransactions.length > 0 && (
                     <div>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Lịch Sử Giao Dịch ({matchedTransactions.length})
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
@@ -419,7 +419,7 @@ export default function M3SearchBar({
                                 {tx.type}
                               </span>
                               <div>
-                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+                                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
                                   {tx.fundCode} • {formatVND(tx.amount)}
                                 </div>
                                 <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
@@ -439,7 +439,7 @@ export default function M3SearchBar({
                   {/* Category 3: Mục Tiêu Tài Chính */}
                   {matchedGoals.length > 0 && (
                     <div>
-                      <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--md-sys-color-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Mục Tiêu Tài Chính ({matchedGoals.length})
                       </span>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
@@ -463,7 +463,7 @@ export default function M3SearchBar({
                                 <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>flag</span>
                               </div>
                               <div>
-                                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</div>
+                                <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</div>
                                 <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Mục tiêu: {formatVND(g.targetAmount)}</div>
                               </div>
                             </div>
@@ -482,7 +482,7 @@ export default function M3SearchBar({
                       <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--md-sys-color-outline)' }}>
                         search_off
                       </span>
-                      <p style={{ marginTop: '12px', fontSize: '14px', fontWeight: 700 }}>
+                      <p style={{ marginTop: '12px', fontSize: '14px', fontWeight: 500 }}>
                         Không tìm thấy kết quả nào cho "{query}"
                       </p>
                       <p style={{ fontSize: '12px', marginTop: '4px' }}>

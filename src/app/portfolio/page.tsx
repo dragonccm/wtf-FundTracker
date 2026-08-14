@@ -49,7 +49,7 @@ export default function PortfolioPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Quản Lý Danh Mục</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>Quản Lý Danh Mục</h1>
           <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             Theo dõi chi tiết giá vốn bình quân và lãi/lỗ từng CCQ
           </p>
@@ -91,8 +91,8 @@ export default function PortfolioPage() {
       <div className="m3-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)' }}>DANH MỤC HIỆN TẠI</div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginTop: '2px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 500, color: 'var(--md-sys-color-on-surface-variant)' }}>DANH MỤC HIỆN TẠI</div>
+            <h2 style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginTop: '2px' }}>
               {activePortfolioId === 'ALL' ? 'Toàn Bộ Tài Sản Hợp Nhất' : activePort?.name}
             </h2>
             {activePort?.description && (
@@ -101,24 +101,24 @@ export default function PortfolioPage() {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị thị trường</div>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.currentMarketValue)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.currentMarketValue)}</div>
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '16px', borderTop: '1px solid var(--md-sys-color-outline-variant)', paddingTop: '12px' }}>
           <div>
             <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Tổng Vốn</div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.totalInvested)}</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.totalInvested)}</div>
           </div>
           <div>
             <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Lợi Nhuận</div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: metrics.totalPnL >= 0 ? '#198754' : '#BA1A1A' }}>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: metrics.totalPnL >= 0 ? '#198754' : '#BA1A1A' }}>
               {formatVND(metrics.totalPnL)}
             </div>
           </div>
           <div>
             <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Tỷ Suất (ROI)</div>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: metrics.totalPnLPercent >= 0 ? '#198754' : '#BA1A1A' }}>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: metrics.totalPnLPercent >= 0 ? '#198754' : '#BA1A1A' }}>
               {formatPercent(metrics.totalPnLPercent)}
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function PortfolioPage() {
 
       {/* Holdings Detailed Cards */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
           Chi Tiết Các Quỹ ({holdings.length})
         </h3>
 
@@ -136,7 +136,7 @@ export default function PortfolioPage() {
             <span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--md-sys-color-outline)' }}>
               account_balance_wallet
             </span>
-            <p style={{ marginTop: '8px', fontSize: '13px', fontWeight: 600 }}>Chưa có chứng chỉ quỹ nào trong danh mục này</p>
+            <p style={{ marginTop: '8px', fontSize: '13px', fontWeight: 500 }}>Chưa có chứng chỉ quỹ nào trong danh mục này</p>
           </div>
         ) : (
           holdings.map((h) => (
@@ -144,16 +144,16 @@ export default function PortfolioPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div className={getFundBadgeClass(h.fundCode)}>
-                    <span style={{ fontWeight: 900, fontSize: '12px' }}>{h.fundCode.slice(0, 3)}</span>
+                    <span style={{ fontWeight: 500, fontSize: '12px' }}>{h.fundCode.slice(0, 3)}</span>
                   </div>
                   <div>
-                    <h4 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{h.fundCode}</h4>
+                    <h4 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{h.fundCode}</h4>
                     <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>{h.fundName}</span>
                   </div>
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentValue)}</div>
+                  <div style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentValue)}</div>
                   <span className={h.unrealizedPnL >= 0 ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '11px', marginTop: '2px' }}>
                     {h.unrealizedPnL >= 0 ? '+' : ''}{formatVND(h.unrealizedPnL)} ({formatPercent(h.unrealizedPnLPercent)})
                   </span>
@@ -164,7 +164,7 @@ export default function PortfolioPage() {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
                   <span style={{ color: 'var(--md-sys-color-on-surface-variant)' }}>Tỷ trọng trong danh mục</span>
-                  <span style={{ fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>{h.weightPercent.toFixed(1)}%</span>
+                  <span style={{ fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{h.weightPercent.toFixed(1)}%</span>
                 </div>
                 <div className="m3-progress-bar-bg">
                   <div
@@ -178,19 +178,19 @@ export default function PortfolioPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', backgroundColor: 'var(--md-sys-color-surface-container-low)', padding: '10px 12px', borderRadius: '14px', border: '1px solid var(--md-sys-color-outline-variant)' }}>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Số lượng CCQ</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{h.totalUnits.toLocaleString('vi-VN')} CCQ</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{h.totalUnits.toLocaleString('vi-VN')} CCQ</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá vốn bình quân</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.avgCostBasis)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.avgCostBasis)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá NAV hiện tại</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentNav)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentNav)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Tổng giá vốn</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.totalCost)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.totalCost)}</div>
                 </div>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function PortfolioPage() {
           }}
         >
           <div className="m3-card" style={{ width: '100%', maxWidth: '420px', padding: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
               Tạo Danh Mục Mới
             </h3>
             <form onSubmit={handleCreatePortfolio} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

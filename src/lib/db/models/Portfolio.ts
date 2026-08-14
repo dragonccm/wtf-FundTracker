@@ -13,7 +13,7 @@ export interface IPortfolio extends Document {
 
 const PortfolioSchema = new Schema<IPortfolio>(
   {
-    id: { type: String, required: true, unique: true, index: true },
+    id: { type: String, required: true, index: true },
     userEmail: { type: String, required: true, lowercase: true, index: true },
     name: { type: String, required: true },
     description: { type: String },
@@ -22,6 +22,8 @@ const PortfolioSchema = new Schema<IPortfolio>(
   },
   { timestamps: true }
 );
+
+PortfolioSchema.index({ userEmail: 1, id: 1 }, { unique: true });
 
 export const PortfolioModel: Model<IPortfolio> =
   mongoose.models.Portfolio || mongoose.model<IPortfolio>('Portfolio', PortfolioSchema);

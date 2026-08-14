@@ -6,9 +6,13 @@
 # testing
 /coverage
 
+# local development database
+/.data/
+
 # next.js
 /.next/
 /out/
+*.tsbuildinfo
 
 # production
 /build

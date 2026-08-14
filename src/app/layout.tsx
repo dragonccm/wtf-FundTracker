@@ -1,7 +1,7 @@
 import React from 'react';
 import './globals.css';
 import '@/styles/globals.css';
-import MaterialLoader from '@/lib/material/MaterialLoader';
+import '@/styles/journal.css';
 import { AppProvider } from '@/lib/store/appStore';
 import AppNavigation from '@/components/navigation/AppNavigation';
 
@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Google Fonts: MoMo Trust Sans & MoMo Trust Display (Official MoMo Fonts) */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display:wght@400;700;900&family=Momo+Trust+Sans:wght@300;400;500;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Momo+Trust+Display:wght@400&family=Momo+Trust+Sans:wght@300;400;500&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap"
           rel="stylesheet"
         />
         {/* Official Google Material Symbols Outlined Icon Font */}
@@ -28,7 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <MaterialLoader />
         <AppProvider>
           <AppNavigation>{children}</AppNavigation>
         </AppProvider>

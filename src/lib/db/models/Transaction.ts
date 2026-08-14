@@ -19,7 +19,7 @@ export interface ITransaction extends Document {
 
 const TransactionSchema = new Schema<ITransaction>(
   {
-    id: { type: String, required: true, unique: true, index: true },
+    id: { type: String, required: true, index: true },
     userEmail: { type: String, required: true, lowercase: true, index: true },
     portfolioId: { type: String, required: true },
     fundId: { type: String, required: true },
@@ -34,6 +34,8 @@ const TransactionSchema = new Schema<ITransaction>(
   },
   { timestamps: true }
 );
+
+TransactionSchema.index({ userEmail: 1, id: 1 }, { unique: true });
 
 export const TransactionModel: Model<ITransaction> =
   mongoose.models.Transaction || mongoose.model<ITransaction>('Transaction', TransactionSchema);

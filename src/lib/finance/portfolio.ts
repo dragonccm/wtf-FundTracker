@@ -92,8 +92,8 @@ export function calculatePerformanceMetrics(
   const currentMarketValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
   const totalCostActive = holdings.reduce((sum, h) => sum + h.totalCost, 0);
 
-  let totalNetDeposits = 0;
   let realizedPnL = 0;
+  let cumulativePurchaseCost = 0;
 
   // Track realized PnL across history
   const tempHoldings = new Map<string, { units: number; cost: number }>();
@@ -107,21 +107,24 @@ export function calculatePerformanceMetrics(
     if (tx.type === 'BUY') {
       cur.units += tx.units;
       cur.cost += tx.amount + tx.fee;
-      totalNetDeposits += tx.amount + tx.fee;
+      cumulativePurchaseCost += tx.amount + tx.fee;
     } else if (tx.type === 'SELL') {
       const avgCost = cur.units > 0 ? cur.cost / cur.units : 0;
-      const soldCost = tx.units * avgCost;
+      const unitsSold = Math.min(tx.units, cur.units);
+      const soldCost = unitsSold * avgCost;
       const proceeds = tx.amount - tx.fee;
       realizedPnL += proceeds - soldCost;
-      cur.units = Math.max(0, cur.units - tx.units);
+      cur.units = Math.max(0, cur.units - unitsSold);
       cur.cost = Math.max(0, cur.cost - soldCost);
-      totalNetDeposits -= proceeds;
+    } else if (tx.type === 'DIVIDEND') {
+      realizedPnL += tx.amount - tx.fee;
     }
     tempHoldings.set(tx.fundCode, cur);
   });
 
-  const totalPnL = currentMarketValue + realizedPnL - (totalCostActive + (totalNetDeposits > 0 ? totalNetDeposits - totalCostActive : 0));
-  const totalPnLPercent = totalCostActive > 0 ? ((currentMarketValue - totalCostActive) / totalCostActive) * 100 : 0;
+  const unrealizedPnL = currentMarketValue - totalCostActive;
+  const totalPnL = unrealizedPnL + realizedPnL;
+  const totalPnLPercent = cumulativePurchaseCost > 0 ? (totalPnL / cumulativePurchaseCost) * 100 : 0;
 
   // Build CashFlows for XIRR
   const cashFlows: CashFlow[] = [];
@@ -136,6 +139,10 @@ export function calculatePerformanceMetrics(
         amount: tx.amount - tx.fee,
         date: new Date(tx.date),
       });
+    } else if (tx.type === 'DIVIDEND' || tx.type === 'WITHDRAWAL') {
+      cashFlows.push({ amount: tx.amount - tx.fee, date: new Date(tx.date) });
+    } else if (tx.type === 'DEPOSIT') {
+      cashFlows.push({ amount: -(tx.amount + tx.fee), date: new Date(tx.date) });
     }
   });
 
@@ -165,7 +172,7 @@ export function calculatePerformanceMetrics(
   return {
     totalInvested: totalCostActive,
     currentMarketValue,
-    totalPnL: currentMarketValue - totalCostActive,
+    totalPnL,
     totalPnLPercent,
     xirrPercent,
     realizedPnL,

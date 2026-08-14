@@ -49,7 +49,7 @@ export default function TransactionsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Sổ Giao Dịch CCQ</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>Sổ Giao Dịch CCQ</h1>
           <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             Xem toàn bộ lịch sử nạp tiền, mua/bán CCQ và phí
           </p>
@@ -125,7 +125,7 @@ export default function TransactionsPage() {
       {/* Transaction List Mobile Cards */}
       <div className="m3-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Lịch Sử Giao Dịch ({filteredTx.length})
           </span>
         </div>
@@ -135,7 +135,7 @@ export default function TransactionsPage() {
             <span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--md-sys-color-outline)' }}>
               receipt_long
             </span>
-            <p style={{ marginTop: '8px', fontSize: '13px', fontWeight: 600 }}>Không tìm thấy giao dịch nào</p>
+            <p style={{ marginTop: '8px', fontSize: '13px', fontWeight: 500 }}>Không tìm thấy giao dịch nào</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -154,11 +154,11 @@ export default function TransactionsPage() {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div className={getFundBadgeClass(tx.fundCode)}>
-                    <span style={{ fontWeight: 900, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
+                    <span style={{ fontWeight: 500, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
                   </div>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{tx.fundCode}</span>
+                      <span style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{tx.fundCode}</span>
                       <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
                         {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
                       </span>
@@ -171,7 +171,7 @@ export default function TransactionsPage() {
 
                 <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
+                    <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
                     <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>NAV: {formatVND(tx.unitPrice)}</div>
                   </div>
                   <button

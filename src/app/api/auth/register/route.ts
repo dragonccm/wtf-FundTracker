@@ -1,60 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { UserModel } from '@/lib/db/models/User';
+import { hashPassword, setSessionCookie } from '@/lib/auth/serverAuth';
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, email, password, avatarUrl, provider = 'local' } = body;
+    const { name, email, password } = await req.json();
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedName = String(name || '').trim();
 
-    if (!email || !name) {
-      return NextResponse.json(
-        { success: false, error: 'Vui lòng cung cấp đầy đủ tên và email.' },
-        { status: 400 }
-      );
+    if (!normalizedName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return NextResponse.json({ success: false, error: 'Tên hoặc email chưa hợp lệ.' }, { status: 400 });
+    }
+    if (String(password || '').length < 8) {
+      return NextResponse.json({ success: false, error: 'Mật khẩu cần ít nhất 8 ký tự.' }, { status: 400 });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    await connectToDatabase();
-
-    const existingUser = await UserModel.findOne({ email: normalizedEmail });
-    if (existingUser) {
-      return NextResponse.json(
-        { success: false, error: 'Email này đã được đăng ký trên hệ thống.' },
-        { status: 400 }
-      );
+    const connection = await connectToDatabase();
+    if (!connection) {
+      return NextResponse.json({ success: false, error: 'Không thể kết nối cơ sở dữ liệu.' }, { status: 503 });
     }
 
-    const id = 'usr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    if (await UserModel.exists({ email: normalizedEmail })) {
+      return NextResponse.json({ success: false, error: 'Email đã được đăng ký.' }, { status: 409 });
+    }
+
     const user = await UserModel.create({
-      id,
+      id: `usr_${Date.now()}_${randomId()}`,
       email: normalizedEmail,
-      name: name.trim(),
-      password: password || '',
-      avatarUrl:
-        avatarUrl ||
-        `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=6750A4`,
-      provider,
+      name: normalizedName,
+      password: hashPassword(String(password)),
+      provider: 'local',
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         avatarUrl: user.avatarUrl,
-        provider: user.provider,
         currency: user.currency,
         dateFormat: user.dateFormat,
-        createdAt: user.createdAt,
+        createdAt: user.createdAt.toISOString(),
       },
-    });
-  } catch (error: any) {
+    }, { status: 201 });
+    return setSessionCookie(response, user.email);
+  } catch (error) {
     console.error('Register API Error:', error);
-    return NextResponse.json(
-      { success: false, error: error.message || 'Lỗi xử lý đăng ký tài khoản.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Không thể tạo tài khoản lúc này.' }, { status: 500 });
   }
+}
+
+function randomId() {
+  return Math.random().toString(36).slice(2, 8);
 }

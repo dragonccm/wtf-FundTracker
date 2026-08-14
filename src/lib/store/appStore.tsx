@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   UserProfile,
   Fund,
@@ -18,11 +18,11 @@ import {
   initialGoals,
 } from './initialData';
 import { calculateHoldings, calculatePerformanceMetrics } from '../finance/portfolio';
-import { authService } from '../auth/authService';
 
 interface AppContextType {
   user: UserProfile;
   isAuthenticated: boolean;
+  isAuthResolved: boolean;
   funds: Fund[];
   portfolios: Portfolio[];
   activePortfolioId: string; // 'ALL' or portfolioId
@@ -46,7 +46,7 @@ interface AppContextType {
   deleteGoal: (id: string) => void;
   addFund: (fund: Omit<Fund, 'id' | 'navHistory'>) => void;
   updateFundNav: (fundId: string, newNav: number, date?: string) => void;
-  resetToSampleData: () => void;
+  clearFinancialData: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -61,25 +61,32 @@ const STORAGE_KEYS = {
   GOALS: 'nhatkyquy_goals',
 };
 
+function defaultPortfolioFor(email: string): Portfolio {
+  let hash = 0;
+  for (const character of email.toLowerCase()) hash = ((hash << 5) - hash + character.charCodeAt(0)) | 0;
+  return {
+    ...initialPortfolios[0],
+    id: `p_main_${Math.abs(hash).toString(36)}`,
+    createdAt: new Date().toISOString().slice(0, 10),
+  };
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile>(initialProfile);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthResolved, setIsAuthResolved] = useState(false);
   const [funds, setFunds] = useState<Fund[]>(initialFunds);
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [activePortfolioId, setActivePortfolioId] = useState<string>('ALL');
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [goals, setGoals] = useState<FinancialGoal[]>(initialGoals);
+  const [hasLoadedRemote, setHasLoadedRemote] = useState(false);
+  const [isCloudAvailable, setIsCloudAvailable] = useState(true);
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
     try {
-      const savedAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
-      if (savedAuth !== null) {
-        setIsAuthenticated(JSON.parse(savedAuth));
-      } else {
-        setIsAuthenticated(false);
-      }
-
       const savedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
       if (savedProfile) setUser(JSON.parse(savedProfile));
 
@@ -100,10 +107,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.error('Failed to load storage state:', e);
     }
+    setHasHydrated(true);
+
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((response) => response.json())
+      .then((data) => {
+        if (!data?.success || !data?.user) throw new Error('No active session');
+        setUser((previous) => ({ ...previous, ...data.user }));
+        setIsCloudAvailable(data.storageMode !== 'local');
+        setIsAuthenticated(true);
+      })
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setIsAuthResolved(true));
   }, []);
 
   // Sync to localStorage
   useEffect(() => {
+    if (!hasHydrated) return;
     try {
       localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(isAuthenticated));
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(user));
@@ -115,35 +135,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.error('Failed to sync to storage:', e);
     }
-  }, [isAuthenticated, user, funds, portfolios, activePortfolioId, transactions, goals]);
+  }, [hasHydrated, isAuthenticated, user, funds, portfolios, activePortfolioId, transactions, goals]);
 
   // Initial Load from MongoDB on Login
   useEffect(() => {
-    if (!isAuthenticated || !user?.email) return;
+    if (!isAuthenticated || !user?.email) {
+      setHasLoadedRemote(false);
+      return;
+    }
 
-    fetch(`/api/user/sync?email=${encodeURIComponent(user.email)}`)
+    if (!isCloudAvailable) {
+      setHasLoadedRemote(true);
+      return;
+    }
+
+    setHasLoadedRemote(false);
+
+    fetch('/api/user/sync', { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data?.success && data?.data) {
-          if (data.data.transactions && data.data.transactions.length > 0) {
-            setTransactions(data.data.transactions);
-          }
-          if (data.data.portfolios && data.data.portfolios.length > 0) {
-            setPortfolios(data.data.portfolios);
-          }
-          if (data.data.goals && data.data.goals.length > 0) {
-            setGoals(data.data.goals);
-          }
+          if (data.data.user) setUser((previous) => ({ ...previous, ...data.data.user }));
+          setTransactions(data.data.transactions || []);
+          setPortfolios(data.data.portfolios?.length ? data.data.portfolios : [defaultPortfolioFor(user.email)]);
+          setGoals(data.data.goals || []);
+          setFunds(data.data.funds || []);
         }
       })
       .catch((err) => {
         console.debug('MongoDB initial sync:', err.message);
-      });
-  }, [isAuthenticated, user?.email]);
+      })
+      .finally(() => setHasLoadedRemote(true));
+  }, [isAuthenticated, user?.email, isCloudAvailable]);
 
   // Background Auto-Sync to MongoDB
   useEffect(() => {
-    if (!isAuthenticated || !user?.email) return;
+    if (!isAuthenticated || !user?.email || !hasLoadedRemote || !isCloudAvailable) return;
 
     const timer = setTimeout(() => {
       fetch('/api/user/sync', {
@@ -155,6 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           portfolios,
           transactions,
           goals,
+          funds,
         }),
       }).catch((err) => {
         console.debug('MongoDB background sync:', err.message);
@@ -162,51 +190,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [isAuthenticated, user, portfolios, transactions, goals]);
+  }, [isAuthenticated, user, portfolios, transactions, goals, funds, hasLoadedRemote, isCloudAvailable]);
 
   // Filter transactions based on active portfolio
-  const filteredTransactions =
-    activePortfolioId === 'ALL'
-      ? transactions
-      : transactions.filter((tx) => tx.portfolioId === activePortfolioId);
+  const filteredTransactions = useMemo(
+    () => (
+      activePortfolioId === 'ALL'
+        ? transactions
+        : transactions.filter((tx) => tx.portfolioId === activePortfolioId)
+    ),
+    [activePortfolioId, transactions],
+  );
 
   // Calculate live holdings and performance metrics
-  const holdings = calculateHoldings(filteredTransactions, funds);
-  const metrics = calculatePerformanceMetrics(filteredTransactions, funds);
+  const holdings = useMemo(
+    () => calculateHoldings(filteredTransactions, funds),
+    [filteredTransactions, funds],
+  );
+  const metrics = useMemo(
+    () => calculatePerformanceMetrics(filteredTransactions, funds),
+    [filteredTransactions, funds],
+  );
 
   const login = useCallback((email: string, name?: string, avatarUrl?: string) => {
-    const users = authService.getRegisteredUsers();
-    const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    
-    if (existing) {
-      setUser((prev) => ({
-        ...prev,
-        id: existing.id || prev.id,
-        email: existing.email,
-        name: existing.name,
-        avatarUrl: existing.avatarUrl || prev.avatarUrl,
-      }));
-      authService.saveRecentAccount(existing);
-    } else {
-      const newUser = {
-        id: 'usr_' + Date.now(),
-        email,
-        name: name || email.split('@')[0],
-        avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || email)}&backgroundColor=6750A4`,
-        provider: 'local' as const,
-        createdAt: new Date().toISOString(),
-      };
-      setUser((prev) => ({
-        ...prev,
-        ...newUser,
-      }));
-      authService.saveRecentAccount(newUser);
-    }
+    setUser((previous) => ({
+      ...previous,
+      email: email.trim().toLowerCase(),
+      name: name || previous.name || email.split('@')[0],
+      avatarUrl: avatarUrl || previous.avatarUrl,
+    }));
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(() => {
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
     setIsAuthenticated(false);
+    setHasLoadedRemote(false);
+    localStorage.removeItem(STORAGE_KEYS.AUTH);
   }, []);
 
   const updateProfile = useCallback((updates: Partial<UserProfile>) => {
@@ -301,15 +321,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const resetToSampleData = () => {
-    setUser(initialProfile);
-    setIsAuthenticated(true);
+  const clearFinancialData = () => {
     setFunds(initialFunds);
-    setPortfolios(initialPortfolios);
+    setPortfolios([defaultPortfolioFor(user.email)]);
     setActivePortfolioId('ALL');
     setTransactions(initialTransactions);
     setGoals(initialGoals);
-    localStorage.clear();
+    [
+      STORAGE_KEYS.FUNDS,
+      STORAGE_KEYS.PORTFOLIOS,
+      STORAGE_KEYS.ACTIVE_PORTFOLIO,
+      STORAGE_KEYS.TRANSACTIONS,
+      STORAGE_KEYS.GOALS,
+    ].forEach((key) => localStorage.removeItem(key));
   };
 
   return (
@@ -317,6 +341,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         user,
         isAuthenticated,
+        isAuthResolved,
         funds,
         portfolios,
         activePortfolioId,
@@ -340,7 +365,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteGoal,
         addFund,
         updateFundNav,
-        resetToSampleData,
+        clearFinancialData,
       }}
     >
       {children}

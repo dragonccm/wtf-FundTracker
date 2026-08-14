@@ -3,11 +3,12 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IGoal extends Document {
   id: string;
   userEmail: string;
-  title: string;
+  name?: string;
+  title?: string;
   targetAmount: number;
   currentAmount: number;
   targetDate: string;
-  category: 'RETIREMENT' | 'HOUSE' | 'EDUCATION' | 'EMERGENCY' | 'OTHER';
+  category: 'RETIREMENT' | 'HOUSE' | 'EDUCATION' | 'CAR' | 'EMERGENCY' | 'OTHER';
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -15,9 +16,10 @@ export interface IGoal extends Document {
 
 const GoalSchema = new Schema<IGoal>(
   {
-    id: { type: String, required: true, unique: true, index: true },
+    id: { type: String, required: true, index: true },
     userEmail: { type: String, required: true, lowercase: true, index: true },
-    title: { type: String, required: true },
+    name: { type: String },
+    title: { type: String },
     targetAmount: { type: Number, required: true },
     currentAmount: { type: Number, default: 0 },
     targetDate: { type: String, required: true },
@@ -27,5 +29,6 @@ const GoalSchema = new Schema<IGoal>(
   { timestamps: true }
 );
 
-export const GoalModel: Model<IGoal> =
-  mongoose.models.Goal || mongoose.model<IGoal>('Goal', GoalSchema);
+GoalSchema.index({ userEmail: 1, id: 1 }, { unique: true });
+
+export const GoalModel: Model<IGoal> = mongoose.models.Goal || mongoose.model<IGoal>('Goal', GoalSchema);
