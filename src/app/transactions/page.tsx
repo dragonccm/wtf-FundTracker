@@ -69,9 +69,9 @@ export default function TransactionsPage() {
         {/* (7) Type Filter M3 Connected Segmented Group (Mẫu 7) */}
         <div className="m3-segmented-group" style={{ width: '100%', display: 'flex' }}>
           {[
-            { id: 'ALL', label: 'Tất cả lệnh', icon: 'list_alt' },
-            { id: 'BUY', label: 'Lệnh Mua', icon: 'add_circle' },
-            { id: 'SELL', label: 'Lệnh Bán', icon: 'remove_circle' },
+            { id: 'ALL', label: 'Tất cả', icon: 'list_alt' },
+            { id: 'BUY', label: 'Mua', icon: 'add_circle' },
+            { id: 'SELL', label: 'Bán', icon: 'remove_circle' },
           ].map((t) => {
             const isActive = selectedTypeFilter === t.id;
             return (
@@ -80,7 +80,7 @@ export default function TransactionsPage() {
                 type="button"
                 onClick={() => setSelectedTypeFilter(t.id)}
                 className={`m3-segmented-item ${isActive ? 'active' : ''}`}
-                style={{ flex: 1, justifyContent: 'center' }}
+                style={{ flex: 1, justifyContent: 'center', whiteSpace: 'nowrap' }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
                   {isActive ? 'check' : t.icon}

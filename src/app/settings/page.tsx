@@ -1,17 +1,47 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/lib/store/appStore';
+import { useToast } from '@/components/feedback/ToastProvider';
 import { Currency, DateFormat } from '@/types';
+
+const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_AVATAR_DATA_URL_LENGTH = 750_000;
+const SUPPORTED_AVATAR_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+async function prepareAvatar(file: File) {
+  const source = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const preview = new Image();
+      preview.onload = () => resolve(preview);
+      preview.onerror = () => reject(new Error('Không thể đọc ảnh này.'));
+      preview.src = source;
+    });
+    const scale = Math.min(1, 512 / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Không thể xử lý ảnh này.');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.86);
+  } finally {
+    URL.revokeObjectURL(source);
+  }
+}
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, updateProfile, clearFinancialData, logout } = useAppStore();
+  const { showToast } = useToast();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user.name);
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
   const [saved, setSaved] = useState(false);
+  const [isPreparingAvatar, setIsPreparingAvatar] = useState(false);
 
   useEffect(() => {
     setName(user.name);
@@ -23,6 +53,35 @@ export default function SettingsPage() {
     updateProfile({ name: name.trim(), avatarUrl: avatarUrl.trim() });
     setSaved(true);
     window.setTimeout(() => setSaved(false), 1600);
+  };
+
+  const handleAvatarSelection = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!SUPPORTED_AVATAR_TYPES.has(file.type)) {
+      showToast('error', 'Chỉ hỗ trợ ảnh JPG, PNG hoặc WebP.');
+      return;
+    }
+    if (file.size > MAX_AVATAR_FILE_SIZE) {
+      showToast('error', 'Ảnh tối đa 5 MB. Vui lòng chọn ảnh nhỏ hơn.');
+      return;
+    }
+
+    setIsPreparingAvatar(true);
+    try {
+      const dataUrl = await prepareAvatar(file);
+      if (dataUrl.length > MAX_AVATAR_DATA_URL_LENGTH) {
+        throw new Error('Ảnh sau khi tối ưu vẫn quá lớn. Vui lòng chọn ảnh khác.');
+      }
+      setAvatarUrl(dataUrl);
+      updateProfile({ avatarUrl: dataUrl });
+      showToast('success', 'Đã thay ảnh đại diện và đang lưu lên tài khoản.');
+    } catch (error) {
+      showToast('error', error instanceof Error ? error.message : 'Không thể tải ảnh đại diện.');
+    } finally {
+      setIsPreparingAvatar(false);
+    }
   };
 
   const clearAllFinancialData = () => {
@@ -46,26 +105,35 @@ export default function SettingsPage() {
 
       <form className="journal-card journal-form" style={{ padding: 20 }} onSubmit={saveProfile}>
         <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-          {avatarUrl ? (
-            <img src={avatarUrl} alt="" className="journal-avatar" style={{ width: 54, height: 54 }} />
-          ) : (
-            <span className="journal-fund-mark" style={{ width: 54, height: 54, borderRadius: 20 }}>
-              <span className="material-symbols-outlined">person</span>
-            </span>
-          )}
+          <div className="journal-avatar-editor">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="journal-avatar" />
+            ) : (
+              <span className="journal-avatar-placeholder">
+                <span className="material-symbols-outlined">person</span>
+              </span>
+            )}
+            <button
+              className="journal-avatar-add"
+              type="button"
+              onClick={() => avatarInputRef.current?.click()}
+              aria-label="Tải ảnh đại diện từ máy"
+              disabled={isPreparingAvatar}
+            >
+              <span className="material-symbols-outlined">{isPreparingAvatar ? 'progress_activity' : 'add'}</span>
+            </button>
+            <input ref={avatarInputRef} className="journal-visually-hidden" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarSelection} />
+          </div>
           <div style={{ minWidth: 0 }}>
             <strong style={{ display: 'block' }}>{user.name}</strong>
             <small style={{ color: 'var(--journal-muted)' }}>{user.email}</small>
+            <small className="journal-avatar-help">Nhấn dấu + để tải ảnh từ máy</small>
           </div>
         </div>
 
         <div className="journal-field">
           <label htmlFor="profile-name">Tên hiển thị</label>
           <input id="profile-name" value={name} onChange={(event) => setName(event.target.value)} required />
-        </div>
-        <div className="journal-field">
-          <label htmlFor="avatar-url">Ảnh đại diện (URL)</label>
-          <input id="avatar-url" type="url" value={avatarUrl} onChange={(event) => setAvatarUrl(event.target.value)} placeholder="https://…" />
         </div>
         <button className="journal-primary-button" type="submit">{saved ? 'Đã lưu' : 'Lưu hồ sơ'}</button>
       </form>

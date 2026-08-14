@@ -11,6 +11,17 @@ function unauthorized() {
   return NextResponse.json({ success: false, error: 'Phiên đăng nhập không hợp lệ.' }, { status: 401 });
 }
 
+function getAvatarUrl(value: unknown) {
+  const avatarUrl = String(value || '');
+  if (!avatarUrl) return '';
+  const isBase64Image = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=\s]+$/i.test(avatarUrl);
+  const isHttpUrl = /^https?:\/\//i.test(avatarUrl);
+  if (avatarUrl.length > 750_000 || (!isBase64Image && !isHttpUrl)) {
+    throw new Error('Avatar image is invalid.');
+  }
+  return avatarUrl;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const email = readSessionEmail(req);
@@ -75,10 +86,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (profile) {
+      const avatarUrl = getAvatarUrl(profile.avatarUrl);
       await UserModel.updateOne({ email }, {
         $set: {
           name: String(profile.name || '').trim(),
-          avatarUrl: String(profile.avatarUrl || ''),
+          avatarUrl,
           currency: profile.currency === 'USD' ? 'USD' : 'VND',
           dateFormat: profile.dateFormat === 'YYYY-MM-DD' ? 'YYYY-MM-DD' : 'DD/MM/YYYY',
         },
