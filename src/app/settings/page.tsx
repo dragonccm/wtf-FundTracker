@@ -34,29 +34,63 @@ export default function SettingsPage() {
         className="m3-card"
         style={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           gap: '14px',
-          padding: '16px',
+          padding: '18px 16px',
         }}
       >
-        <div
-          style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            overflow: 'hidden',
-            border: '2px solid var(--md-sys-color-outline-variant)',
-          }}
-        >
-          <img
-            src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-            alt={user.name}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div
+            style={{
+              width: '52px',
+              height: '52px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              border: '2px solid var(--md-sys-color-primary)',
+            }}
+          >
+            <img
+              src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+              alt={user.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{user.name}</div>
+            <div style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>{user.email}</div>
+            <span className="badge-positive" style={{ marginTop: '4px', fontSize: '10px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '12px' }}>verified_user</span>
+              Google Auth Active
+            </span>
+          </div>
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{user.name}</div>
-          <div style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>{user.email} • Google Account</div>
+
+        {/* Auth Action Buttons */}
+        <div style={{ display: 'flex', gap: '8px', paddingTop: '8px', borderTop: '1px solid var(--md-sys-color-outline-variant)' }}>
+          <button
+            type="button"
+            onClick={() => {
+              window.location.href = '/login';
+            }}
+            className="m3-pill-btn"
+            style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>sync_alt</span>
+            Đổi Tài Khoản
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                window.location.href = '/login';
+              }
+            }}
+            className="m3-pill-btn-danger"
+            style={{ flex: 1, padding: '8px 12px', fontSize: '12px' }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>logout</span>
+            Đăng Xuất
+          </button>
         </div>
       </div>
 
