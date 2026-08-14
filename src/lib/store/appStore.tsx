@@ -113,6 +113,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [isAuthenticated, user, funds, portfolios, activePortfolioId, transactions, goals]);
 
+  // Initial Load from MongoDB on Login
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) return;
+
+    fetch(`/api/user/sync?email=${encodeURIComponent(user.email)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.data) {
+          if (data.data.transactions && data.data.transactions.length > 0) {
+            setTransactions(data.data.transactions);
+          }
+          if (data.data.portfolios && data.data.portfolios.length > 0) {
+            setPortfolios(data.data.portfolios);
+          }
+          if (data.data.goals && data.data.goals.length > 0) {
+            setGoals(data.data.goals);
+          }
+        }
+      })
+      .catch((err) => {
+        console.debug('MongoDB initial sync:', err.message);
+      });
+  }, [isAuthenticated, user?.email]);
+
+  // Background Auto-Sync to MongoDB
+  useEffect(() => {
+    if (!isAuthenticated || !user?.email) return;
+
+    const timer = setTimeout(() => {
+      fetch('/api/user/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user.email,
+          profile: user,
+          portfolios,
+          transactions,
+          goals,
+        }),
+      }).catch((err) => {
+        console.debug('MongoDB background sync:', err.message);
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, user, portfolios, transactions, goals]);
+
   // Filter transactions based on active portfolio
   const filteredTransactions =
     activePortfolioId === 'ALL'
