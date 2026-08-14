@@ -55,8 +55,8 @@ export default function GoalsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#E2E2E6' }}>Mục Tiêu Tài Chính</h1>
-          <p style={{ fontSize: '13px', color: '#909299', marginTop: '2px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Mục Tiêu Tài Chính</h1>
+          <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             Đặt mục tiêu mua nhà, hưu trí, học phí cho con và theo dõi tiến độ
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function GoalsPage() {
           const { badgeClass, icon } = getCategoryIconBadge(g.category);
 
           return (
-            <div key={g.id} className="m3-card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div key={g.id} className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div className={badgeClass}>
@@ -92,61 +92,62 @@ export default function GoalsPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#E2E2E6' }}>{g.name}</h3>
-                    <span style={{ fontSize: '11px', color: '#909299' }}>
+                    <h3 style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</h3>
+                    <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
                       Hạn: {g.targetDate} ({monthsLeft} tháng)
                     </span>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (confirm('Xóa mục tiêu này?')) deleteGoal(g.id);
-                  }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#909299' }}
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-primary)' }}>
+                    {completionPct.toFixed(1)}%
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm('Bạn có muốn xóa mục tiêu này?')) {
+                        deleteGoal(g.id);
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--md-sys-color-outline)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                  </button>
+                </div>
               </div>
 
               {/* Progress Bar */}
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px' }}>
-                  <span style={{ fontWeight: 600, color: '#909299' }}>Tiến độ tích lũy</span>
-                  <span style={{ fontWeight: 900, color: '#A8C7FA' }}>{completionPct.toFixed(1)}%</span>
-                </div>
+              <div className="m3-progress-bar-bg">
                 <div
-                  style={{
-                    height: '8px',
-                    borderRadius: '4px',
-                    backgroundColor: '#282B31',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div
-                    style={{
-                      height: '100%',
-                      width: `${completionPct}%`,
-                      backgroundColor: '#A8C7FA',
-                      borderRadius: '4px',
-                    }}
-                  />
-                </div>
+                  className="m3-progress-bar-fill"
+                  style={{ width: `${completionPct}%` }}
+                />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', padding: '10px 12px', borderRadius: '14px', backgroundColor: '#191B1F' }}>
+              {/* Stats Row */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', backgroundColor: 'var(--md-sys-color-surface-container-low)', padding: '10px 12px', borderRadius: '14px', border: '1px solid var(--md-sys-color-outline-variant)' }}>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#909299' }}>Đã tích lũy</div>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#85D397' }}>{formatVND(g.currentAmount)}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Đã tích lũy</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.currentAmount)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', color: '#909299' }}>Mục tiêu</div>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#E2E2E6' }}>{formatVND(g.targetAmount)}</div>
+                  <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Mục tiêu</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.targetAmount)}</div>
                 </div>
-              </div>
-
-              <div style={{ fontSize: '11px', color: '#909299', borderTop: '1px solid #282B31', paddingTop: '8px' }}>
-                Cần tích lũy khoảng <strong style={{ color: '#E2E2E6' }}>{formatVND(monthlyRequired)}/tháng</strong> để đạt đúng hạn.
+                <div>
+                  <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Còn thiếu</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#BA1A1A' }}>{formatVND(remainingAmount)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Cần nạp / tháng</div>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--md-sys-color-primary)' }}>{formatVND(monthlyRequired)}</div>
+                </div>
               </div>
             </div>
           );
@@ -162,93 +163,83 @@ export default function GoalsPage() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: 'rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
-            padding: '20px',
+            padding: '16px',
           }}
         >
-          <div className="m3-card-dark" style={{ width: '100%', maxWidth: '440px', padding: '24px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#E2E2E6', marginBottom: '16px' }}>Thêm Mục Tiêu Mới</h2>
-            <form onSubmit={handleCreateGoal} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="m3-card" style={{ width: '100%', maxWidth: '440px', padding: '24px 20px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
+              Thêm Mục Tiêu Tài Chính
+            </h2>
+            <form onSubmit={handleCreateGoal} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div className="m3-form-group">
                 <label className="m3-form-label">Tên mục tiêu</label>
                 <input
                   type="text"
                   required
-                  placeholder="VD: Mua nhà căn hộ, Quỹ hưu trí..."
+                  placeholder="VD: Mua nhà Vinhome, Quỹ hưu trí..."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="m3-input"
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div className="m3-form-group">
-                  <label className="m3-form-label">Phân loại</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as GoalCategory)}
-                    className="m3-select"
-                  >
-                    <option value="HOUSE">Mua nhà</option>
-                    <option value="EDUCATION">Học phí</option>
-                    <option value="RETIREMENT">Hưu trí</option>
-                    <option value="CAR">Mua xe</option>
-                    <option value="EMERGENCY">Dự phòng</option>
-                    <option value="OTHER">Mục tiêu khác</option>
-                  </select>
-                </div>
-
-                <div className="m3-form-group">
-                  <label className="m3-form-label">Hạn hoàn thành</label>
-                  <input
-                    type="date"
-                    required
-                    value={targetDate}
-                    onChange={(e) => setTargetDate(e.target.value)}
-                    className="m3-input"
-                  />
-                </div>
+              <div className="m3-form-group">
+                <label className="m3-form-label">Phân loại</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as GoalCategory)}
+                  className="m3-select"
+                >
+                  <option value="HOUSE">Mua nhà (House)</option>
+                  <option value="RETIREMENT">Hưu trí (Retirement)</option>
+                  <option value="EDUCATION">Học vấn con cái (Education)</option>
+                  <option value="CAR">Mua xe (Car)</option>
+                  <option value="EMERGENCY">Quỹ khẩn cấp (Emergency)</option>
+                  <option value="OTHER">Mục tiêu khác (Other)</option>
+                </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div className="m3-form-group">
-                  <label className="m3-form-label">Mục tiêu (VND)</label>
+                  <label className="m3-form-label">Số tiền mục tiêu</label>
                   <input
                     type="number"
-                    required
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
+                    required
                     className="m3-input"
                   />
                 </div>
 
                 <div className="m3-form-group">
-                  <label className="m3-form-label">Đã có (VND)</label>
+                  <label className="m3-form-label">Đã tích lũy sẵn</label>
                   <input
                     type="number"
                     value={currentAmount}
                     onChange={(e) => setCurrentAmount(e.target.value)}
+                    required
                     className="m3-input"
                   />
                 </div>
               </div>
 
               <div className="m3-form-group">
-                <label className="m3-form-label">Ghi chú</label>
+                <label className="m3-form-label">Hạn hoàn thành</label>
                 <input
-                  type="text"
-                  placeholder="Ghi chú chi tiết..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  required
                   className="m3-input"
                 />
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}

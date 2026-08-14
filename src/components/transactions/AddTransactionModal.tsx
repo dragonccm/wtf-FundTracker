@@ -83,7 +83,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -95,9 +95,10 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         style={{
           width: '100%',
           maxWidth: '440px',
-          backgroundColor: '#202328',
+          backgroundColor: 'var(--md-sys-color-surface)',
           borderRadius: '28px',
-          border: '1px solid #282B31',
+          border: '1px solid var(--md-sys-color-outline-variant)',
+          boxShadow: 'var(--md-sys-elevation-4)',
           padding: '24px 20px',
           display: 'flex',
           flexDirection: 'column',
@@ -107,10 +108,10 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, color: '#E2E2E6' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
               Ghi Nhận Giao Dịch Mới
             </h2>
-            <p style={{ fontSize: '11px', color: '#909299' }}>Thêm lệnh mua/bán chứng chỉ quỹ</p>
+            <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>Thêm lệnh mua/bán chứng chỉ quỹ</p>
           </div>
           <button
             onClick={onClose}
@@ -118,7 +119,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#909299',
+              color: 'var(--md-sys-color-on-surface-variant)',
               padding: '4px',
               borderRadius: '50%',
               display: 'flex',
@@ -138,8 +139,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               onClick={() => setType('BUY')}
               className={`m3-segment-btn ${type === 'BUY' ? 'active' : ''}`}
               style={{
-                backgroundColor: type === 'BUY' ? '#A8C7FA' : 'transparent',
-                color: type === 'BUY' ? '#041E49' : '#909299',
+                backgroundColor: type === 'BUY' ? 'var(--md-sys-color-primary-container)' : 'transparent',
+                color: type === 'BUY' ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface-variant)',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
@@ -152,8 +153,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               onClick={() => setType('SELL')}
               className={`m3-segment-btn ${type === 'SELL' ? 'active' : ''}`}
               style={{
-                backgroundColor: type === 'SELL' ? '#FFB4AB' : 'transparent',
-                color: type === 'SELL' ? '#690005' : '#909299',
+                backgroundColor: type === 'SELL' ? 'var(--md-sys-color-error-container)' : 'transparent',
+                color: type === 'SELL' ? 'var(--md-sys-color-on-error-container)' : 'var(--md-sys-color-on-surface-variant)',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>

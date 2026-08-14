@@ -2,55 +2,69 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
 :root {
-  /* Google Pixel Android 14/15 Material You (M3 Dark Theme) Color System */
-  --md-sys-color-background: #111315;
-  --md-sys-color-on-background: #E2E2E6;
+  /* Official Material 3 Design Kit Tonal Palette (M3 Light Specification) */
+  --md-sys-color-background: #FEF7FF;
+  --md-sys-color-on-background: #1D1B20;
   
-  --md-sys-color-surface: #111315;
-  --md-sys-color-on-surface: #E2E2E6;
-  --md-sys-color-on-surface-variant: #909299;
+  --md-sys-color-surface: #FEF7FF;
+  --md-sys-color-surface-dim: #DED8E1;
+  --md-sys-color-surface-bright: #FEF7FF;
+  --md-sys-color-on-surface: #1D1B20;
+  --md-sys-color-on-surface-variant: #49454F;
 
-  /* Surface Containers Hierarchy */
-  --md-sys-color-surface-container-lowest: #0C0E10;
-  --md-sys-color-surface-container-low: #191B1F;
-  --md-sys-color-surface-container: #202328;
-  --md-sys-color-surface-container-high: #282B31;
-  --md-sys-color-surface-container-highest: #33363D;
+  /* Surface Container Hierarchy (Matches M3 Example Layouts exact tone) */
+  --md-sys-color-surface-container-lowest: #FFFFFF;
+  --md-sys-color-surface-container-low: #F7F2FA;
+  --md-sys-color-surface-container: #F3EDF7;
+  --md-sys-color-surface-container-high: #ECE6F0;
+  --md-sys-color-surface-container-highest: #E6E0E9;
 
-  /* Pixel M3 Pastel Accents */
-  --md-sys-color-primary: #A8C7FA;
-  --md-sys-color-on-primary: #041E49;
-  --md-sys-color-primary-container: #004A77;
-  --md-sys-color-on-primary-container: #D3E3FD;
+  /* Primary Tonal (M3 Purple / Indigo Tint) */
+  --md-sys-color-primary: #6750A4;
+  --md-sys-color-on-primary: #FFFFFF;
+  --md-sys-color-primary-container: #EADDFF;
+  --md-sys-color-on-primary-container: #21005D;
 
-  --md-sys-color-secondary: #7DD0E2;
-  --md-sys-color-on-secondary: #00363F;
-  --md-sys-color-secondary-container: #1F4D57;
-  --md-sys-color-on-secondary-container: #BEEBF4;
+  /* Secondary Tonal (M3 Capsule Pill Active Color) */
+  --md-sys-color-secondary: #625B71;
+  --md-sys-color-on-secondary: #FFFFFF;
+  --md-sys-color-secondary-container: #E8DEF8;
+  --md-sys-color-on-secondary-container: #1D192B;
 
-  --md-sys-color-tertiary: #D0BCFF;
-  --md-sys-color-on-tertiary: #381E72;
-  --md-sys-color-tertiary-container: #4F378B;
-  --md-sys-color-on-tertiary-container: #EADDFF;
+  /* Tertiary Tonal */
+  --md-sys-color-tertiary: #7D5260;
+  --md-sys-color-on-tertiary: #FFFFFF;
+  --md-sys-color-tertiary-container: #FFD8E4;
+  --md-sys-color-on-tertiary-container: #31111D;
 
-  --md-sys-color-success: #85D397;
-  --md-sys-color-on-success: #003914;
-  --md-sys-color-success-container: #1B4D2B;
-  --md-sys-color-on-success-container: #A6EDB8;
+  /* Semantic Palettes */
+  --md-sys-color-success: #2E6C38;
+  --md-sys-color-on-success: #FFFFFF;
+  --md-sys-color-success-container: #C8ECCB;
+  --md-sys-color-on-success-container: #00210B;
 
-  --md-sys-color-warning: #FFB74D;
-  --md-sys-color-on-warning: #452B00;
-  --md-sys-color-warning-container: #633F00;
+  --md-sys-color-error: #BA1A1A;
+  --md-sys-color-on-error: #FFFFFF;
+  --md-sys-color-error-container: #FFDAD6;
+  --md-sys-color-on-error-container: #410002;
 
-  --md-sys-color-error: #FFB4AB;
-  --md-sys-color-on-error: #690005;
-  --md-sys-color-error-container: #4D1F1C;
-  --md-sys-color-on-error-container: #FFDAD6;
+  --md-sys-color-outline: #79747E;
+  --md-sys-color-outline-variant: #CAC4D0;
 
-  --md-sys-color-outline: #44474E;
-  --md-sys-color-outline-variant: #282B31;
+  /* M3 Shape Tokens (from M3 Figma Kit) */
+  --md-sys-shape-corner-none: 0px;
+  --md-sys-shape-corner-extra-small: 4px;
+  --md-sys-shape-corner-small: 8px;
+  --md-sys-shape-corner-medium: 12px;
+  --md-sys-shape-corner-large: 16px;
+  --md-sys-shape-corner-extra-large: 28px;
+  --md-sys-shape-corner-full: 9999px;
 
-  /* Fonts */
+  /* M3 Elevation Shadows */
+  --md-sys-elevation-1: 0px 1px 3px 1px rgba(0, 0, 0, 0.08), 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --md-sys-elevation-2: 0px 2px 6px 2px rgba(0, 0, 0, 0.08), 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+  --md-sys-elevation-3: 0px 4px 12px 3px rgba(0, 0, 0, 0.09), 0px 1px 3px 0px rgba(0, 0, 0, 0.06);
+
   --font-family: 'Plus Jakarta Sans', 'Roboto', sans-serif;
 }
 
@@ -63,10 +77,11 @@
 
 body {
   font-family: var(--font-family);
-  background-color: #0C0E10;
+  background-color: var(--md-sys-color-background);
   color: var(--md-sys-color-on-background);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
 a {
@@ -78,6 +93,7 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
+/* Material Symbols Icon Font */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;
@@ -94,156 +110,197 @@ button, input, select, textarea {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Material You Dark Theme Cards (Exact Pixel Android 14/15 Style) */
-
-.m3-card-dark {
+/* M3 Card Styles (Exact Example Layouts from Figma) */
+.m3-card, .m3-card-dark {
   background-color: var(--md-sys-color-surface-container);
-  border-radius: 24px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
   padding: 20px;
   border: none;
+  box-shadow: none;
+}
+
+.m3-card-elevated {
+  background-color: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  padding: 20px;
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+.m3-card-outlined {
+  background-color: var(--md-sys-color-surface-container-lowest);
+  border-radius: var(--md-sys-shape-corner-large);
+  padding: 16px;
+  border: 1px solid var(--md-sys-color-outline-variant);
 }
 
 .m3-card-tile {
   background-color: var(--md-sys-color-surface-container-high);
-  border-radius: 20px;
+  border-radius: var(--md-sys-shape-corner-large);
   padding: 16px;
   border: none;
-  transition: background-color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.m3-card-tile-active {
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  border-radius: 20px;
-  padding: 16px;
-  border: none;
+.m3-card-tile:hover {
+  background-color: var(--md-sys-color-surface-container-highest);
 }
 
-/* Pixel Circular Icon Pill Badges (from Android Settings) */
-.m3-icon-badge-blue {
-  width: 40px;
-  height: 40px;
+/* M3 Shape Badges & Thumbnails (Matches Figma M3 Shape definitions) */
+.m3-shape-circle {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background-color: #A8C7FA;
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-shape-square {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-shape-pill {
+  width: 44px;
+  height: 44px;
+  border-radius: 20px;
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-icon-badge-blue {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #D3E3FD;
   color: #041E49;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .m3-icon-badge-cyan {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #7DD0E2;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #C4EEF7;
   color: #00363F;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .m3-icon-badge-pink {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #F2B8B5;
-  color: #601410;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #FFD8E4;
+  color: #31111D;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .m3-icon-badge-purple {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #D0BCFF;
-  color: #381E72;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #E8DEF8;
+  color: #1D192B;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .m3-icon-badge-orange {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #FFB74D;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #FFE082;
   color: #452B00;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .m3-icon-badge-green {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #85D397;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #C8ECCB;
   color: #003914;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.m3-icon-badge-gray {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #33363D;
-  color: #E2E2E6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Material You Segmented Control (Dark Theme) */
+/* M3 Segmented Buttons */
 .m3-segmented-control {
   display: flex;
-  background-color: var(--md-sys-color-surface-container-low);
-  border-radius: 24px;
+  background-color: var(--md-sys-color-surface-container-high);
+  border-radius: var(--md-sys-shape-corner-full);
   padding: 4px;
   gap: 4px;
 }
 
 .m3-segment-btn {
   flex: 1;
-  padding: 8px 12px;
+  padding: 8px 14px;
   border: none;
   background: transparent;
   color: var(--md-sys-color-on-surface-variant);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  border-radius: 20px;
+  border-radius: var(--md-sys-shape-corner-full);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .m3-segment-btn.active {
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
   font-weight: 800;
 }
 
-/* Pixel Material You Pill Buttons */
+/* M3 Pill & Action Buttons */
 .m3-pill-btn {
   background-color: var(--md-sys-color-surface-container-high);
   color: var(--md-sys-color-on-surface);
   border: none;
-  border-radius: 24px;
-  padding: 12px 18px;
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 10px 20px;
   font-size: 13px;
   font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .m3-pill-btn:hover {
@@ -254,27 +311,45 @@ button, input, select, textarea {
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
   border: none;
-  border-radius: 24px;
-  padding: 12px 18px;
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 10px 22px;
   font-size: 13px;
   font-weight: 800;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  transition: opacity 0.15s ease;
+  box-shadow: var(--md-sys-elevation-1);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .m3-pill-btn-primary:hover {
-  opacity: 0.92;
+  box-shadow: var(--md-sys-elevation-2);
+  filter: brightness(1.06);
 }
 
-/* Pixel Outlined Inputs (Dark Theme) */
+.m3-pill-btn-danger {
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* M3 Outlined Inputs */
 .m3-form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .m3-form-label {
@@ -286,45 +361,75 @@ button, input, select, textarea {
 .m3-input, .m3-select, .m3-textarea {
   width: 100%;
   padding: 12px 16px;
-  border-radius: 16px;
-  border: 1px solid var(--md-sys-color-outline);
-  background-color: var(--md-sys-color-surface-container-low);
-  color: #FFFFFF;
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface);
   font-size: 14px;
   font-weight: 600;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .m3-input:focus, .m3-select:focus, .m3-textarea:focus {
   border-color: var(--md-sys-color-primary);
+  border-width: 2px;
 }
 
-/* Material You FAB */
+/* M3 Floating Action Button (FAB) */
 .m3-fab {
-  background-color: #A8C7FA;
-  color: #041E49;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
   border: none;
-  border-radius: 20px;
-  padding: 14px 22px;
+  border-radius: var(--md-sys-shape-corner-large);
+  padding: 16px 24px;
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--md-sys-elevation-3);
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Pixel Badges */
+.m3-fab:hover {
+  box-shadow: var(--md-sys-elevation-4);
+  filter: brightness(0.96);
+}
+
+/* M3 Chips */
+.m3-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--md-sys-shape-corner-small);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-lowest);
+  color: var(--md-sys-color-on-surface-variant);
+  transition: all 0.2s ease;
+}
+
+.m3-chip.active {
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-color: transparent;
+  font-weight: 800;
+}
+
+/* M3 Status Badges */
 .badge-positive {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: rgba(133, 211, 151, 0.18);
-  color: #85D397;
+  background-color: var(--md-sys-color-success-container);
+  color: var(--md-sys-color-on-success-container);
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
   font-weight: 800;
 }
@@ -333,10 +438,10 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: rgba(255, 180, 171, 0.18);
-  color: #FFB4AB;
+  background-color: var(--md-sys-color-error-container);
+  color: var(--md-sys-color-on-error-container);
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
   font-weight: 800;
 }
@@ -345,20 +450,38 @@ button, input, select, textarea {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface-variant);
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
   font-weight: 700;
 }
 
-/* M3 Dark Table */
+/* M3 Linear Progress Bar */
+.m3-progress-bar-bg {
+  width: 100%;
+  height: 8px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-surface-container-highest);
+  overflow: hidden;
+  position: relative;
+}
+
+.m3-progress-bar-fill {
+  height: 100%;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: var(--md-sys-color-primary);
+  transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* M3 Table */
 .m3-table-container {
   width: 100%;
   overflow-x: auto;
-  border-radius: 16px;
+  border-radius: var(--md-sys-shape-corner-large);
   border: 1px solid var(--md-sys-color-outline-variant);
+  background-color: var(--md-sys-color-surface-container-lowest);
 }
 
 .m3-table {
@@ -369,9 +492,9 @@ button, input, select, textarea {
 }
 
 .m3-table th {
-  background-color: var(--md-sys-color-surface-container-high);
+  background-color: var(--md-sys-color-surface-container-low);
   color: var(--md-sys-color-on-surface-variant);
-  font-weight: 700;
+  font-weight: 800;
   padding: 12px 14px;
   border-bottom: 1px solid var(--md-sys-color-outline-variant);
   white-space: nowrap;
@@ -379,7 +502,7 @@ button, input, select, textarea {
 
 .m3-table td {
   padding: 12px 14px;
-  border-bottom: 1px solid var(--md-sys-color-surface-container);
+  border-bottom: 1px solid var(--md-sys-color-surface-container-low);
   color: var(--md-sys-color-on-surface);
   white-space: nowrap;
 }

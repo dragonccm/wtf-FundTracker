@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { formatVND, formatPercent } from '@/lib/finance/portfolio';
 import Link from 'next/link';
@@ -10,12 +10,14 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import M3SearchBar from '@/components/search/M3SearchBar';
 
 export default function DashboardPage() {
   const { metrics, holdings, goals } = useAppStore();
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
 
-  // Pixel Material You Pastel Palette
-  const PIXEL_COLORS = ['#A8C7FA', '#85D397', '#FFB74D', '#D0BCFF', '#7DD0E2', '#FFB4AB'];
+  // M3 Tonal Palette for Pie Chart
+  const M3_PIE_COLORS = ['#6750A4', '#2E6C38', '#B26A00', '#006876', '#7D5260', '#BA1A1A'];
 
   const getFundBadgeClass = (code: string) => {
     switch (code) {
@@ -32,9 +34,13 @@ export default function DashboardPage() {
       case 'E1VFVN30':
         return 'm3-icon-badge-pink';
       default:
-        return 'm3-icon-badge-blue';
+        return 'm3-icon-badge-purple';
     }
   };
+
+  const filteredHoldings = selectedCategory === 'ALL'
+    ? holdings
+    : holdings.filter((h) => h.category === selectedCategory);
 
   const pieData = holdings.map((h) => ({
     name: h.fundCode,
@@ -44,10 +50,54 @@ export default function DashboardPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* 1. Digital Wellbeing Style Hero Card (From Screenshot 3) */}
-      <div className="m3-card-dark" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+      {/* 1. M3 Search Bar Component */}
+      <M3SearchBar placeholder="Tìm kiếm nhanh quỹ, giao dịch, mục tiêu..." />
+
+      {/* 2. Horizontal Filter Chips (M3 Subheader Category Chips) */}
+      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+        {[
+          { id: 'ALL', label: 'Tất cả quỹ' },
+          { id: 'Equity', label: 'Cổ phiếu' },
+          { id: 'Bond', label: 'Trái phiếu' },
+          { id: 'Balanced', label: 'Cân bằng' },
+          { id: 'Index', label: 'Chỉ số ETF' },
+        ].map((tab) => {
+          const isActive = selectedCategory === tab.id;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setSelectedCategory(tab.id)}
+              className={`m3-chip ${isActive ? 'active' : ''}`}
+              style={{
+                borderRadius: '20px',
+                padding: '8px 16px',
+                whiteSpace: 'nowrap',
+                fontWeight: isActive ? 800 : 600,
+              }}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 3. Hero Visual Card (Matching Figma M3 Example Layouts Hero Container) */}
+      <div
+        className="m3-card"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '16px',
+          padding: '24px 20px',
+          backgroundColor: 'var(--md-sys-color-surface-container)',
+        }}
+      >
         <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', fontWeight: 700, color: '#909299' }}>Tổng Giá Trị Danh Mục</span>
+          <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', letterSpacing: '0.4px', textTransform: 'uppercase' }}>
+            Tổng Giá Trị Tài Sản
+          </span>
           <span className={metrics.dailyChange >= 0 ? 'badge-positive' : 'badge-negative'}>
             {metrics.dailyChange >= 0 ? '+' : ''}
             {formatVND(metrics.dailyChange)} ({formatPercent(metrics.dailyChangePercent)})
@@ -55,25 +105,25 @@ export default function DashboardPage() {
         </div>
 
         {/* Central Donut Ring with Total Amount */}
-        <div style={{ position: 'relative', width: '220px', height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '210px', height: '210px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={pieData.length > 0 ? pieData : [{ name: 'Empty', value: 1 }]}
                 cx="50%"
                 cy="50%"
-                innerRadius={76}
-                outerRadius={96}
+                innerRadius={72}
+                outerRadius={92}
                 paddingAngle={pieData.length > 1 ? 4 : 0}
                 dataKey="value"
                 stroke="none"
               >
                 {pieData.length > 0 ? (
                   pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PIXEL_COLORS[index % PIXEL_COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={M3_PIE_COLORS[index % M3_PIE_COLORS.length]} />
                   ))
                 ) : (
-                  <Cell fill="#33363D" />
+                  <Cell fill="var(--md-sys-color-surface-container-highest)" />
                 )}
               </Pie>
             </PieChart>
@@ -91,171 +141,160 @@ export default function DashboardPage() {
               maxWidth: '140px',
             }}
           >
-            <span style={{ fontSize: '11px', fontWeight: 600, color: '#909299' }}>Tổng Tài Sản</span>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: '#E2E2E6', lineHeight: 1.2, marginTop: '2px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--md-sys-color-on-surface-variant)' }}>Tài Sản Ròng</span>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', lineHeight: 1.2, marginTop: '2px' }}>
               {formatVND(metrics.currentMarketValue)}
             </div>
-            <span style={{ fontSize: '10px', color: '#A8C7FA', fontWeight: 700, marginTop: '2px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--md-sys-color-primary)', fontWeight: 800, marginTop: '2px' }}>
               {holdings.length} Quỹ Nắm Giữ
             </span>
           </div>
         </div>
 
-        {/* Action Pill Button inside Card */}
+        {/* Action Pill Button */}
         <Link
           href="/performance"
           className="m3-pill-btn"
-          style={{ width: '100%', backgroundColor: '#282B31', color: '#E2E2E6' }}
+          style={{
+            width: '100%',
+            backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
+            color: 'var(--md-sys-color-on-surface)',
+            boxShadow: 'var(--md-sys-elevation-1)',
+          }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#A8C7FA' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--md-sys-color-primary)' }}>
             analytics
           </span>
           Xem Phân Tích Hiệu Suất XIRR
         </Link>
       </div>
 
-      {/* 2. Pixel Quick Settings 2x2 Metric Tiles (From Screenshot 2 & 3) */}
+      {/* 4. M3 Quick Metric 2x2 Grid (As seen in Figma Example Layouts Grid) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        {/* Tile A: Invested Amount */}
-        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '94px' }}>
+        {/* Tile A: Invested */}
+        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#909299' }}>Vốn Đầu Tư</span>
-            <div className="m3-icon-badge-blue" style={{ width: '28px', height: '28px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)' }}>Vốn Đầu Tư</span>
+            <div className="m3-icon-badge-blue" style={{ width: '28px', height: '28px', borderRadius: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>payments</span>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: '#E2E2E6' }}>{formatVND(metrics.totalInvested)}</div>
-            <div style={{ fontSize: '10px', color: '#909299' }}>Giá vốn đang giữ</div>
+            <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.totalInvested)}</div>
+            <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá vốn đang giữ</div>
           </div>
         </div>
 
-        {/* Tile B: Total P&L */}
-        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '94px' }}>
+        {/* Tile B: Total PnL */}
+        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#909299' }}>Lãi / Lỗ Tổng</span>
-            <div className="m3-icon-badge-green" style={{ width: '28px', height: '28px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)' }}>Lãi / Lỗ Tổng</span>
+            <div className="m3-icon-badge-green" style={{ width: '28px', height: '28px', borderRadius: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>trending_up</span>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: metrics.totalPnL >= 0 ? '#85D397' : '#FFB4AB' }}>
+            <div style={{ fontSize: '16px', fontWeight: 900, color: metrics.totalPnL >= 0 ? '#2E6C38' : '#BA1A1A' }}>
               {formatVND(metrics.totalPnL)}
             </div>
-            <div style={{ fontSize: '10px', color: '#909299' }}>ROI: {formatPercent(metrics.totalPnLPercent)}</div>
+            <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>ROI: {formatPercent(metrics.totalPnLPercent)}</div>
           </div>
         </div>
 
         {/* Tile C: XIRR */}
-        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '94px' }}>
+        <div className="m3-card-tile" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#909299' }}>Tỷ Suất XIRR</span>
-            <div className="m3-icon-badge-purple" style={{ width: '28px', height: '28px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)' }}>Tỷ Suất XIRR</span>
+            <div className="m3-icon-badge-purple" style={{ width: '28px', height: '28px', borderRadius: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>auto_graph</span>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: '#D0BCFF' }}>{formatPercent(metrics.xirrPercent)}</div>
-            <div style={{ fontSize: '10px', color: '#909299' }}>Quy năm (%/năm)</div>
+            <div style={{ fontSize: '16px', fontWeight: 900, color: '#6750A4' }}>{formatPercent(metrics.xirrPercent)}</div>
+            <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Quy năm (%/năm)</div>
           </div>
         </div>
 
-        {/* Tile D: Quick Import */}
+        {/* Tile D: Import/Export */}
         <Link
           href="/import-export"
           className="m3-card-tile"
-          style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '94px', textDecoration: 'none' }}
+          style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '96px', textDecoration: 'none' }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: '#909299' }}>Đồng Bộ Excel</span>
-            <div className="m3-icon-badge-cyan" style={{ width: '28px', height: '28px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)' }}>Đồng Bộ Excel</span>
+            <div className="m3-icon-badge-cyan" style={{ width: '28px', height: '28px', borderRadius: '8px' }}>
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>upload_file</span>
             </div>
           </div>
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: '#7DD0E2' }}>Import / Export</div>
-            <div style={{ fontSize: '10px', color: '#909299' }}>Nhập dữ liệu nhanh</div>
+            <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>Import / Export</div>
+            <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Nhập dữ liệu nhanh</div>
           </div>
         </Link>
       </div>
 
-      {/* 3. Pixel Callout Banner (From Screenshot 3) */}
-      <div
-        style={{
-          backgroundColor: '#1E2833',
-          borderRadius: '24px',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          border: '1px solid #283645',
-        }}
-      >
-        <div className="m3-icon-badge-blue">
-          <span className="material-symbols-outlined">savings</span>
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>Tích Lũy Đầu Tư Kỷ Luật</div>
-          <div style={{ fontSize: '11px', color: '#A8C7FA', marginTop: '2px' }}>
-            Duy trì nạp định kỳ hàng tháng giúp tối ưu giá vốn bình quân (DCA).
-          </div>
-        </div>
-      </div>
-
-      {/* 4. Fund Holdings List (From Screenshot 1 Android Settings Style) */}
-      <div className="m3-card-dark">
+      {/* 5. Holdings Multi-line M3 List Items (Matching Figma Example Layouts List Section) */}
+      <div className="m3-card" style={{ padding: '18px 16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#909299', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Tài Sản Quỹ Nắm Giữ
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Tài Sản Quỹ Nắm Giữ ({filteredHoldings.length})
           </span>
-          <Link href="/portfolio" style={{ fontSize: '12px', fontWeight: 800, color: '#A8C7FA' }}>
-            Tất cả →
+          <Link href="/portfolio" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>
+            Xem tất cả →
           </Link>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {holdings.map((h) => (
-            <div
-              key={h.fundCode}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '12px 14px',
-                borderRadius: '18px',
-                backgroundColor: '#191B1F',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div className={getFundBadgeClass(h.fundCode)}>
-                  <span style={{ fontWeight: 900, fontSize: '11px' }}>{h.fundCode.slice(0, 3)}</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>{h.fundCode}</div>
-                  <div style={{ fontSize: '11px', color: '#909299' }}>
-                    {h.totalUnits.toLocaleString('vi-VN')} CCQ • NAV: {formatVND(h.currentNav)}
+          {filteredHoldings.length === 0 ? (
+            <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', textAlign: 'center', padding: '16px 0' }}>
+              Không có quỹ nào trong danh mục này
+            </p>
+          ) : (
+            filteredHoldings.map((h) => (
+              <div
+                key={h.fundCode}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 14px',
+                  borderRadius: '16px',
+                  backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
+                  boxShadow: 'var(--md-sys-elevation-1)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className={getFundBadgeClass(h.fundCode)}>
+                    <span style={{ fontWeight: 900, fontSize: '11px' }}>{h.fundCode.slice(0, 3)}</span>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{h.fundCode}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                      {h.totalUnits.toLocaleString('vi-VN')} CCQ • NAV: {formatVND(h.currentNav)}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: '#E2E2E6' }}>{formatVND(h.currentValue)}</div>
-                <span className={h.unrealizedPnL >= 0 ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '11px' }}>
-                  {formatPercent(h.unrealizedPnLPercent)}
-                </span>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentValue)}</div>
+                  <span className={h.unrealizedPnL >= 0 ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '11px' }}>
+                    {formatPercent(h.unrealizedPnLPercent)}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
-      {/* 5. Financial Goals Progress */}
-      <div className="m3-card-dark">
+      {/* 6. Financial Goals Progress Card */}
+      <div className="m3-card" style={{ padding: '18px 16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#909299', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Mục Tiêu Tài Chính
           </span>
-          <Link href="/goals" style={{ fontSize: '12px', fontWeight: 800, color: '#A8C7FA' }}>
+          <Link href="/goals" style={{ fontSize: '12px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>
             Quản lý →
           </Link>
         </div>
@@ -272,31 +311,21 @@ export default function DashboardPage() {
                   gap: '6px',
                   padding: '12px 14px',
                   borderRadius: '16px',
-                  backgroundColor: '#191B1F',
+                  backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
+                  boxShadow: 'var(--md-sys-elevation-1)',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
-                  <span style={{ fontWeight: 800, color: '#E2E2E6' }}>{g.name}</span>
-                  <span style={{ fontWeight: 900, color: '#A8C7FA' }}>{pct.toFixed(1)}%</span>
+                  <span style={{ fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{g.name}</span>
+                  <span style={{ fontWeight: 900, color: 'var(--md-sys-color-primary)' }}>{pct.toFixed(1)}%</span>
                 </div>
-                <div
-                  style={{
-                    height: '8px',
-                    borderRadius: '4px',
-                    backgroundColor: '#282B31',
-                    overflow: 'hidden',
-                  }}
-                >
+                <div className="m3-progress-bar-bg">
                   <div
-                    style={{
-                      height: '100%',
-                      width: `${pct}%`,
-                      backgroundColor: '#A8C7FA',
-                      borderRadius: '4px',
-                    }}
+                    className="m3-progress-bar-fill"
+                    style={{ width: `${pct}%` }}
                   />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#909299' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
                   <span>Đã tích lũy: {formatVND(g.currentAmount)}</span>
                   <span>Mục tiêu: {formatVND(g.targetAmount)}</span>
                 </div>

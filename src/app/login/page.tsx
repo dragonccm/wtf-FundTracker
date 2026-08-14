@@ -29,17 +29,18 @@ export default function LoginPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#E9EEF6',
+        backgroundColor: 'var(--md-sys-color-background)',
         padding: '16px',
       }}
     >
       <div
-        className="m3-card-white"
+        className="m3-card"
         style={{
           width: '100%',
           maxWidth: '400px',
           borderRadius: '28px',
           padding: '32px 24px',
+          boxShadow: 'var(--md-sys-elevation-2)',
         }}
       >
         {/* Brand Header */}
@@ -49,22 +50,23 @@ export default function LoginPage() {
               width: '52px',
               height: '52px',
               borderRadius: '16px',
-              backgroundColor: '#0B57D0',
-              color: '#FFFFFF',
+              backgroundColor: 'var(--md-sys-color-primary)',
+              color: 'var(--md-sys-color-on-primary)',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: 900,
               fontSize: '22px',
               marginBottom: '12px',
+              boxShadow: 'var(--md-sys-elevation-1)',
             }}
           >
             NKQ
           </div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#0B57D0' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-primary)' }}>
             Nhật Ký Quỹ
           </h1>
-          <p style={{ fontSize: '13px', color: '#74777F', marginTop: '2px' }}>
+          <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             {isRegister ? 'Tạo tài khoản theo dõi đầu tư mới' : 'Đăng nhập vào tài khoản của bạn'}
           </p>
         </div>
@@ -76,18 +78,19 @@ export default function LoginPage() {
           style={{
             width: '100%',
             padding: '11px',
-            borderRadius: '20px',
-            border: '1px solid #74777F',
-            backgroundColor: '#FFFFFF',
+            borderRadius: '24px',
+            border: '1px solid var(--md-sys-color-outline-variant)',
+            backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
             fontWeight: 800,
             fontSize: '13px',
-            color: '#1F1F1F',
+            color: 'var(--md-sys-color-on-surface)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '10px',
             cursor: 'pointer',
             marginBottom: '16px',
+            boxShadow: 'var(--md-sys-elevation-1)',
           }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24">
@@ -113,9 +116,9 @@ export default function LoginPage() {
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '14px 0 16px 0' }}>
-          <div style={{ flex: 1, height: '1px', backgroundColor: '#E1E7F0' }} />
-          <span style={{ fontSize: '11px', color: '#74777F', fontWeight: 600 }}>hoặc Email</span>
-          <div style={{ flex: 1, height: '1px', backgroundColor: '#E1E7F0' }} />
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--md-sys-color-outline-variant)' }} />
+          <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600 }}>hoặc Email</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--md-sys-color-outline-variant)' }} />
         </div>
 
         {/* Form */}
@@ -146,7 +149,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="m3-btn-filled"
+            className="m3-pill-btn-primary"
             style={{ marginTop: '6px', width: '100%' }}
           >
             {isRegister ? 'Đăng Ký Tài Khoản' : 'Đăng Nhập'}
@@ -154,7 +157,7 @@ export default function LoginPage() {
         </form>
 
         {/* Switch Login/Register */}
-        <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: '#74777F' }}>
+        <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>
           {isRegister ? 'Đã có tài khoản? ' : 'Chưa có tài khoản? '}
           <button
             type="button"
@@ -162,7 +165,7 @@ export default function LoginPage() {
             style={{
               background: 'none',
               border: 'none',
-              color: '#0B57D0',
+              color: 'var(--md-sys-color-primary)',
               fontWeight: 800,
               cursor: 'pointer',
             }}

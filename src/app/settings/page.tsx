@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { Currency, DateFormat } from '@/types';
+import M3SearchBar from '@/components/search/M3SearchBar';
 
 export default function SettingsPage() {
   const { user, updateProfile, resetToSampleData } = useAppStore();
@@ -11,7 +12,6 @@ export default function SettingsPage() {
   const [email, setEmail] = useState(user.email);
   const [currency, setCurrency] = useState<Currency>(user.currency);
   const [dateFormat, setDateFormat] = useState<DateFormat>(user.dateFormat);
-  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,40 +26,12 @@ export default function SettingsPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* 1. Pixel Settings Search Bar (From Screenshot 1) */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          padding: '12px 18px',
-          borderRadius: '28px',
-          backgroundColor: '#202328',
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#909299' }}>
-          search
-        </span>
-        <input
-          type="text"
-          placeholder="Tìm chế độ cài đặt"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            color: '#E2E2E6',
-            fontSize: '14px',
-            fontWeight: 600,
-            width: '100%',
-          }}
-        />
-      </div>
+      {/* 1. M3 Search Bar */}
+      <M3SearchBar placeholder="Tìm kiếm cài đặt, quỹ, giao dịch..." />
 
-      {/* 2. User Account Card (From Screenshot 1 Top Item) */}
+      {/* 2. User Account Card */}
       <div
-        className="m3-card-dark"
+        className="m3-card"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -69,11 +41,11 @@ export default function SettingsPage() {
       >
         <div
           style={{
-            width: '46px',
-            height: '46px',
+            width: '48px',
+            height: '48px',
             borderRadius: '50%',
             overflow: 'hidden',
-            border: '2px solid #282B31',
+            border: '2px solid var(--md-sys-color-outline-variant)',
           }}
         >
           <img
@@ -83,132 +55,99 @@ export default function SettingsPage() {
           />
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '15px', fontWeight: 800, color: '#E2E2E6' }}>{user.name}</div>
-          <div style={{ fontSize: '11px', color: '#909299' }}>{user.email} • Google Account</div>
+          <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{user.name}</div>
+          <div style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>{user.email} • Google Account</div>
         </div>
       </div>
 
-      {/* 3. Grouped Settings Section: Account & Display (Screenshot 1 Style) */}
-      <div className="m3-card-dark" style={{ padding: '8px 12px' }}>
-        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* 3. Grouped Settings Section: Account & Display */}
+      <div className="m3-card" style={{ padding: '16px' }}>
+        <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {/* Item 1: Name */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 4px' }}>
-            <div className="m3-icon-badge-blue">
-              <span className="material-symbols-outlined">person</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>Họ và tên</div>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={{
-                  width: '100%',
-                  marginTop: '4px',
-                  background: '#191B1F',
-                  border: '1px solid #282B31',
-                  borderRadius: '10px',
-                  padding: '8px 12px',
-                  color: '#E2E2E6',
-                  fontSize: '13px',
-                }}
-              />
+          <div className="m3-form-group">
+            <label className="m3-form-label">Họ và tên</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="m3-input"
+            />
+          </div>
+
+          {/* Item 2: Email */}
+          <div className="m3-form-group">
+            <label className="m3-form-label">Email tài khoản</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="m3-input"
+            />
+          </div>
+
+          {/* Item 3: Currency */}
+          <div className="m3-form-group">
+            <label className="m3-form-label">Đơn vị tiền tệ chính</label>
+            <div className="m3-segmented-control">
+              {(['VND', 'USD'] as Currency[]).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCurrency(c)}
+                  className={`m3-segment-btn ${currency === c ? 'active' : ''}`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div style={{ height: '1px', backgroundColor: '#282B31' }} />
-
-          {/* Item 2: Currency */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 4px' }}>
-            <div className="m3-icon-badge-cyan">
-              <span className="material-symbols-outlined">payments</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>Đơn vị tiền tệ</div>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value as Currency)}
-                style={{
-                  width: '100%',
-                  marginTop: '4px',
-                  background: '#191B1F',
-                  border: '1px solid #282B31',
-                  borderRadius: '10px',
-                  padding: '8px 12px',
-                  color: '#E2E2E6',
-                  fontSize: '13px',
-                }}
-              >
-                <option value="VND">VNĐ - Việt Nam Đồng</option>
-                <option value="USD">USD - Đô la Mỹ</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ height: '1px', backgroundColor: '#282B31' }} />
-
-          {/* Item 3: Date Format */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 4px' }}>
-            <div className="m3-icon-badge-purple">
-              <span className="material-symbols-outlined">calendar_today</span>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E2E6' }}>Định dạng ngày</div>
-              <select
-                value={dateFormat}
-                onChange={(e) => setDateFormat(e.target.value as DateFormat)}
-                style={{
-                  width: '100%',
-                  marginTop: '4px',
-                  background: '#191B1F',
-                  border: '1px solid #282B31',
-                  borderRadius: '10px',
-                  padding: '8px 12px',
-                  color: '#E2E2E6',
-                  fontSize: '13px',
-                }}
-              >
-                <option value="DD/MM/YYYY">DD/MM/YYYY (25/12/2026)</option>
-                <option value="YYYY-MM-DD">YYYY-MM-DD (2026-12-25)</option>
-              </select>
-            </div>
-          </div>
-
-          <div style={{ padding: '8px 0' }}>
-            <button
-              type="submit"
-              className="m3-pill-btn-primary"
-              style={{ width: '100%' }}
+          {/* Item 4: Date Format */}
+          <div className="m3-form-group">
+            <label className="m3-form-label">Định dạng ngày</label>
+            <select
+              value={dateFormat}
+              onChange={(e) => setDateFormat(e.target.value as DateFormat)}
+              className="m3-select"
             >
-              Lưu Cài Đặt
-            </button>
+              <option value="DD/MM/YYYY">DD/MM/YYYY (Việt Nam)</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD (Quốc tế)</option>
+            </select>
           </div>
+
+          <button
+            type="submit"
+            className="m3-pill-btn-primary"
+            style={{ width: '100%', marginTop: '6px' }}
+          >
+            Lưu Thay Đổi Cài Đặt
+          </button>
         </form>
       </div>
 
-      {/* 4. Grouped Settings Section: Data & Reset (Screenshot 1 Style) */}
-      <div className="m3-card-dark" style={{ padding: '8px 12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '10px 4px' }}>
-          <div className="m3-icon-badge-pink">
-            <span className="material-symbols-outlined">restart_alt</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '14px', fontWeight: 800, color: '#FFB4AB' }}>Khôi phục dữ liệu mẫu</div>
-            <div style={{ fontSize: '11px', color: '#909299' }}>Nạp lại bộ dữ liệu thử nghiệm chuẩn</div>
-          </div>
-          <button
-            onClick={() => {
-              if (confirm('Khôi phục dữ liệu mẫu sẽ thay thế toàn bộ giao dịch hiện tại. Tiếp tục?')) {
-                resetToSampleData();
-                alert('Đã khôi phục dữ liệu mẫu thành công!');
-              }
-            }}
-            className="m3-pill-btn"
-            style={{ padding: '8px 14px', fontSize: '11px', color: '#FFB4AB', backgroundColor: '#3B2123' }}
-          >
-            Khôi phục
-          </button>
-        </div>
+      {/* 4. Danger Zone: Reset Data */}
+      <div className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 900, color: '#BA1A1A' }}>
+          Quản Trị Dữ Liệu
+        </h3>
+        <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+          Khôi phục toàn bộ giao dịch, danh mục và mục tiêu về dữ liệu mẫu mặc định ban đầu.
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (confirm('CẢNH BÁO: Tất cả giao dịch và thiết lập cá nhân của bạn sẽ bị xóa và thay thế bằng dữ liệu mẫu. Bạn có chắc chắn muốn khôi phục?')) {
+              resetToSampleData();
+              alert('Đã khôi phục dữ liệu mẫu thành công!');
+            }
+          }}
+          className="m3-pill-btn-danger"
+          style={{ width: '100%' }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>restart_alt</span>
+          Khôi Phục Dữ Liệu Mẫu
+        </button>
       </div>
     </div>
   );

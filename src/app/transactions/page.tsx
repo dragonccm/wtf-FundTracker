@@ -6,7 +6,7 @@ import { formatVND } from '@/lib/finance/portfolio';
 import AddTransactionModal from '@/components/transactions/AddTransactionModal';
 
 export default function TransactionsPage() {
-  const { transactions, funds, deleteTransaction, portfolios } = useAppStore();
+  const { transactions, funds, deleteTransaction } = useAppStore();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [selectedFundFilter, setSelectedFundFilter] = useState('ALL');
@@ -49,8 +49,8 @@ export default function TransactionsPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, color: '#E2E2E6' }}>Sổ Giao Dịch CCQ</h1>
-          <p style={{ fontSize: '13px', color: '#909299', marginTop: '2px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>Sổ Giao Dịch CCQ</h1>
+          <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
             Xem toàn bộ lịch sử nạp tiền, mua/bán CCQ và phí
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Filter Panel */}
-      <div className="m3-card-dark" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {/* Type Filter Segmented Control */}
         <div className="m3-segmented-control">
           {[
@@ -116,104 +116,78 @@ export default function TransactionsPage() {
       </div>
 
       {/* Transaction List Mobile Cards */}
-      <div className="m3-card-dark">
+      <div className="m3-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#909299', textTransform: 'uppercase' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Lịch Sử Giao Dịch ({filteredTx.length})
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {filteredTx.length > 0 ? (
-            filteredTx.map((tx) => {
-              const port = portfolios.find((p) => p.id === tx.portfolioId);
-              return (
-                <div
-                  key={tx.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    padding: '14px',
-                    borderRadius: '18px',
-                    backgroundColor: '#191B1F',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <div className={getFundBadgeClass(tx.fundCode)}>
-                        <span style={{ fontWeight: 900, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 900, color: '#E2E2E6' }}>{tx.fundCode}</span>
-                          <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
-                            {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#909299' }}>
-                          {tx.date} • {port ? port.name : tx.portfolioId}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: tx.type === 'BUY' ? '#E2E2E6' : '#FFB4AB' }}>
-                        {formatVND(tx.amount)}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#909299' }}>
-                        {tx.units.toLocaleString('vi-VN')} CCQ @ {formatVND(tx.unitPrice)}
-                      </div>
-                    </div>
+        {filteredTx.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '40px', color: 'var(--md-sys-color-outline)' }}>
+              receipt_long
+            </span>
+            <p style={{ marginTop: '8px', fontSize: '13px', fontWeight: 600 }}>Không tìm thấy giao dịch nào</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {filteredTx.map((tx) => (
+              <div
+                key={tx.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '12px 14px',
+                  borderRadius: '16px',
+                  backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                  border: '1px solid var(--md-sys-color-outline-variant)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div className={getFundBadgeClass(tx.fundCode)}>
+                    <span style={{ fontWeight: 900, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
                   </div>
-
-                  {/* Notes & Delete Action */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      borderTop: '1px solid #282B31',
-                      paddingTop: '6px',
-                      marginTop: '4px',
-                      fontSize: '11px',
-                      color: '#909299',
-                    }}
-                  >
-                    <span>{tx.notes || 'Không có ghi chú'}</span>
-                    <button
-                      onClick={() => {
-                        if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
-                          deleteTransaction(tx.id);
-                        }
-                      }}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        color: '#FFB4AB',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        fontWeight: 700,
-                        fontSize: '11px',
-                      }}
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                        delete
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{tx.fundCode}</span>
+                      <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
+                        {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
                       </span>
-                      Xóa
-                    </button>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
+                      {tx.units.toLocaleString('vi-VN')} CCQ • {tx.date}
+                    </div>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#909299', fontSize: '13px' }}>
-              Không tìm thấy giao dịch nào phù hợp.
-            </div>
-          )}
-        </div>
+
+                <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
+                    <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>NAV: {formatVND(tx.unitPrice)}</div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
+                        deleteTransaction(tx.id);
+                      }
+                    }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--md-sys-color-outline)',
+                      cursor: 'pointer',
+                      padding: '4px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {isAddModalOpen && <AddTransactionModal onClose={() => setIsAddModalOpen(false)} />}

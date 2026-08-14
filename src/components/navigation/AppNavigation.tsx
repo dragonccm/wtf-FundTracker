@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppStore } from '@/lib/store/appStore';
 import AddTransactionModal from '../transactions/AddTransactionModal';
+import M3SearchBar from '../search/M3SearchBar';
 
 export default function AppNavigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -18,30 +19,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
   const [newPortName, setNewPortName] = useState('');
   const [newPortDesc, setNewPortDesc] = useState('');
 
-  // Scroll detection for auto-hiding floating nav & FAB
-  const [isNavVisible, setIsNavVisible] = useState(true);
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY < 10) {
-        setIsNavVisible(true);
-      } else if (currentScrollY > lastScrollY.current + 8) {
-        // Scrolling down
-        setIsNavVisible(false);
-      } else if (currentScrollY < lastScrollY.current - 8) {
-        // Scrolling up
-        setIsNavVisible(true);
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Bottom Navigation 4 main items
+  // 4 Bottom Navigation Bar standard M3 Destinations
   const mainNavItems = [
     { href: '/dashboard', label: 'Tổng quan', icon: 'dashboard' },
     { href: '/portfolio', label: 'Danh mục', icon: 'pie_chart' },
@@ -66,7 +44,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
     addPortfolio({
       name: newPortName,
       description: newPortDesc,
-      color: '#A8C7FA',
+      color: '#6750A4',
     });
     setNewPortName('');
     setNewPortDesc('');
@@ -78,105 +56,125 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#0C0E10',
+        backgroundColor: 'var(--md-sys-color-background)',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'flex-start',
       }}
     >
-      {/* Mobile Frame Container */}
+      {/* Phone Frame Container (390px - 440px width matching Figma Example Compact Class) */}
       <div
         style={{
           width: '100%',
-          maxWidth: '480px',
+          maxWidth: '430px',
           minHeight: '100vh',
-          backgroundColor: '#111315',
+          backgroundColor: 'var(--md-sys-color-background)',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          borderLeft: '1px solid #1E2024',
-          borderRight: '1px solid #1E2024',
+          boxShadow: '0 0 40px rgba(0, 0, 0, 0.05)',
         }}
       >
-        {/* Pixel Top App Bar */}
+        {/* M3 Standard Top App Bar (As seen in Figma Example Layouts Header) */}
         <header
           style={{
             position: 'sticky',
             top: 0,
             zIndex: 90,
-            backgroundColor: 'rgba(17, 19, 21, 0.88)',
-            backdropFilter: 'blur(16px)',
-            padding: '10px 16px',
+            backgroundColor: 'var(--md-sys-color-background)',
+            padding: '12px 16px 8px 16px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
           }}
         >
-          {/* Left: Brand Logo & Title */}
-          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Left: Brand Icon & Title */}
+          <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div
               style={{
-                width: '34px',
-                height: '34px',
-                borderRadius: '10px',
-                backgroundColor: '#A8C7FA',
-                color: '#041E49',
+                width: '36px',
+                height: '36px',
+                borderRadius: '12px',
+                backgroundColor: 'var(--md-sys-color-primary-container)',
+                color: 'var(--md-sys-color-on-primary-container)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 900,
-                fontSize: '14px',
+                fontSize: '15px',
               }}
             >
-              NKQ
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                account_balance_wallet
+              </span>
             </div>
             <div>
-              <div style={{ fontSize: '14px', fontWeight: 900, color: '#E2E2E6', lineHeight: 1.2 }}>
+              <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)', lineHeight: 1.2 }}>
                 Nhật Ký Quỹ
               </div>
             </div>
           </Link>
 
-          {/* Right: Portfolio Switcher Chip & User Avatar */}
+          {/* Right Action Icons: Portfolio Switcher, More widgets, Profile Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Pixel Portfolio Switcher Pill */}
+            {/* Portfolio Switcher Chip */}
             <button
               onClick={() => setIsPortfolioModalOpen(true)}
               style={{
                 padding: '6px 12px',
                 borderRadius: '20px',
-                border: '1px solid #282B31',
-                backgroundColor: '#191B1F',
-                color: '#E2E2E6',
+                border: '1px solid var(--md-sys-color-outline-variant)',
+                backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                color: 'var(--md-sys-color-on-surface)',
                 fontSize: '12px',
-                fontWeight: 800,
+                fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
                 cursor: 'pointer',
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '15px', color: '#A8C7FA' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '15px', color: 'var(--md-sys-color-primary)' }}>
                 folder
               </span>
-              <span style={{ maxWidth: '95px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span style={{ maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {activePortfolioId === 'ALL' ? 'Tất cả' : activePort?.name}
               </span>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#909299' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--md-sys-color-on-surface-variant)' }}>
                 expand_more
               </span>
             </button>
 
-            {/* User Avatar */}
+            {/* More Menu Trigger Button */}
+            <button
+              onClick={() => setIsMoreMenuOpen(true)}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: 'var(--md-sys-color-on-surface-variant)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
+                widgets
+              </span>
+            </button>
+
+            {/* Profile Avatar */}
             <Link
               href="/settings"
               style={{
-                width: '32px',
-                height: '32px',
+                width: '34px',
+                height: '34px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '1.5px solid #282B31',
+                border: '1.5px solid var(--md-sys-color-outline-variant)',
                 display: 'block',
               }}
             >
@@ -190,48 +188,41 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
         </header>
 
         {/* Main Content Area */}
-        <main style={{ flex: 1, padding: '16px', paddingBottom: '96px' }}>{children}</main>
+        <main style={{ flex: 1, padding: '8px 16px 110px 16px' }}>{children}</main>
 
-        {/* Floating Action Button (FAB - Auto hides on scroll down) */}
+        {/* Floating Action Button (FAB) */}
         <button
           onClick={() => setIsAddTxOpen(true)}
           style={{
             position: 'fixed',
-            bottom: '84px',
-            right: 'calc(50% - 220px + 16px)',
+            bottom: '96px',
+            right: 'calc(50% - 200px + 16px)',
             zIndex: 95,
-            transform: isNavVisible ? 'translateY(0)' : 'translateY(120px)',
-            opacity: isNavVisible ? 1 : 0,
-            transition: 'transform 0.28s cubic-bezier(0.2, 0, 0, 1), opacity 0.28s ease',
           }}
           className="m3-fab"
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
             add
           </span>
           Giao Dịch
         </button>
 
-        {/* Floating Pill Navigation Bar (Auto hides on scroll down, active-label mechanism) */}
+        {/* Official M3 Bottom Navigation Bar (Standard 80px Height with Capsule Pill Active Indicator) */}
         <nav
           style={{
             position: 'fixed',
-            bottom: '16px',
+            bottom: 0,
             left: '50%',
-            transform: isNavVisible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(120px)',
-            opacity: isNavVisible ? 1 : 0,
-            transition: 'transform 0.3s cubic-bezier(0.2, 0, 0, 1), opacity 0.3s ease',
-            width: 'calc(100% - 32px)',
+            transform: 'translateX(-50%)',
+            width: '100%',
             maxWidth: '430px',
-            backgroundColor: 'rgba(30, 32, 37, 0.92)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '32px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.45)',
+            height: '80px',
+            backgroundColor: 'var(--md-sys-color-surface-container)',
+            borderTop: '1px solid var(--md-sys-color-surface-container-highest)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-around',
-            padding: '6px 8px',
+            padding: '0 8px',
             zIndex: 99,
           }}
         >
@@ -243,77 +234,56 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                 href={item.href}
                 style={{
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: isActive ? '8px 14px' : '8px 12px',
-                  borderRadius: '24px',
-                  backgroundColor: isActive ? '#A8C7FA' : 'transparent',
-                  color: isActive ? '#041E49' : '#909299',
+                  gap: '4px',
                   textDecoration: 'none',
-                  transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
+                  flex: 1,
+                  padding: '4px 0',
                 }}
               >
-                <span
-                  className="material-symbols-outlined"
+                {/* M3 Active Capsule Pill (64px x 32px standard) */}
+                <div
                   style={{
-                    fontSize: '22px',
-                    color: isActive ? '#041E49' : '#909299',
+                    width: '64px',
+                    height: '32px',
+                    borderRadius: '16px',
+                    backgroundColor: isActive ? 'var(--md-sys-color-secondary-container)' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
                   }}
                 >
-                  {item.icon}
-                </span>
-
-                {/* Only show label text when active */}
-                {isActive && (
                   <span
+                    className="material-symbols-outlined"
                     style={{
-                      fontSize: '12px',
-                      fontWeight: 800,
-                      whiteSpace: 'nowrap',
-                      lineHeight: 1,
+                      fontSize: '22px',
+                      color: isActive ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
+                      fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                     }}
                   >
-                    {item.label}
+                    {item.icon}
                   </span>
-                )}
+                </div>
+
+                {/* Destination Label */}
+                <span
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: isActive ? 800 : 500,
+                    color: isActive ? 'var(--md-sys-color-on-surface)' : 'var(--md-sys-color-on-surface-variant)',
+                    lineHeight: 1,
+                  }}
+                >
+                  {item.label}
+                </span>
               </Link>
             );
           })}
-
-          {/* More Menu Trigger */}
-          <button
-            onClick={() => setIsMoreMenuOpen(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: isMoreMenuOpen ? '8px 14px' : '8px 12px',
-              borderRadius: '24px',
-              backgroundColor: isMoreMenuOpen ? '#A8C7FA' : 'transparent',
-              color: isMoreMenuOpen ? '#041E49' : '#909299',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: '22px',
-                color: isMoreMenuOpen ? '#041E49' : '#909299',
-              }}
-            >
-              widgets
-            </span>
-            {isMoreMenuOpen && (
-              <span style={{ fontSize: '12px', fontWeight: 800, whiteSpace: 'nowrap', lineHeight: 1 }}>
-                Thêm
-              </span>
-            )}
-          </button>
         </nav>
 
-        {/* Portfolio Switcher M3 Bottom Sheet Modal */}
+        {/* Portfolio Switcher M3 Bottom Sheet */}
         {isPortfolioModalOpen && (
           <div
             onClick={() => setIsPortfolioModalOpen(false)}
@@ -323,7 +293,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.6)',
+              backgroundColor: 'rgba(0,0,0,0.35)',
               zIndex: 200,
               display: 'flex',
               alignItems: 'flex-end',
@@ -334,47 +304,34 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: '100%',
-                maxWidth: '480px',
-                backgroundColor: '#202328',
+                maxWidth: '430px',
+                backgroundColor: 'var(--md-sys-color-surface-container-low)',
                 borderTopLeftRadius: '28px',
                 borderTopRightRadius: '28px',
-                padding: '20px 16px 28px 16px',
-                borderTop: '1px solid #282B31',
+                padding: '16px 16px 28px 16px',
+                boxShadow: 'var(--md-sys-elevation-3)',
               }}
             >
               <div
                 style={{
-                  width: '36px',
+                  width: '32px',
                   height: '4px',
-                  backgroundColor: '#44474E',
+                  backgroundColor: 'var(--md-sys-color-outline-variant)',
                   borderRadius: '2px',
                   margin: '0 auto 16px auto',
                 }}
               />
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#E2E2E6' }}>
+                <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
                   Danh Mục Đầu Tư
                 </h3>
                 <button
                   onClick={() => setIsCreatePortModalOpen(true)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '16px',
-                    backgroundColor: '#A8C7FA',
-                    color: '#041E49',
-                    border: 'none',
-                    fontSize: '12px',
-                    fontWeight: 800,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
+                  className="m3-pill-btn-primary"
+                  style={{ padding: '6px 14px', fontSize: '12px' }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>
-                    add
-                  </span>
+                  <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>add</span>
                   Tạo Mới
                 </button>
               </div>
@@ -392,23 +349,22 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                     justifyContent: 'space-between',
                     padding: '12px 14px',
                     borderRadius: '16px',
-                    backgroundColor: activePortfolioId === 'ALL' ? '#282B31' : '#191B1F',
-                    border: activePortfolioId === 'ALL' ? '1px solid #A8C7FA' : '1px solid transparent',
+                    backgroundColor: activePortfolioId === 'ALL' ? 'var(--md-sys-color-secondary-container)' : 'var(--md-sys-color-surface-container)',
                     cursor: 'pointer',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div className="m3-icon-badge-blue" style={{ width: '34px', height: '34px' }}>
+                    <div className="m3-icon-badge-blue" style={{ width: '36px', height: '36px' }}>
                       <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>language</span>
                     </div>
                     <div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>Tất cả danh mục</div>
-                      <div style={{ fontSize: '10px', color: '#909299' }}>Hợp nhất toàn bộ tài sản</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>Tất cả danh mục</div>
+                      <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Hợp nhất toàn bộ tài sản</div>
                     </div>
                   </div>
 
                   {activePortfolioId === 'ALL' && (
-                    <span className="material-symbols-outlined" style={{ color: '#A8C7FA', fontWeight: 900, fontSize: '18px' }}>
+                    <span className="material-symbols-outlined" style={{ color: 'var(--md-sys-color-primary)', fontWeight: 900, fontSize: '18px' }}>
                       check
                     </span>
                   )}
@@ -430,25 +386,24 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                         justifyContent: 'space-between',
                         padding: '12px 14px',
                         borderRadius: '16px',
-                        backgroundColor: isSelected ? '#282B31' : '#191B1F',
-                        border: isSelected ? '1px solid #A8C7FA' : '1px solid transparent',
+                        backgroundColor: isSelected ? 'var(--md-sys-color-secondary-container)' : 'var(--md-sys-color-surface-container)',
                         cursor: 'pointer',
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div className="m3-icon-badge-cyan" style={{ width: '34px', height: '34px' }}>
+                        <div className="m3-icon-badge-cyan" style={{ width: '36px', height: '36px' }}>
                           <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>business_center</span>
                         </div>
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>{p.name}</div>
+                          <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{p.name}</div>
                           {p.description && (
-                            <div style={{ fontSize: '10px', color: '#909299' }}>{p.description}</div>
+                            <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>{p.description}</div>
                           )}
                         </div>
                       </div>
 
                       {isSelected && (
-                        <span className="material-symbols-outlined" style={{ color: '#A8C7FA', fontWeight: 900, fontSize: '18px' }}>
+                        <span className="material-symbols-outlined" style={{ color: 'var(--md-sys-color-primary)', fontWeight: 900, fontSize: '18px' }}>
                           check
                         </span>
                       )}
@@ -469,7 +424,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.7)',
+              backgroundColor: 'rgba(0,0,0,0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -477,8 +432,8 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               padding: '20px',
             }}
           >
-            <div className="m3-card-dark" style={{ width: '100%', maxWidth: '420px', padding: '24px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#E2E2E6', marginBottom: '14px' }}>
+            <div className="m3-card-elevated" style={{ width: '100%', maxWidth: '400px', padding: '24px' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
                 Tạo Danh Mục Mới
               </h3>
               <form onSubmit={handleCreatePortfolio} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -537,7 +492,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.6)',
+              backgroundColor: 'rgba(0,0,0,0.35)',
               zIndex: 200,
               display: 'flex',
               alignItems: 'flex-end',
@@ -548,25 +503,25 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: '100%',
-                maxWidth: '480px',
-                backgroundColor: '#202328',
+                maxWidth: '430px',
+                backgroundColor: 'var(--md-sys-color-surface-container-low)',
                 borderTopLeftRadius: '28px',
                 borderTopRightRadius: '28px',
-                padding: '20px 16px 28px 16px',
-                borderTop: '1px solid #282B31',
+                padding: '16px 16px 28px 16px',
+                boxShadow: 'var(--md-sys-elevation-3)',
               }}
             >
               <div
                 style={{
-                  width: '36px',
+                  width: '32px',
                   height: '4px',
-                  backgroundColor: '#44474E',
+                  backgroundColor: 'var(--md-sys-color-outline-variant)',
                   borderRadius: '2px',
                   margin: '0 auto 16px auto',
                 }}
               />
 
-              <h3 style={{ fontSize: '16px', fontWeight: 900, marginBottom: '14px', color: '#E2E2E6' }}>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, marginBottom: '14px', color: 'var(--md-sys-color-on-surface)' }}>
                 Chức Năng Mở Rộng
               </h3>
 
@@ -582,18 +537,17 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px',
-                        padding: '10px 14px',
+                        padding: '12px 14px',
                         borderRadius: '16px',
-                        backgroundColor: pathname === item.href ? '#282B31' : '#191B1F',
-                        border: pathname === item.href ? '1px solid #A8C7FA' : '1px solid transparent',
+                        backgroundColor: pathname === item.href ? 'var(--md-sys-color-secondary-container)' : 'var(--md-sys-color-surface-container)',
                       }}
                     >
-                      <div className={badgeClasses[idx % badgeClasses.length]} style={{ width: '36px', height: '36px' }}>
+                      <div className={badgeClasses[idx % badgeClasses.length]} style={{ width: '38px', height: '38px' }}>
                         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>{item.icon}</span>
                       </div>
                       <div>
-                        <div style={{ fontSize: '13px', fontWeight: 800, color: '#E2E2E6' }}>{item.label}</div>
-                        <div style={{ fontSize: '10px', color: '#909299' }}>{item.desc}</div>
+                        <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{item.label}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>{item.desc}</div>
                       </div>
                     </Link>
                   );

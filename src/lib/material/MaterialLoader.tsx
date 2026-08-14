@@ -19,6 +19,9 @@ export default function MaterialLoader() {
     import('@material/web/tabs/secondary-tab.js');
     import('@material/web/chips/chip-set.js');
     import('@material/web/chips/filter-chip.js');
+    import('@material/web/chips/assist-chip.js');
+    import('@material/web/radio/radio.js');
+    import('@material/web/fab/fab.js');
     import('@material/web/elevation/elevation.js');
     import('@material/web/progress/circular-progress.js');
     import('@material/web/progress/linear-progress.js');
