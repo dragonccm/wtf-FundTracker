@@ -201,7 +201,7 @@ function LoginFormContent() {
         justifyContent: 'center',
         alignItems: 'center',
         padding: '24px 16px',
-        fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif",
+        fontFamily: "'Momo Trust Sans', 'Momo Trust Display', 'Plus Jakarta Sans', sans-serif",
       }}
     >
       {/* Main Form Container Card */}
@@ -1206,7 +1206,7 @@ export default function LoginPage() {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#FEF7FF',
-            fontFamily: 'sans-serif',
+            fontFamily: "'Momo Trust Sans', sans-serif",
           }}
         >
           Đang tải trang đăng nhập...
