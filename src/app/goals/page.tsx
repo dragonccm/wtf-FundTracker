@@ -72,7 +72,29 @@ export default function GoalsPage() {
 
       {/* Goal Cards List */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {goals.map((g) => {
+        {goals.length === 0 ? (
+          <div className="m3-card" style={{ textAlign: 'center', padding: '36px 16px' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '44px', color: 'var(--md-sys-color-outline)' }}>
+              flag
+            </span>
+            <h3 style={{ marginTop: '10px', fontSize: '15px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+              Chưa Có Mục Tiêu Tài Chính
+            </h3>
+            <p style={{ marginTop: '4px', fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', maxWidth: '320px', margin: '6px auto 16px auto' }}>
+              Hãy đặt mục tiêu mua nhà, hưu trí hoặc quỹ khẩn cấp để theo dõi tiến độ tích lũy chứng chỉ quỹ.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsAddModalOpen(true)}
+              className="m3-btn-filled"
+              style={{ margin: '0 auto', display: 'inline-flex' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+              Tạo Mục Tiêu Ngay
+            </button>
+          </div>
+        ) : (
+          goals.map((g) => {
           const completionPct = Math.min(100, (g.currentAmount / g.targetAmount) * 100);
           const remainingAmount = Math.max(0, g.targetAmount - g.currentAmount);
 

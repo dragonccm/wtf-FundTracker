@@ -17,36 +17,8 @@ const STORAGE_KEYS = {
   REMEMBERED_EMAIL: 'nhatkyquy_remembered_email',
 };
 
-// Initial Seed Users for instant testing
-const INITIAL_USERS: UserAccount[] = [
-  {
-    id: 'user_admin',
-    name: 'Quản Trị Viên',
-    email: 'admin@fundtracker.vn',
-    password: 'password123',
-    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120',
-    provider: 'local',
-    createdAt: '2026-01-01T00:00:00Z',
-  },
-  {
-    id: 'user_demo_google',
-    name: 'Nhà Đầu Tư M3 (Google)',
-    email: 'demo.investor@gmail.com',
-    password: 'password123',
-    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120',
-    provider: 'google',
-    createdAt: '2026-02-15T00:00:00Z',
-  },
-  {
-    id: 'user_dragon',
-    name: 'Dragon Capital Pro',
-    email: 'investor@dragoncapital.com',
-    password: 'password123',
-    avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=120',
-    provider: 'local',
-    createdAt: '2026-03-10T00:00:00Z',
-  },
-];
+// Seed Users list (Empty by default for real user registration)
+const INITIAL_USERS: UserAccount[] = [];
 
 export const authService = {
   // Get all registered users
@@ -237,7 +209,7 @@ export const authService = {
     if (typeof window === 'undefined') return [];
     try {
       const data = localStorage.getItem(STORAGE_KEYS.RECENT_ACCOUNTS);
-      if (!data) return INITIAL_USERS.slice(0, 2);
+      if (!data) return [];
       return JSON.parse(data);
     } catch (e) {
       return [];

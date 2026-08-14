@@ -63,7 +63,7 @@ const STORAGE_KEYS = {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile>(initialProfile);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [funds, setFunds] = useState<Fund[]>(initialFunds);
   const [portfolios, setPortfolios] = useState<Portfolio[]>(initialPortfolios);
   const [activePortfolioId, setActivePortfolioId] = useState<string>('ALL');
@@ -74,7 +74,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     try {
       const savedAuth = localStorage.getItem(STORAGE_KEYS.AUTH);
-      if (savedAuth !== null) setIsAuthenticated(JSON.parse(savedAuth));
+      if (savedAuth !== null) {
+        setIsAuthenticated(JSON.parse(savedAuth));
+      } else {
+        setIsAuthenticated(false);
+      }
 
       const savedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
       if (savedProfile) setUser(JSON.parse(savedProfile));

@@ -346,9 +346,17 @@ export default function DashboardPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {filteredHoldings.length === 0 ? (
-            <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', textAlign: 'center', padding: '16px 0' }}>
-              Không có quỹ nào trong danh mục này
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '28px 16px', textAlign: 'center', gap: '8px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '36px', color: 'var(--md-sys-color-outline)' }}>
+                account_balance_wallet
+              </span>
+              <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+                Chưa có chứng chỉ quỹ nào trong danh mục
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', maxWidth: '300px' }}>
+                Bấm nút "+" góc dưới hoặc nút "Ghi Nhận Giao Dịch" để thêm lệnh mua đầu tiên của bạn.
+              </div>
+            </div>
           ) : (
             filteredHoldings.map((h) => (
               <div key={h.fundCode} className="pixel-settings-item">
