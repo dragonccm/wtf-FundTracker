@@ -147,13 +147,16 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                 background: 'none',
                 border: 'none',
                 color: 'var(--md-sys-color-primary)',
-                fontSize: '12px',
-                fontWeight: 800,
-                cursor: 'pointer',
-                padding: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
               }}
             >
-              ⚡ Xem nhanh danh mục với Tài khoản Demo
+              <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--md-sys-color-primary)' }}>
+                bolt
+              </span>
+              Xem nhanh danh mục với Tài khoản Demo
             </button>
           </div>
         </div>

@@ -113,7 +113,7 @@ function LoginFormContent() {
       if (rememberMe) authService.setRememberedEmail(email.trim());
       login(res.user!.email, res.user!.name, res.user!.avatarUrl);
 
-      setSuccessMsg('🎉 Đăng ký tài khoản thành công! Đang chuyển đến bảng điều khiển...');
+      setSuccessMsg('Đăng ký tài khoản thành công! Đang chuyển đến bảng điều khiển...');
       setTimeout(() => {
         router.push('/dashboard');
       }, 700);
@@ -134,7 +134,7 @@ function LoginFormContent() {
       }
 
       login(res.user!.email, res.user!.name, res.user!.avatarUrl);
-      setSuccessMsg('✨ Đăng nhập thành công! Đang vào hệ thống...');
+      setSuccessMsg('Đăng nhập thành công! Đang vào hệ thống...');
       setTimeout(() => {
         router.push('/dashboard');
       }, 600);
@@ -403,7 +403,9 @@ function LoginFormContent() {
               transition: 'all 0.2s ease',
             }}
           >
-            <span style={{ fontSize: '15px' }}>⚡</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#6750A4' }}>
+              bolt
+            </span>
             Đăng nhập nhanh tài khoản Google Demo
           </button>
         </div>

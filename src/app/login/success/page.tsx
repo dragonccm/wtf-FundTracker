@@ -28,8 +28,11 @@ function LoginSuccessHandler() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '16px' }}>
-      <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>
-        🎉 Đang xử lý đăng nhập Google...
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '22px', fontWeight: 800, color: 'var(--md-sys-color-primary)' }}>
+        <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>
+          account_circle
+        </span>
+        Đang xử lý đăng nhập Google...
       </div>
       <p style={{ color: 'var(--md-sys-color-secondary)' }}>Vui lòng đợi trong giây lát...</p>
     </div>
