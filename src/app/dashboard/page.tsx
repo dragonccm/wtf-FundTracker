@@ -16,6 +16,7 @@ export default function DashboardPage() {
   const { metrics, holdings, goals } = useAppStore();
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [showCallout, setShowCallout] = useState(true);
+  const [isSplitMenuOpen, setIsSplitMenuOpen] = useState(false);
 
   // Pixel Native Donut Colors (Matching Digital Wellbeing Palette)
   const PIXEL_DONUT_COLORS = ['#A8C7FA', '#B48CD8', '#7FC0FF', '#6DD58C', '#F2B8B5', '#FFD8E4'];
@@ -148,30 +149,107 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Full Pill Action Button (Matches 'Xem thông tin về hoạt động...' in Screenshot 3) */}
-        <Link
-          href="/performance"
-          style={{
-            width: '100%',
-            padding: '12px 18px',
-            borderRadius: '28px',
-            backgroundColor: 'var(--md-sys-color-surface-container-high)',
-            color: 'var(--md-sys-color-on-surface)',
-            fontSize: '13px',
-            fontWeight: 800,
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            textDecoration: 'none',
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--md-sys-color-primary)' }}>
-            query_stats
-          </span>
-          Xem thông tin phân tích hiệu suất & XIRR
-        </Link>
+        {/* (5) M3 Split Button with Dropdown Menu (Mẫu 5 & material-web/menu.md) */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <div className="m3-split-button" style={{ width: '100%', display: 'flex' }}>
+            <Link
+              href="/performance"
+              className="m3-split-main"
+              style={{ flex: 1, textDecoration: 'none', justifyContent: 'center' }}
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                query_stats
+              </span>
+              Phân Tích Hiệu Suất XIRR
+            </Link>
+            <div className="m3-split-divider" />
+            <button
+              type="button"
+              onClick={() => setIsSplitMenuOpen(!isSplitMenuOpen)}
+              className="m3-split-trigger"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                {isSplitMenuOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+              </span>
+            </button>
+          </div>
+
+          {/* M3 Menu Surface (Material Web Menu Specification) */}
+          {isSplitMenuOpen && (
+            <>
+              <div
+                onClick={() => setIsSplitMenuOpen(false)}
+                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 240 }}
+              />
+              <div
+                className="m3-menu-surface"
+                style={{
+                  top: '100%',
+                  right: 0,
+                  marginTop: '8px',
+                  width: '100%',
+                  boxShadow: 'var(--md-sys-elevation-3)',
+                }}
+              >
+                <Link
+                  href="/performance"
+                  onClick={() => setIsSplitMenuOpen(false)}
+                  className="m3-menu-item"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--md-sys-color-primary)' }}>
+                    auto_graph
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Tính XIRR Dòng Tiền</div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Lợi suất theo ngày nạp/rút</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/funds"
+                  onClick={() => setIsSplitMenuOpen(false)}
+                  className="m3-menu-item"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--md-sys-color-secondary)' }}>
+                    finance_chip
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Tra Cứu Giá NAV Quỹ</div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Lịch sử tăng trưởng NAV</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/timeline"
+                  onClick={() => setIsSplitMenuOpen(false)}
+                  className="m3-menu-item"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--md-sys-color-tertiary)' }}>
+                    timeline
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Lịch Sử Dòng Tiền Timeline</div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Theo dõi biến động dòng vốn</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/import-export"
+                  onClick={() => setIsSplitMenuOpen(false)}
+                  className="m3-menu-item"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: '#198754' }}>
+                    table_chart
+                  </span>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Xuất / Nhập Báo Cáo Excel</div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Sao lưu dữ liệu cá nhân</div>
+                  </div>
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 4. Two Metric Tiles (Matches '1 Lượt mở khóa' & '3 Thông báo' in Screenshot 3) */}

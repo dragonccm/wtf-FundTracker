@@ -66,22 +66,29 @@ export default function TransactionsPage() {
 
       {/* Filter Panel */}
       <div className="m3-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {/* Type Filter Segmented Control */}
-        <div className="m3-segmented-control">
+        {/* (7) Type Filter M3 Connected Segmented Group (Mẫu 7) */}
+        <div className="m3-segmented-group" style={{ width: '100%', display: 'flex' }}>
           {[
-            { id: 'ALL', label: 'Tất cả lệnh' },
-            { id: 'BUY', label: 'Lệnh Mua' },
-            { id: 'SELL', label: 'Lệnh Bán' },
-          ].map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setSelectedTypeFilter(t.id)}
-              className={`m3-segment-btn ${selectedTypeFilter === t.id ? 'active' : ''}`}
-            >
-              {t.label}
-            </button>
-          ))}
+            { id: 'ALL', label: 'Tất cả lệnh', icon: 'list_alt' },
+            { id: 'BUY', label: 'Lệnh Mua', icon: 'add_circle' },
+            { id: 'SELL', label: 'Lệnh Bán', icon: 'remove_circle' },
+          ].map((t) => {
+            const isActive = selectedTypeFilter === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setSelectedTypeFilter(t.id)}
+                className={`m3-segmented-item ${isActive ? 'active' : ''}`}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                  {isActive ? 'check' : t.icon}
+                </span>
+                {t.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Fund Filter & Search */}

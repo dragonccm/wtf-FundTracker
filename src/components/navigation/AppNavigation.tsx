@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAppStore } from '@/lib/store/appStore';
 import AddTransactionModal from '../transactions/AddTransactionModal';
 import M3SearchBar from '../search/M3SearchBar';
+import M3FabMenu from './M3FabMenu';
 
 export default function AppNavigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -195,22 +196,11 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
         {/* Main Content Area */}
         <main style={{ flex: 1, padding: '8px 16px 110px 16px' }}>{children}</main>
 
-        {/* Floating Action Button (FAB) */}
-        <button
-          onClick={() => setIsAddTxOpen(true)}
-          style={{
-            position: 'fixed',
-            bottom: '96px',
-            right: 'calc(50% - 200px + 16px)',
-            zIndex: 95,
-          }}
-          className="m3-fab"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>
-            add
-          </span>
-          Giao Dịch
-        </button>
+        {/* M3 Speed Dial FAB Menu (Mẫu 10: Official Material 3 Component) */}
+        <M3FabMenu
+          onOpenAddTx={() => setIsAddTxOpen(true)}
+          onOpenCreatePortfolio={() => setIsCreatePortModalOpen(true)}
+        />
 
         {/* Official M3 Bottom Navigation Bar (Standard 80px Height with Capsule Pill Active Indicator) */}
         <nav
