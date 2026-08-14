@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAppStore } from '@/lib/store/appStore';
+import { authService } from '@/lib/auth/authService';
 import AddTransactionModal from '../transactions/AddTransactionModal';
 import M3SearchBar from '../search/M3SearchBar';
 import M3FabMenu from './M3FabMenu';
 
 export default function AppNavigation({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, portfolios, activePortfolioId, setActivePortfolioId, addPortfolio, isAuthenticated, login } = useAppStore();
+  const { user, portfolios, activePortfolioId, setActivePortfolioId, addPortfolio, isAuthenticated, login, logout } = useAppStore();
   
   const [isAddTxOpen, setIsAddTxOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
