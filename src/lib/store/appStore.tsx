@@ -31,7 +31,7 @@ interface AppContextType {
   goals: FinancialGoal[];
   holdings: Holding[];
   metrics: PerformanceMetrics;
-  login: (email: string) => void;
+  login: (email: string, name?: string, avatarUrl?: string) => void;
   logout: () => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
