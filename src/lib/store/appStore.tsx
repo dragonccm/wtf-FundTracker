@@ -153,23 +153,40 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     setHasLoadedRemote(false);
+    let cancelled = false;
 
-    fetch('/api/user/sync', { cache: 'no-store' })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.success && data?.data) {
-          if (data.data.user) setUser((previous) => ({ ...previous, ...data.data.user }));
-          setTransactions(data.data.transactions || []);
-          setPortfolios(data.data.portfolios?.length ? data.data.portfolios : [defaultPortfolioFor(user.email)]);
-          setGoals(data.data.goals || []);
-          setFunds(data.data.funds || []);
+    const loadRemoteData = async () => {
+      try {
+        const response = await fetch('/api/user/sync', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        if (!data?.success || !data?.data) throw new Error('Initial sync rejected');
+        if (cancelled) return;
+
+        if (data.data.user) setUser((previous) => ({ ...previous, ...data.data.user }));
+        setTransactions(data.data.transactions || []);
+        setPortfolios(data.data.portfolios?.length ? data.data.portfolios : [defaultPortfolioFor(user.email)]);
+        setGoals(data.data.goals || []);
+        setFunds(data.data.funds || []);
+        setHasLoadedRemote(true);
+        hasReportedSyncError.current = false;
+      } catch (err) {
+        console.debug('MongoDB initial sync:', err instanceof Error ? err.message : err);
+        if (!cancelled) {
+          setHasLoadedRemote(false);
+          if (!hasReportedSyncError.current) {
+            hasReportedSyncError.current = true;
+            showToast('error', 'Chưa thể tải dữ liệu từ đám mây. Dữ liệu trên máy chủ sẽ không bị thay đổi.');
+          }
         }
-      })
-      .catch((err) => {
-        console.debug('MongoDB initial sync:', err.message);
-      })
-      .finally(() => setHasLoadedRemote(true));
-  }, [isAuthenticated, user?.email, isCloudAvailable]);
+      }
+    };
+
+    loadRemoteData();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, user?.email, isCloudAvailable, showToast]);
 
   // Background Auto-Sync to MongoDB
   useEffect(() => {
