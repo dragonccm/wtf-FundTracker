@@ -197,6 +197,63 @@ button, input, select, textarea {
 .m3-icon-badge-cyan {
   width: 44px;
   height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #C4EEF7;
+  color: #00363F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-icon-badge-pink {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #FFD8E4;
+  color: #31111D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-icon-badge-purple {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #E8DEF8;
+  color: #1D192B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-icon-badge-orange {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #FFE082;
+  color: #452B00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.m3-icon-badge-green {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--md-sys-shape-corner-medium);
+  background-color: #C8ECCB;
+  color: #003914;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* Pixel Native Circular Icon Badges (Matches Pixel Android 14-16 Settings exactly) */
 .pixel-circle-icon {
   width: 42px;
