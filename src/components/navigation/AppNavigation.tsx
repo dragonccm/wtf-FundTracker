@@ -15,6 +15,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
   const [isCreatePortModalOpen, setIsCreatePortModalOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const [newPortName, setNewPortName] = useState('');
   const [newPortDesc, setNewPortDesc] = useState('');
@@ -166,16 +167,20 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
               </span>
             </button>
 
-            {/* Profile Avatar */}
-            <Link
-              href="/settings"
+            {/* Profile Avatar Button (Opens Google Profile Switcher Dialog) */}
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen(true)}
               style={{
                 width: '34px',
                 height: '34px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                border: '1.5px solid var(--md-sys-color-outline-variant)',
+                border: '1.5px solid var(--md-sys-color-primary)',
                 display: 'block',
+                padding: 0,
+                background: 'none',
+                cursor: 'pointer',
               }}
             >
               <img
@@ -183,7 +188,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                 alt={user.name}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
-            </Link>
+            </button>
           </div>
         </header>
 
@@ -552,6 +557,224 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                     </Link>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Google Account Profile Switcher Dialog (Pixel / Google Native Modal) */}
+        {isProfileMenuOpen && (
+          <div
+            onClick={() => setIsProfileMenuOpen(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.4)',
+              zIndex: 300,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '100%',
+                maxWidth: '380px',
+                backgroundColor: 'var(--md-sys-color-surface-container)',
+                borderRadius: '28px',
+                padding: '24px 20px',
+                boxShadow: 'var(--md-sys-elevation-3)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+              }}
+            >
+              {/* Header with Close */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--md-sys-color-primary)', fontSize: '22px' }}>
+                    account_circle
+                  </span>
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>
+                    Tài Khoản Google
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--md-sys-color-on-surface-variant)',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
+                </button>
+              </div>
+
+              {/* Active User Card */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '16px',
+                  borderRadius: '20px',
+                  backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
+                  gap: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '2px solid var(--md-sys-color-primary)',
+                  }}
+                >
+                  <img
+                    src={user.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120'}
+                    alt={user.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '16px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>{user.name}</div>
+                  <div style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>{user.email}</div>
+                </div>
+
+                <Link
+                  href="/settings"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  className="m3-pill-btn"
+                  style={{
+                    marginTop: '6px',
+                    padding: '8px 18px',
+                    fontSize: '12px',
+                    backgroundColor: 'var(--md-sys-color-surface-container-high)',
+                    border: '1px solid var(--md-sys-color-outline-variant)',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px', color: 'var(--md-sys-color-primary)' }}>
+                    settings
+                  </span>
+                  Quản lý tài khoản & Cài đặt
+                </Link>
+              </div>
+
+              {/* Account Actions */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {/* Switch to Another Account / Login */}
+                <Link
+                  href="/login"
+                  onClick={() => setIsProfileMenuOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    padding: '12px 14px',
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                    color: 'var(--md-sys-color-on-surface)',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px', color: 'var(--md-sys-color-primary)' }}>
+                    person_add
+                  </span>
+                  Đăng nhập tài khoản khác
+                </Link>
+
+                {/* Google OAuth Login */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    window.location.href = '/api/auth/google';
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    padding: '12px 14px',
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                    border: 'none',
+                    color: 'var(--md-sys-color-on-surface)',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  Xác thực tài khoản Google
+                </button>
+
+                {/* Logout Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi thiết bị này?')) {
+                      window.location.href = '/login';
+                    }
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '14px',
+                    padding: '12px 14px',
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--md-sys-color-error-container)',
+                    border: 'none',
+                    color: 'var(--md-sys-color-on-error-container)',
+                    fontSize: '14px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    width: '100%',
+                    textAlign: 'left',
+                    marginTop: '4px',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+                    logout
+                  </span>
+                  Đăng xuất khỏi thiết bị này
+                </button>
               </div>
             </div>
           </div>
