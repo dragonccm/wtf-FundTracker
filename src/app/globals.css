@@ -92,7 +92,7 @@ button, input, select, textarea {
 
 /* Material Symbols Icon Font */
 .material-symbols-outlined {
-  font-family: 'Material Symbols Outlined';
+  font-family: 'Material Symbols Outlined' !important;
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -107,7 +107,7 @@ button, input, select, textarea {
   -webkit-font-smoothing: antialiased;
 }
 
-/* M3 Card Styles (Exact Example Layouts from Figma) */
+/* M3 Card Styles */
 .m3-card, .m3-card-dark {
   background-color: var(--md-sys-color-surface-container);
   border-radius: var(--md-sys-shape-corner-extra-large);
@@ -142,116 +142,7 @@ button, input, select, textarea {
   background-color: var(--md-sys-color-surface-container-highest);
 }
 
-/* M3 Shape Badges & Thumbnails (Matches Figma M3 Shape definitions) */
-.m3-shape-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background-color: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-shape-square {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-shape-pill {
-  width: 44px;
-  height: 44px;
-  border-radius: 20px;
-  background-color: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-blue {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #D3E3FD;
-  color: #041E49;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-cyan {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #C4EEF7;
-  color: #00363F;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-pink {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #FFD8E4;
-  color: #31111D;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-purple {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #E8DEF8;
-  color: #1D192B;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-orange {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #FFE082;
-  color: #452B00;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.m3-icon-badge-green {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--md-sys-shape-corner-medium);
-  background-color: #C8ECCB;
-  color: #003914;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Pixel Native Circular Icon Badges (Matches Pixel Android 14-16 Settings exactly) */
+/* Pixel Native Circular Icon Badges */
 .pixel-circle-icon {
   width: 42px;
   height: 42px;
@@ -262,52 +153,17 @@ button, input, select, textarea {
   flex-shrink: 0;
 }
 
-.pixel-icon-blue {
-  background-color: #6DA3E6;
-  color: #041E49;
-}
+.pixel-icon-blue { background-color: #6DA3E6; color: #041E49; }
+.pixel-icon-cyan { background-color: #56B4D3; color: #00363F; }
+.pixel-icon-purple { background-color: #B48CD8; color: #21005D; }
+.pixel-icon-pink { background-color: #E8829C; color: #3B0817; }
+.pixel-icon-rose { background-color: #D65A84; color: #3B0817; }
+.pixel-icon-orange { background-color: #ECA354; color: #432100; }
+.pixel-icon-green { background-color: #6BCB77; color: #003914; }
+.pixel-icon-yellow { background-color: #ECC748; color: #403000; }
+.pixel-icon-gray { background-color: #8C9098; color: #1A1C1E; }
 
-.pixel-icon-cyan {
-  background-color: #56B4D3;
-  color: #00363F;
-}
-
-.pixel-icon-purple {
-  background-color: #B48CD8;
-  color: #21005D;
-}
-
-.pixel-icon-pink {
-  background-color: #E8829C;
-  color: #3B0817;
-}
-
-.pixel-icon-rose {
-  background-color: #D65A84;
-  color: #3B0817;
-}
-
-.pixel-icon-orange {
-  background-color: #ECA354;
-  color: #432100;
-}
-
-.pixel-icon-green {
-  background-color: #6BCB77;
-  color: #003914;
-}
-
-.pixel-icon-yellow {
-  background-color: #ECC748;
-  color: #403000;
-}
-
-.pixel-icon-gray {
-  background-color: #8C9098;
-  color: #1A1C1E;
-}
-
-/* Pixel Grouped Settings Card (Rounded 24px-28px with smooth item dividers) */
+/* Pixel Grouped Settings Card */
 .pixel-grouped-card {
   background-color: var(--md-sys-color-surface-container);
   border-radius: 24px;
@@ -376,19 +232,15 @@ button, input, select, textarea {
   font-weight: 800;
 }
 
-/* ==========================================================================
-   10 OFFICIAL MATERIAL 3 BUTTON, FAB & MENU COMPONENTS (m3.material.io)
-   ========================================================================== */
-
-/* (1) M3 Filled Button with Icon */
+/* 10 M3 Buttons */
 .m3-btn-filled {
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
   border: none;
   border-radius: var(--md-sys-shape-corner-full);
-  padding: 10px 24px;
+  padding: 12px 24px;
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -403,88 +255,6 @@ button, input, select, textarea {
   filter: brightness(1.08);
 }
 
-/* (2) M3 Toggle Pill Buttons (Unselected / Selected) */
-.m3-btn-toggle-unselected {
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
-  border: none;
-  border-radius: var(--md-sys-shape-corner-full);
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.m3-btn-toggle-selected {
-  background-color: var(--md-sys-color-primary);
-  color: var(--md-sys-color-on-primary);
-  border: none;
-  border-radius: var(--md-sys-shape-corner-full);
-  padding: 8px 18px;
-  font-size: 13px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: var(--md-sys-elevation-1);
-  transition: all 0.2s ease;
-}
-
-/* (3) & (4) M3 Icon Buttons (Tonal, Standard, Outlined) */
-.m3-btn-icon-tonal {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--md-sys-color-secondary-container);
-  color: var(--md-sys-color-on-secondary-container);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.m3-btn-icon-tonal:hover {
-  filter: brightness(0.94);
-}
-
-.m3-btn-icon-standard {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: transparent;
-  color: var(--md-sys-color-on-surface-variant);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.m3-btn-icon-standard:hover {
-  background-color: var(--md-sys-color-surface-container-high);
-}
-
-.m3-btn-icon-outlined {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: transparent;
-  color: var(--md-sys-color-on-surface);
-  border: 1px solid var(--md-sys-color-outline-variant);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* (5) M3 Split Button with Dropdown */
 .m3-split-button {
   display: inline-flex;
   align-items: stretch;
@@ -531,21 +301,6 @@ button, input, select, textarea {
   transition: background-color 0.15s ease;
 }
 
-.m3-split-trigger:hover {
-  background-color: rgba(255, 255, 255, 0.12);
-}
-
-/* (6) M3 Button Group with Connected Icons */
-.m3-btn-group-connected {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px;
-  border-radius: var(--md-sys-shape-corner-full);
-  background-color: var(--md-sys-color-surface-container-high);
-}
-
-/* (7) M3 Connected Segmented Button Group (Left, Middle, Right) */
 .m3-segmented-group {
   display: inline-flex;
   border-radius: var(--md-sys-shape-corner-full);
@@ -579,50 +334,6 @@ button, input, select, textarea {
   font-weight: 800;
 }
 
-/* (8) & (9) M3 Standard & Extended FAB */
-.m3-fab-standard {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--md-sys-elevation-3);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.m3-fab-standard:hover {
-  box-shadow: var(--md-sys-elevation-4);
-  filter: brightness(0.95);
-}
-
-.m3-fab-extended {
-  height: 56px;
-  padding: 0 20px;
-  border-radius: 16px;
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  border: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 800;
-  box-shadow: var(--md-sys-elevation-3);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.m3-fab-extended:hover {
-  box-shadow: var(--md-sys-elevation-4);
-  filter: brightness(0.95);
-}
-
-/* (10) M3 Expandable Speed Dial FAB Menu */
 .m3-fab-speed-dial {
   position: fixed;
   bottom: 96px;
@@ -651,11 +362,6 @@ button, input, select, textarea {
   transition: all 0.2s ease;
 }
 
-.m3-fab-speed-item:hover {
-  box-shadow: var(--md-sys-elevation-3);
-  filter: brightness(0.95);
-}
-
 @keyframes m3SpeedDialPop {
   0% {
     opacity: 0;
@@ -667,7 +373,6 @@ button, input, select, textarea {
   }
 }
 
-/* Official M3 Menu Surface (matching material-web/menu.md specification) */
 .m3-menu-surface {
   position: absolute;
   background-color: var(--md-sys-color-surface-container);
@@ -713,27 +418,6 @@ button, input, select, textarea {
   background-color: var(--md-sys-color-surface-container-high);
 }
 
-/* M3 Pill & Action Buttons */
-.m3-pill-btn {
-  background-color: var(--md-sys-color-surface-container-high);
-  color: var(--md-sys-color-on-surface);
-  border: none;
-  border-radius: var(--md-sys-shape-corner-full);
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.m3-pill-btn:hover {
-  background-color: var(--md-sys-color-surface-container-highest);
-}
-
 .m3-pill-btn-primary {
   background-color: var(--md-sys-color-primary);
   color: var(--md-sys-color-on-primary);
@@ -751,28 +435,6 @@ button, input, select, textarea {
   transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.m3-pill-btn-primary:hover {
-  box-shadow: var(--md-sys-elevation-2);
-  filter: brightness(1.06);
-}
-
-.m3-pill-btn-danger {
-  background-color: var(--md-sys-color-error-container);
-  color: var(--md-sys-color-on-error-container);
-  border: none;
-  border-radius: var(--md-sys-shape-corner-full);
-  padding: 10px 20px;
-  font-size: 13px;
-  font-weight: 800;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* M3 Outlined Inputs */
 .m3-form-group {
   display: flex;
   flex-direction: column;
@@ -803,64 +465,21 @@ button, input, select, textarea {
   border-width: 2px;
 }
 
-/* M3 Floating Action Button (FAB) */
-.m3-fab {
-  background-color: var(--md-sys-color-primary-container);
-  color: var(--md-sys-color-on-primary-container);
-  border: none;
-  border-radius: var(--md-sys-shape-corner-large);
-  padding: 16px 24px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 800;
-  font-size: 14px;
-  box-shadow: var(--md-sys-elevation-3);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.m3-fab:hover {
-  box-shadow: var(--md-sys-elevation-4);
-  filter: brightness(0.96);
-}
-
-/* M3 Horizontal Scroll / Chips Slider (Clean Material 3 Carousel without ugly desktop scrollbar) */
 .m3-chips-scroll, .no-scrollbar {
   display: flex;
   gap: 8px;
   overflow-x: auto;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   padding-bottom: 4px;
 }
 
 .m3-chips-scroll::-webkit-scrollbar, .no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
-/* Custom Scrollbar for large tables */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--md-sys-color-surface-container-highest);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--md-sys-color-outline);
-}
-
-/* M3 Chips */
 .m3-chip {
   display: inline-flex;
   align-items: center;
@@ -879,11 +498,6 @@ button, input, select, textarea {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.m3-chip:hover {
-  background-color: var(--md-sys-color-surface-container-low);
-  border-color: var(--md-sys-color-outline);
-}
-
 .m3-chip.active {
   background-color: var(--md-sys-color-secondary-container);
   color: var(--md-sys-color-on-secondary-container);
@@ -892,7 +506,6 @@ button, input, select, textarea {
   box-shadow: var(--md-sys-elevation-1);
 }
 
-/* M3 Status Badges */
 .badge-positive {
   display: inline-flex;
   align-items: center;
@@ -915,69 +528,4 @@ button, input, select, textarea {
   border-radius: var(--md-sys-shape-corner-full);
   font-size: 12px;
   font-weight: 800;
-}
-
-.badge-neutral {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background-color: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface-variant);
-  padding: 4px 10px;
-  border-radius: var(--md-sys-shape-corner-full);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* M3 Linear Progress Bar */
-.m3-progress-bar-bg {
-  width: 100%;
-  height: 8px;
-  border-radius: var(--md-sys-shape-corner-full);
-  background-color: var(--md-sys-color-surface-container-highest);
-  overflow: hidden;
-  position: relative;
-}
-
-.m3-progress-bar-fill {
-  height: 100%;
-  border-radius: var(--md-sys-shape-corner-full);
-  background-color: var(--md-sys-color-primary);
-  transition: width 0.4s cubic-bezier(0.2, 0, 0, 1);
-}
-
-/* M3 Table */
-.m3-table-container {
-  width: 100%;
-  overflow-x: auto;
-  border-radius: var(--md-sys-shape-corner-large);
-  border: 1px solid var(--md-sys-color-outline-variant);
-  background-color: var(--md-sys-color-surface-container-lowest);
-}
-
-.m3-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 13px;
-}
-
-.m3-table th {
-  background-color: var(--md-sys-color-surface-container-low);
-  color: var(--md-sys-color-on-surface-variant);
-  font-weight: 800;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--md-sys-color-outline-variant);
-  white-space: nowrap;
-}
-
-.m3-table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--md-sys-color-surface-container-low);
-  color: var(--md-sys-color-on-surface);
-  white-space: nowrap;
-}
-
-.m3-table tr:last-child td {
-  border-bottom: none;
 }

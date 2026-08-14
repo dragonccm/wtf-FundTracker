@@ -1,4 +1,5 @@
 import React from 'react';
+import './globals.css';
 import '@/styles/globals.css';
 import MaterialLoader from '@/lib/material/MaterialLoader';
 import { AppProvider } from '@/lib/store/appStore';

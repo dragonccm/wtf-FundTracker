@@ -12,9 +12,9 @@ function LoginFormContent() {
 
   const [authMode, setAuthMode] = useState<'LOGIN' | 'REGISTER'>('LOGIN');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState('admin@fundtracker.vn');
+  const [password, setPassword] = useState('123456');
+  const [confirmPassword, setConfirmPassword] = useState('123456');
   const [rememberMe, setRememberMe] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -67,7 +67,7 @@ function LoginFormContent() {
         setTimeout(() => {
           router.push('/dashboard');
         }, 600);
-      }, 500);
+      }, 400);
     } else {
       setIsLoading(true);
       setTimeout(() => {
@@ -76,7 +76,7 @@ function LoginFormContent() {
         setTimeout(() => {
           router.push('/dashboard');
         }, 600);
-      }, 500);
+      }, 400);
     }
   };
 
@@ -97,143 +97,173 @@ function LoginFormContent() {
     setSuccessMsg('Đã đăng nhập tài khoản Google Demo! Đang vào hệ thống...');
     setTimeout(() => {
       router.push('/dashboard');
-    }, 600);
+    }, 500);
   };
 
   return (
     <div
       style={{
-        width: '100%',
-        maxWidth: '430px',
-        backgroundColor: 'var(--md-sys-color-surface-container)',
-        borderRadius: '28px',
-        padding: '32px 24px',
-        boxShadow: 'var(--md-sys-elevation-2)',
+        minHeight: '100vh',
+        backgroundColor: '#FEF7FF',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '20px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '24px 16px',
+        fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif",
       }}
     >
-      {/* Brand Header */}
-      <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {/* M3 Phone / Card Container */}
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          backgroundColor: '#F3EDF7',
+          borderRadius: '32px',
+          padding: '36px 28px',
+          boxShadow: '0px 4px 20px 0px rgba(0, 0, 0, 0.06), 0px 1px 4px 0px rgba(0, 0, 0, 0.04)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        {/* Brand Logo & Header */}
         <div
           style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '18px',
-            backgroundColor: 'var(--md-sys-color-primary-container)',
-            color: 'var(--md-sys-color-on-primary-container)',
+            width: '64px',
+            height: '64px',
+            borderRadius: '20px',
+            backgroundColor: '#EADDFF',
+            color: '#21005D',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            marginBottom: '12px',
-            boxShadow: 'var(--md-sys-elevation-1)',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(103, 80, 164, 0.15)',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '28px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '34px', color: '#6750A4' }}>
             account_balance_wallet
           </span>
         </div>
-        <h1 style={{ fontSize: '24px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+
+        <h1
+          style={{
+            fontSize: '24px',
+            fontWeight: 900,
+            color: '#1D1B20',
+            textAlign: 'center',
+            lineHeight: 1.2,
+            margin: '0 0 6px 0',
+          }}
+        >
           Nhật Ký Quỹ
         </h1>
-        <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '4px' }}>
+        <p
+          style={{
+            fontSize: '13px',
+            color: '#49454F',
+            textAlign: 'center',
+            margin: '0 0 24px 0',
+            fontWeight: 500,
+          }}
+        >
           Quản lý danh mục chứng chỉ quỹ chuẩn Material 3
         </p>
-      </div>
 
-      {/* M3 Segmented Control (Switch between Login & Register) */}
-      <div className="m3-segmented-control">
-        <button
-          type="button"
-          onClick={() => {
-            setAuthMode('LOGIN');
-            setErrorMsg('');
-            setSuccessMsg('');
-          }}
-          className={`m3-segment-btn ${authMode === 'LOGIN' ? 'active' : ''}`}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>login</span>
-          Đăng Nhập
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setAuthMode('REGISTER');
-            setErrorMsg('');
-            setSuccessMsg('');
-          }}
-          className={`m3-segment-btn ${authMode === 'REGISTER' ? 'active' : ''}`}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>person_add</span>
-          Đăng Ký
-        </button>
-      </div>
-
-      {/* Error & Success Alerts */}
-      {errorMsg && (
+        {/* M3 Segmented Control (Login / Register Tabs) */}
         <div
           style={{
-            padding: '12px 14px',
-            borderRadius: '16px',
-            backgroundColor: 'var(--md-sys-color-error-container)',
-            color: 'var(--md-sys-color-on-error-container)',
-            fontSize: '13px',
-            fontWeight: 700,
+            width: '100%',
             display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
+            backgroundColor: '#ECE6F0',
+            borderRadius: '9999px',
+            padding: '4px',
+            marginBottom: '20px',
           }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>error</span>
-          <span>{errorMsg}</span>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('LOGIN');
+              setErrorMsg('');
+            }}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              border: 'none',
+              borderRadius: '9999px',
+              backgroundColor: authMode === 'LOGIN' ? '#E8DEF8' : 'transparent',
+              color: authMode === 'LOGIN' ? '#1D192B' : '#49454F',
+              fontSize: '13px',
+              fontWeight: authMode === 'LOGIN' ? 800 : 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+              login
+            </span>
+            Đăng Nhập
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('REGISTER');
+              setErrorMsg('');
+            }}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              border: 'none',
+              borderRadius: '9999px',
+              backgroundColor: authMode === 'REGISTER' ? '#E8DEF8' : 'transparent',
+              color: authMode === 'REGISTER' ? '#1D192B' : '#49454F',
+              fontSize: '13px',
+              fontWeight: authMode === 'REGISTER' ? 800 : 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+              person_add
+            </span>
+            Đăng Ký
+          </button>
         </div>
-      )}
 
-      {successMsg && (
-        <div
-          style={{
-            padding: '12px 14px',
-            borderRadius: '16px',
-            backgroundColor: 'var(--md-sys-color-success-container)',
-            color: 'var(--md-sys-color-on-success-container)',
-            fontSize: '13px',
-            fontWeight: 700,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>check_circle</span>
-          <span>{successMsg}</span>
-        </div>
-      )}
-
-      {/* Google OAuth Login Button */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* Google OAuth Button */}
         <button
           type="button"
           onClick={handleGoogleOAuth}
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '12px',
-            borderRadius: '24px',
-            border: '1px solid var(--md-sys-color-outline-variant)',
-            backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
-            fontWeight: 800,
-            fontSize: '13px',
-            color: 'var(--md-sys-color-on-surface)',
+            padding: '12px 20px',
+            borderRadius: '9999px',
+            border: '1px solid #CAC4D0',
+            backgroundColor: '#FFFFFF',
+            color: '#1D1B20',
+            fontSize: '14px',
+            fontWeight: 700,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
+            gap: '12px',
             cursor: 'pointer',
-            boxShadow: 'var(--md-sys-elevation-1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             transition: 'all 0.2s ease',
+            marginBottom: '10px',
           }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24">
+          <svg width="20" height="20" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -254,158 +284,276 @@ function LoginFormContent() {
           Tiếp tục với Google OAuth
         </button>
 
-        {/* Quick Demo Google Button */}
+        {/* Quick Demo Login Option */}
         <button
           type="button"
           onClick={handleQuickDemoGoogle}
+          disabled={isLoading}
           style={{
-            background: 'none',
+            width: '100%',
+            padding: '10px 16px',
+            borderRadius: '9999px',
             border: 'none',
-            color: 'var(--md-sys-color-primary)',
-            fontSize: '12px',
+            backgroundColor: '#E8DEF8',
+            color: '#1D192B',
+            fontSize: '13px',
             fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
             cursor: 'pointer',
-            textAlign: 'center',
-            padding: '4px',
+            marginBottom: '20px',
+            transition: 'all 0.2s ease',
           }}
         >
-          ⚡ Đăng nhập nhanh tài khoản Google Demo (Trải nghiệm ngay)
+          <span style={{ fontSize: '15px' }}>⚡</span>
+          Đăng nhập nhanh tài khoản Google Demo
         </button>
-      </div>
 
-      {/* Divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--md-sys-color-outline-variant)' }} />
-        <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 700 }}>
-          HOẶC DÙNG EMAIL
-        </span>
-        <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--md-sys-color-outline-variant)' }} />
-      </div>
+        {/* Divider with Text */}
+        <div
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '20px',
+          }}
+        >
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#CAC4D0' }} />
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#49454F', letterSpacing: '0.5px' }}>
+            HOẶC DÙNG EMAIL
+          </span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: '#CAC4D0' }} />
+        </div>
 
-      {/* Main Email Auth Form */}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {/* Name input (only for Register) */}
-        {authMode === 'REGISTER' && (
-          <div className="m3-form-group">
-            <label className="m3-form-label">Họ và tên của bạn</label>
-            <input
-              type="text"
-              required
-              placeholder="VD: Nguyễn Văn A"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="m3-input"
-            />
+        {/* Feedback Messages */}
+        {errorMsg && (
+          <div
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: '16px',
+              backgroundColor: '#FFDAD6',
+              color: '#410002',
+              fontSize: '13px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '16px',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+              error
+            </span>
+            <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Email input */}
-        <div className="m3-form-group">
-          <label className="m3-form-label">Địa chỉ Email</label>
-          <input
-            type="email"
-            required
-            placeholder="example@domain.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="m3-input"
-          />
-        </div>
+        {successMsg && (
+          <div
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              borderRadius: '16px',
+              backgroundColor: '#C8ECCB',
+              color: '#00210B',
+              fontSize: '13px',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '16px',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+              check_circle
+            </span>
+            <span>{successMsg}</span>
+          </div>
+        )}
 
-        {/* Password input */}
-        <div className="m3-form-group">
-          <label className="m3-form-label">Mật khẩu</label>
-          <input
-            type="password"
-            required
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="m3-input"
-          />
-        </div>
+        {/* Main Email Form */}
+        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {authMode === 'REGISTER' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#49454F' }}>
+                Họ và Tên
+              </label>
+              <input
+                type="text"
+                placeholder="Ví dụ: Nguyễn Văn A"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '14px',
+                  border: '1px solid #CAC4D0',
+                  backgroundColor: '#FFFFFF',
+                  color: '#1D1B20',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          )}
 
-        {/* Confirm Password input (only for Register) */}
-        {authMode === 'REGISTER' && (
-          <div className="m3-form-group">
-            <label className="m3-form-label">Xác nhận mật khẩu</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 700, color: '#49454F' }}>
+              Địa chỉ Email
+            </label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '14px',
+                border: '1px solid #CAC4D0',
+                backgroundColor: '#FFFFFF',
+                color: '#1D1B20',
+                fontSize: '14px',
+                fontWeight: 600,
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 700, color: '#49454F' }}>
+              Mật khẩu
+            </label>
             <input
               type="password"
-              required
               placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="m3-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '14px',
+                border: '1px solid #CAC4D0',
+                backgroundColor: '#FFFFFF',
+                color: '#1D1B20',
+                fontSize: '14px',
+                fontWeight: 600,
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
             />
           </div>
-        )}
 
-        {/* Login Extra Options */}
-        {authMode === 'LOGIN' && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600 }}>
+          {authMode === 'REGISTER' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#49454F' }}>
+                Xác nhận Mật khẩu
+              </label>
               <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                style={{ accentColor: 'var(--md-sys-color-primary)' }}
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  borderRadius: '14px',
+                  border: '1px solid #CAC4D0',
+                  backgroundColor: '#FFFFFF',
+                  color: '#1D1B20',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
               />
-              Ghi nhớ đăng nhập
-            </label>
-            <button
-              type="button"
-              onClick={() => alert('Vui lòng liên hệ quản trị viên hoặc sử dụng Đăng nhập bằng Google để đặt lại mật khẩu.')}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--md-sys-color-primary)',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Quên mật khẩu?
-            </button>
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="m3-pill-btn-primary"
-          style={{ width: '100%', padding: '12px', marginTop: '6px' }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-            {authMode === 'LOGIN' ? 'arrow_forward' : 'how_to_reg'}
-          </span>
-          {isLoading
-            ? 'Đang xử lý...'
-            : authMode === 'LOGIN'
-            ? 'Đăng Nhập'
-            : 'Tạo Tài Khoản Mới'}
-        </button>
-      </form>
+          {authMode === 'LOGIN' && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '2px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 700, color: '#49454F', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={{ accentColor: '#6750A4', width: '16px', height: '16px' }}
+                />
+                Ghi nhớ đăng nhập
+              </label>
+              <button
+                type="button"
+                onClick={() => alert('Vui lòng liên hệ quản trị viên hoặc sử dụng Đăng nhập Google để lấy lại mật khẩu.')}
+                style={{ background: 'none', border: 'none', color: '#6750A4', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }}
+              >
+                Quên mật khẩu?
+              </button>
+            </div>
+          )}
 
-      {/* Switch Mode Footer */}
-      <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-        {authMode === 'LOGIN' ? 'Chưa có tài khoản? ' : 'Đã có tài khoản? '}
-        <button
-          type="button"
-          onClick={() => {
-            setAuthMode(authMode === 'LOGIN' ? 'REGISTER' : 'LOGIN');
-            setErrorMsg('');
-            setSuccessMsg('');
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--md-sys-color-primary)',
-            fontWeight: 800,
-            cursor: 'pointer',
-          }}
-        >
-          {authMode === 'LOGIN' ? 'Đăng ký ngay' : 'Đăng nhập tại đây'}
-        </button>
+          {/* Primary Submit Button (Mẫu 1: Filled M3 Button) */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '9999px',
+              border: 'none',
+              backgroundColor: '#6750A4',
+              color: '#FFFFFF',
+              fontSize: '14px',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              cursor: 'pointer',
+              marginTop: '8px',
+              boxShadow: '0px 2px 6px 2px rgba(0, 0, 0, 0.08)',
+              transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+              {authMode === 'LOGIN' ? 'arrow_forward' : 'how_to_reg'}
+            </span>
+            {isLoading ? 'Đang xử lý...' : authMode === 'LOGIN' ? 'Đăng Nhập' : 'Đăng Ký Tài Khoản'}
+          </button>
+        </form>
+
+        {/* Footer switch prompt */}
+        <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: '#49454F' }}>
+          {authMode === 'LOGIN' ? (
+            <>
+              Chưa có tài khoản?{' '}
+              <button
+                type="button"
+                onClick={() => setAuthMode('REGISTER')}
+                style={{ background: 'none', border: 'none', color: '#6750A4', fontWeight: 900, cursor: 'pointer' }}
+              >
+                Đăng ký ngay
+              </button>
+            </>
+          ) : (
+            <>
+              Đã có tài khoản?{' '}
+              <button
+                type="button"
+                onClick={() => setAuthMode('LOGIN')}
+                style={{ background: 'none', border: 'none', color: '#6750A4', fontWeight: 900, cursor: 'pointer' }}
+              >
+                Đăng nhập ngay
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -413,19 +561,14 @@ function LoginFormContent() {
 
 export default function LoginPage() {
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--md-sys-color-background)',
-        padding: '16px',
-      }}
+    <Suspense
+      fallback={
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FEF7FF', fontFamily: 'sans-serif' }}>
+          Đang tải trang đăng nhập...
+        </div>
+      }
     >
-      <Suspense fallback={<div>Đang tải...</div>}>
-        <LoginFormContent />
-      </Suspense>
-    </div>
+      <LoginFormContent />
+    </Suspense>
   );
 }
