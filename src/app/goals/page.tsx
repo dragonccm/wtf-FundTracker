@@ -173,7 +173,7 @@ export default function GoalsPage() {
               </div>
             </div>
           );
-        })}
+        }))}
       </div>
 
       {/* Add Goal Modal */}
