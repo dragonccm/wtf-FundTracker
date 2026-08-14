@@ -11,6 +11,7 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
 } from 'recharts';
 
 export default function PerformancePage() {
@@ -122,20 +123,30 @@ export default function PerformancePage() {
           So Sánh Vốn Đầu Tư & Giá Trị Hiện Tại (Triệu VND)
         </h3>
 
-        <div style={{ width: '100%', height: '220px' }}>
+        <div style={{ width: '100%', height: '230px' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={comparisonData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <BarChart data={comparisonData} margin={{ top: 10, right: 10, left: 15, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--md-sys-color-outline-variant)" opacity={0.3} />
               <XAxis dataKey="name" stroke="var(--md-sys-color-on-surface-variant)" fontSize={11} tickLine={false} />
-              <YAxis stroke="var(--md-sys-color-on-surface-variant)" fontSize={11} tickLine={false} />
+              <YAxis
+                width={45}
+                stroke="var(--md-sys-color-on-surface-variant)"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(v) => `${v}Tr`}
+              />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: 'var(--md-sys-color-surface)',
+                  backgroundColor: 'var(--md-sys-color-surface-container-high)',
                   borderRadius: '12px',
                   border: '1px solid var(--md-sys-color-outline-variant)',
                   color: 'var(--md-sys-color-on-surface)',
                   fontSize: '12px',
                   boxShadow: 'var(--md-sys-elevation-2)',
+                  padding: '8px 12px',
                 }}
+                formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} Triệu VND`]}
               />
               <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
               <Bar dataKey="invested" name="Vốn đầu tư" fill="#74777F" radius={[6, 6, 0, 0]} />

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { formatVND, formatPercent } from '@/lib/finance/portfolio';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 export default function FundsPage() {
   const { funds } = useAppStore();
@@ -101,27 +101,69 @@ export default function FundsPage() {
 
           {/* NAV History Chart Card */}
           <div className="m3-card">
-            <h3 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
-              Biểu Đồ Lịch Sử NAV (VND)
-            </h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h3 style={{ fontSize: '15px', fontWeight: 900, color: 'var(--md-sys-color-on-surface)' }}>
+                Biểu Đồ Lịch Sử NAV (VND)
+              </h3>
+              <span style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 600 }}>
+                12 Tháng Gần Nhất
+              </span>
+            </div>
 
-            <div style={{ width: '100%', height: '220px' }}>
+            <div style={{ width: '100%', height: '230px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={selectedFund.navHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="date" stroke="var(--md-sys-color-on-surface-variant)" fontSize={11} tickLine={false} />
-                  <YAxis stroke="var(--md-sys-color-on-surface-variant)" fontSize={11} tickLine={false} domain={['auto', 'auto']} />
+                <AreaChart data={selectedFund.navHistory} margin={{ top: 10, right: 12, left: 18, bottom: 4 }}>
+                  <defs>
+                    <linearGradient id="navAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0B57D0" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#0B57D0" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--md-sys-color-outline-variant)" opacity={0.3} />
+                  <XAxis
+                    dataKey="date"
+                    stroke="var(--md-sys-color-on-surface-variant)"
+                    fontSize={10}
+                    tickLine={false}
+                    tickFormatter={(val) => {
+                      if (!val) return '';
+                      const parts = val.split('-');
+                      return parts.length >= 3 ? `${parts[2]}/${parts[1]}` : val;
+                    }}
+                  />
+                  <YAxis
+                    width={60}
+                    stroke="var(--md-sys-color-on-surface-variant)"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    domain={['auto', 'auto']}
+                    tickFormatter={(v) => Number(v).toLocaleString('vi-VN')}
+                  />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: 'var(--md-sys-color-surface)',
+                      backgroundColor: 'var(--md-sys-color-surface-container-high)',
                       borderRadius: '12px',
                       border: '1px solid var(--md-sys-color-outline-variant)',
                       color: 'var(--md-sys-color-on-surface)',
                       fontSize: '12px',
                       boxShadow: 'var(--md-sys-elevation-2)',
+                      padding: '8px 12px',
                     }}
+                    formatter={(value: any) => [formatVND(Number(value)), 'Giá NAV']}
+                    labelFormatter={(label) => `Ngày: ${label}`}
                   />
-                  <Line type="monotone" dataKey="nav" stroke="#0B57D0" strokeWidth={3} dot={{ r: 4, fill: '#0B57D0' }} activeDot={{ r: 6 }} />
-                </LineChart>
+                  <Area
+                    type="monotone"
+                    dataKey="nav"
+                    stroke="#0B57D0"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#navAreaGradient)"
+                    dot={false}
+                    activeDot={{ r: 5, fill: '#0B57D0', stroke: '#ffffff', strokeWidth: 2 }}
+                  />
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
