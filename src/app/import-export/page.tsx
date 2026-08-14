@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import * as XLSX from 'xlsx';
 import { formatVND } from '@/lib/finance/portfolio';
+import { useToast } from '@/components/feedback/ToastProvider';
 
 interface RawExcelRow {
   [key: string]: any;
@@ -25,6 +26,7 @@ interface ValidatedRow {
 
 export default function ImportExportPage() {
   const { funds, portfolios, addBulkTransactions, transactions, holdings } = useAppStore();
+  const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [fileName, setFileName] = useState('');
@@ -89,7 +91,7 @@ export default function ImportExportPage() {
           setStep(2);
         }
       } catch (err) {
-        alert('Lỗi khi đọc file Excel. Vui lòng kiểm tra file định dạng .xlsx hoặc .csv');
+        showToast('error', 'Không đọc được file. Hãy kiểm tra định dạng .xlsx, .xls hoặc .csv.');
       }
     };
     reader.readAsArrayBuffer(file);
@@ -155,7 +157,7 @@ export default function ImportExportPage() {
   const handleConfirmImport = () => {
     const validRowsToImport = validatedRows.filter((r) => r.isValid);
     if (validRowsToImport.length === 0) {
-      alert('Không có dòng giao dịch nào hợp lệ để nhập.');
+      showToast('error', 'Không có giao dịch hợp lệ để nhập. Hãy kiểm tra các cột và mã quỹ.');
       return;
     }
 
@@ -176,7 +178,6 @@ export default function ImportExportPage() {
     });
 
     addBulkTransactions(newTransactions);
-    alert(`Đã nhập thành công ${validRowsToImport.length} giao dịch vào danh mục!`);
     setStep(1);
     setFileName('');
   };
@@ -194,6 +195,8 @@ export default function ImportExportPage() {
     a.href = url;
     a.download = `FundTracker_Backup_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
+    URL.revokeObjectURL(url);
+    showToast('success', 'Đã tải file sao lưu JSON.');
   };
 
   return (

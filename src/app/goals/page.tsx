@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { formatVND } from '@/lib/finance/portfolio';
 import { GoalCategory } from '@/types';
+import { useToast } from '@/components/feedback/ToastProvider';
 
 export default function GoalsPage() {
   const { goals, addGoal, deleteGoal } = useAppStore();
+  const { showToast } = useToast();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const [name, setName] = useState('');
@@ -18,7 +20,14 @@ export default function GoalsPage() {
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      showToast('error', 'Hãy đặt tên cho mục tiêu tài chính.');
+      return;
+    }
+    if ((parseFloat(targetAmount) || 0) <= 0) {
+      showToast('error', 'Số tiền mục tiêu phải lớn hơn 0.');
+      return;
+    }
 
     addGoal({
       name,

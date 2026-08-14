@@ -122,7 +122,6 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
           aria-label="Thêm giao dịch"
         >
           <span className="material-symbols-outlined">add</span>
-          <span>Giao dịch</span>
         </button>
       )}
 

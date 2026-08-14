@@ -9,21 +9,43 @@ import { formatPercent, formatVND } from '@/lib/finance/portfolio';
 const allocationColors = ['#a4c6fb', '#b98bd7', '#73b8fa', '#63d18a', '#d0b36f', '#a9b4d6'];
 
 function compactVND(value: number) {
-  return new Intl.NumberFormat('vi-VN', {
+  const amount = new Intl.NumberFormat('vi-VN', {
     notation: 'compact',
     maximumFractionDigits: 1,
   }).format(value);
+  return `${amount} ₫`;
 }
 
 export default function DashboardPage() {
-  const { metrics, holdings, goals } = useAppStore();
+  const { metrics, holdings, goals, transactions } = useAppStore();
   const hasPortfolioData = holdings.length > 0;
   const allocation = holdings.map((holding) => ({
     name: holding.fundCode,
     value: holding.currentValue,
+    weight: holding.weightPercent,
   }));
+  const investmentDates = transactions
+    .filter((transaction) => transaction.type === 'BUY' || transaction.type === 'DEPOSIT')
+    .map((transaction) => new Date(transaction.date).getTime())
+    .filter(Number.isFinite);
+  const earliestInvestment = investmentDates.length ? Math.min(...investmentDates) : null;
+  const investmentAgeInDays = earliestInvestment
+    ? Math.floor((Date.now() - earliestInvestment) / (1000 * 60 * 60 * 24))
+    : 0;
+  const hasMatureXirr = investmentAgeInDays >= 30;
+  const hasSuspiciousXirr = Math.abs(metrics.xirrPercent) > 200;
+  const xirrLabel = !hasMatureXirr
+    ? 'Chưa đủ kỳ'
+    : hasSuspiciousXirr
+      ? 'Kiểm tra dữ liệu'
+      : formatPercent(metrics.xirrPercent);
+  const xirrHint = !hasMatureXirr
+    ? 'Cần tối thiểu 30 ngày'
+    : hasSuspiciousXirr
+      ? 'Kiểm tra ngày mua và NAV'
+      : 'Tỷ suất quy năm';
   const highlightedGoal = goals
-    .filter((goal) => goal.targetAmount > 0)
+    .filter((goal) => goal.targetAmount > 0 && goal.name.trim().length > 0)
     .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())[0];
 
   return (
@@ -43,15 +65,21 @@ export default function DashboardPage() {
           <section className="journal-card journal-hero">
             <div className="journal-hero-heading">
               <span className="journal-eyebrow" style={{ color: 'var(--journal-muted)' }}>Tổng giá trị tài sản</span>
+              <span className="journal-hero-updated">{holdings.length} quỹ đang nắm giữ</span>
+            </div>
+            <strong className="journal-hero-value">{formatVND(metrics.currentMarketValue)}</strong>
+            <div className="journal-hero-performance">
               <div className={metrics.totalPnL >= 0 ? 'journal-positive' : 'journal-negative'}>
                 <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
                   {metrics.totalPnL >= 0 ? 'trending_up' : 'trending_down'}
                 </span>
-                {formatVND(metrics.totalPnL)} · {formatPercent(metrics.totalPnLPercent)}
+                Lãi/lỗ {formatVND(metrics.totalPnL)} ({formatPercent(metrics.totalPnLPercent)})
               </div>
+              <span className={metrics.dailyChange >= 0 ? 'journal-daily-positive' : 'journal-daily-negative'}>
+                Hôm nay {formatVND(metrics.dailyChange)}
+              </span>
             </div>
-
-            <div className="journal-allocation" aria-label="Phân bổ danh mục">
+            <div className="journal-hero-pie" aria-label={`Biểu đồ phân bổ danh mục: ${allocation.map((item) => `${item.name} ${item.weight.toFixed(1)}%`).join(', ')}`}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -59,10 +87,10 @@ export default function DashboardPage() {
                     dataKey="value"
                     cx="50%"
                     cy="50%"
-                    innerRadius="61%"
-                    outerRadius="88%"
-                    paddingAngle={allocation.length > 1 ? 4 : 0}
-                    stroke="var(--journal-surface)"
+                    innerRadius={70}
+                    outerRadius={102}
+                    paddingAngle={allocation.length > 1 ? 3 : 0}
+                    stroke="#f3edf7"
                     strokeWidth={3}
                   >
                     {allocation.map((item, index) => (
@@ -71,20 +99,24 @@ export default function DashboardPage() {
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              <div style={{
-                position: 'absolute', inset: 0, display: 'grid', placeItems: 'center',
-                color: 'var(--journal-ink)', textAlign: 'center', pointerEvents: 'none',
-              }}>
-                <span className="journal-allocation-label">
-                  <strong>{formatVND(metrics.currentMarketValue)}</strong>
-                  <small>{holdings.length} quỹ nắm giữ</small>
-                </span>
+              <div className="journal-hero-pie-label" aria-hidden="true">
+                <strong>{holdings.length}</strong>
+                <span>quỹ nắm giữ</span>
               </div>
+            </div>
+            <div className="journal-hero-allocation-legend" aria-hidden="true">
+              {allocation.slice(0, 3).map((item, index) => (
+                <span key={item.name}>
+                  <i style={{ backgroundColor: allocationColors[index % allocationColors.length] }} />
+                  {item.name} {item.weight.toFixed(0)}%
+                </span>
+              ))}
+              {allocation.length > 3 && <span>+{allocation.length - 3} quỹ khác</span>}
             </div>
             <Link href="/performance" className="journal-hero-action">
               <span className="material-symbols-outlined">insights</span>
               Phân tích hiệu suất XIRR
-              <span className="material-symbols-outlined journal-hero-action-arrow">expand_more</span>
+              <span className="material-symbols-outlined journal-hero-action-arrow">arrow_forward</span>
             </Link>
           </section>
 
@@ -95,14 +127,21 @@ export default function DashboardPage() {
               <strong title={formatVND(metrics.totalInvested)}>{compactVND(metrics.totalInvested)}</strong>
             </div>
             <div className="journal-metric">
+              <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>trending_up</span>
+              <span className="journal-eyebrow">Lãi / lỗ</span>
+              <strong className={metrics.totalPnL >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.totalPnL)}>{compactVND(metrics.totalPnL)}</strong>
+            </div>
+            <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>query_stats</span>
               <span className="journal-eyebrow">XIRR</span>
-              <strong>{formatPercent(metrics.xirrPercent)}</strong>
+              <strong className={hasSuspiciousXirr || !hasMatureXirr ? 'journal-value-muted' : undefined}>{xirrLabel}</strong>
+              <small className="journal-metric-hint">{xirrHint}</small>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>today</span>
               <span className="journal-eyebrow">Hôm nay</span>
               <strong title={formatVND(metrics.dailyChange)}>{compactVND(metrics.dailyChange)}</strong>
+              <small className="journal-metric-hint">{formatPercent(metrics.dailyChangePercent)}</small>
             </div>
           </section>
 
@@ -122,7 +161,9 @@ export default function DashboardPage() {
                   </span>
                   <span style={{ minWidth: 0 }}>
                     <strong style={{ display: 'block', fontSize: 14 }}>{holding.fundCode}</strong>
-                    <small style={{ color: 'var(--journal-muted)' }}>{holding.weightPercent.toFixed(1)}% danh mục</small>
+                    <small style={{ color: 'var(--journal-muted)' }}>
+                      {holding.totalUnits.toLocaleString('vi-VN', { maximumFractionDigits: 2 })} CCQ · NAV {formatVND(holding.currentNav)}
+                    </small>
                   </span>
                   <span style={{ textAlign: 'right' }}>
                     <strong style={{ display: 'block', fontSize: 14 }}>{compactVND(holding.currentValue)}</strong>

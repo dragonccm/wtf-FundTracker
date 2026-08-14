@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { FundCategory } from '@/types';
 import { formatVND } from '@/lib/finance/portfolio';
+import { useToast } from '@/components/feedback/ToastProvider';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function FundsPage() {
   const { funds, addFund, updateFundNav } = useAppStore();
+  const { showToast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingFundId, setEditingFundId] = useState<string | null>(null);
   const [code, setCode] = useState('');
@@ -24,7 +26,10 @@ export default function FundsPage() {
     event.preventDefault();
     const normalizedCode = code.trim().toUpperCase();
     const parsedNav = Number(nav);
-    if (!normalizedCode || !name.trim() || !company.trim() || parsedNav <= 0) return;
+    if (!normalizedCode || !name.trim() || !company.trim() || parsedNav <= 0) {
+      showToast('error', 'Hãy nhập đủ mã quỹ, tên quỹ, công ty quản lý và NAV hợp lệ.');
+      return;
+    }
 
     addFund({
       code: normalizedCode,
@@ -48,7 +53,10 @@ export default function FundsPage() {
   const saveNav = (event: React.FormEvent) => {
     event.preventDefault();
     const value = Number(newNav);
-    if (!editingFundId || value <= 0) return;
+    if (!editingFundId || value <= 0) {
+      showToast('error', 'NAV mới phải lớn hơn 0.');
+      return;
+    }
     updateFundNav(editingFundId, value, newNavDate);
     setEditingFundId(null);
     setNewNav('');

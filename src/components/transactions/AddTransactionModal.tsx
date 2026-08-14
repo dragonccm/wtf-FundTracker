@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { TransactionType } from '@/types';
+import { useToast } from '@/components/feedback/ToastProvider';
 
 export default function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const { funds, portfolios, addTransaction, activePortfolioId } = useAppStore();
+  const { showToast } = useToast();
 
   const [portfolioId, setPortfolioId] = useState<string>(
     activePortfolioId !== 'ALL' ? activePortfolioId : portfolios[0]?.id || 'p_main'
@@ -58,6 +60,19 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
     const parsedPrice = parseFloat(unitPrice) || 0;
     const parsedUnits = parseFloat(units) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
     const parsedFee = parseFloat(fee) || 0;
+
+    if (!selectedFund) {
+      showToast('error', 'Hãy thêm quỹ trước khi ghi nhận giao dịch.');
+      return;
+    }
+    if (!portfolioId) {
+      showToast('error', 'Hãy chọn danh mục cho giao dịch này.');
+      return;
+    }
+    if (parsedAmount <= 0 || parsedPrice <= 0 || parsedUnits <= 0) {
+      showToast('error', 'Số tiền, NAV và số CCQ phải lớn hơn 0.');
+      return;
+    }
 
     addTransaction({
       portfolioId,

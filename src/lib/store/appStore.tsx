@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   UserProfile,
   Fund,
@@ -18,6 +18,7 @@ import {
   initialGoals,
 } from './initialData';
 import { calculateHoldings, calculatePerformanceMetrics } from '../finance/portfolio';
+import { useToast } from '@/components/feedback/ToastProvider';
 
 interface AppContextType {
   user: UserProfile;
@@ -72,6 +73,7 @@ function defaultPortfolioFor(email: string): Portfolio {
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { showToast } = useToast();
   const [user, setUser] = useState<UserProfile>(initialProfile);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthResolved, setIsAuthResolved] = useState(false);
@@ -83,6 +85,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [hasLoadedRemote, setHasLoadedRemote] = useState(false);
   const [isCloudAvailable, setIsCloudAvailable] = useState(true);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const hasReportedSyncError = useRef(false);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -184,13 +187,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           goals,
           funds,
         }),
-      }).catch((err) => {
-        console.debug('MongoDB background sync:', err.message);
-      });
+      })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          if (!data?.success) throw new Error('Sync rejected');
+          hasReportedSyncError.current = false;
+        })
+        .catch((err) => {
+          console.debug('MongoDB background sync:', err.message);
+          if (!hasReportedSyncError.current) {
+            hasReportedSyncError.current = true;
+            showToast('error', 'Chưa thể đồng bộ dữ liệu. Vui lòng kiểm tra kết nối và thử lại.');
+          }
+        });
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [isAuthenticated, user, portfolios, transactions, goals, funds, hasLoadedRemote, isCloudAvailable]);
+  }, [isAuthenticated, user, portfolios, transactions, goals, funds, hasLoadedRemote, isCloudAvailable, showToast]);
 
   // Filter transactions based on active portfolio
   const filteredTransactions = useMemo(
@@ -220,18 +234,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       avatarUrl: avatarUrl || previous.avatarUrl,
     }));
     setIsAuthenticated(true);
-  }, []);
+    showToast('success', 'Đăng nhập thành công.');
+  }, [showToast]);
 
   const logout = useCallback(() => {
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
     setIsAuthenticated(false);
     setHasLoadedRemote(false);
     localStorage.removeItem(STORAGE_KEYS.AUTH);
-  }, []);
+    showToast('info', 'Bạn đã đăng xuất.');
+  }, [showToast]);
 
   const updateProfile = useCallback((updates: Partial<UserProfile>) => {
     setUser((prev) => ({ ...prev, ...updates }));
-  }, []);
+    showToast('success', 'Đã lưu thay đổi tài khoản.');
+  }, [showToast]);
 
   const addTransaction = (txData: Omit<Transaction, 'id'>) => {
     const newTx: Transaction = {
@@ -239,14 +256,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
     };
     setTransactions((prev) => [newTx, ...prev]);
+    showToast('success', `Đã thêm giao dịch ${txData.type === 'BUY' ? 'mua' : 'bán'} ${txData.fundCode}.`);
   };
 
   const updateTransaction = (id: string, updates: Partial<Transaction>) => {
     setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    showToast('success', 'Đã cập nhật giao dịch.');
   };
 
   const deleteTransaction = (id: string) => {
     setTransactions((prev) => prev.filter((t) => t.id !== id));
+    showToast('info', 'Đã xóa giao dịch.');
   };
 
   const addBulkTransactions = (txsData: Omit<Transaction, 'id'>[]) => {
@@ -255,6 +275,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'tx_bulk_' + Date.now() + '_' + index,
     }));
     setTransactions((prev) => [...newTxs, ...prev]);
+    showToast('success', `Đã nhập ${newTxs.length} giao dịch hợp lệ.`);
   };
 
   const addPortfolio = (portfolioData: Omit<Portfolio, 'id' | 'createdAt'>) => {
@@ -264,16 +285,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString().split('T')[0],
     };
     setPortfolios((prev) => [...prev, newPort]);
+    showToast('success', `Đã tạo danh mục “${newPort.name}”.`);
   };
 
   const updatePortfolio = (id: string, updates: Partial<Portfolio>) => {
     setPortfolios((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
+    showToast('success', 'Đã cập nhật danh mục.');
   };
 
   const deletePortfolio = (id: string) => {
     setPortfolios((prev) => prev.filter((p) => p.id !== id));
     setTransactions((prev) => prev.filter((t) => t.portfolioId !== id));
     if (activePortfolioId === id) setActivePortfolioId('ALL');
+    showToast('info', 'Đã xóa danh mục và các giao dịch liên quan.');
   };
 
   const addGoal = (goalData: Omit<FinancialGoal, 'id' | 'createdAt'>) => {
@@ -283,14 +307,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString().split('T')[0],
     };
     setGoals((prev) => [...prev, newGoal]);
+    showToast('success', `Đã thêm mục tiêu “${newGoal.name}”.`);
   };
 
   const updateGoal = (id: string, updates: Partial<FinancialGoal>) => {
     setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, ...updates } : g)));
+    showToast('success', 'Đã cập nhật mục tiêu.');
   };
 
   const deleteGoal = (id: string) => {
     setGoals((prev) => prev.filter((g) => g.id !== id));
+    showToast('info', 'Đã xóa mục tiêu.');
   };
 
   const addFund = (fundData: Omit<Fund, 'id' | 'navHistory'>) => {
@@ -300,6 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       navHistory: [{ date: fundData.navDate, nav: fundData.nav }],
     };
     setFunds((prev) => [...prev, newFund]);
+    showToast('success', `Đã thêm quỹ ${newFund.code}.`);
   };
 
   const updateFundNav = (fundId: string, newNav: number, date?: string) => {
@@ -319,6 +347,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return f;
       })
     );
+    showToast('success', 'Đã cập nhật NAV quỹ.');
   };
 
   const clearFinancialData = () => {
@@ -334,6 +363,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       STORAGE_KEYS.TRANSACTIONS,
       STORAGE_KEYS.GOALS,
     ].forEach((key) => localStorage.removeItem(key));
+    showToast('info', 'Đã xóa toàn bộ dữ liệu tài chính.');
   };
 
   return (

@@ -4,6 +4,7 @@ import '@/styles/globals.css';
 import '@/styles/journal.css';
 import { AppProvider } from '@/lib/store/appStore';
 import AppNavigation from '@/components/navigation/AppNavigation';
+import { ToastProvider } from '@/components/feedback/ToastProvider';
 
 export const metadata = {
   title: 'Nhật Ký Quỹ - Quản Lý & Theo Dõi Đầu Tư Chứng Chỉ Quỹ',
@@ -28,9 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <AppProvider>
-          <AppNavigation>{children}</AppNavigation>
-        </AppProvider>
+        <ToastProvider>
+          <AppProvider>
+            <AppNavigation>{children}</AppNavigation>
+          </AppProvider>
+        </ToastProvider>
       </body>
     </html>
   );
