@@ -255,13 +255,12 @@ export default function M3SearchBar({
 
             {/* Quick Suggestion Assist Chips */}
             <div
+              className="m3-chips-scroll"
               style={{
-                display: 'flex',
-                gap: '6px',
                 padding: '10px 16px',
-                overflowX: 'auto',
                 borderBottom: '1px solid var(--md-sys-color-outline-variant)',
                 backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                marginBottom: 0,
               }}
             >
               {['VESAF', 'DCBC', 'TCBF', 'DSI', 'Hưu trí', 'Lệnh mua'].map((chip) => (

@@ -43,29 +43,18 @@ export default function FundsPage() {
         </p>
       </div>
 
-      {/* Fund Selector Chips */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {/* Fund Selector Chips (Smooth M3 Carousel) */}
+      <div className="m3-chips-scroll">
         {funds.map((f) => {
           const isSelected = f.code === selectedFundCode;
           return (
             <button
               key={f.id}
+              type="button"
               onClick={() => setSelectedFundCode(f.code)}
-              style={{
-                padding: '8px 16px',
-                borderRadius: '24px',
-                border: '1px solid var(--md-sys-color-outline-variant)',
-                backgroundColor: isSelected ? 'var(--md-sys-color-primary-container)' : 'var(--md-sys-color-surface-container-lowest)',
-                color: isSelected ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface)',
-                fontWeight: 800,
-                fontSize: '12px',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
+              className={`m3-chip ${isSelected ? 'active' : ''}`}
             >
+              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>finance_chip</span>
               {f.code}
             </button>
           );

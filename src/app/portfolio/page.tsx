@@ -64,48 +64,24 @@ export default function PortfolioPage() {
         </button>
       </div>
 
-      {/* Portfolio Selector Chips */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+      {/* Portfolio Selector Chips (Smooth M3 Carousel without ugly scrollbar) */}
+      <div className="m3-chips-scroll">
         <button
+          type="button"
           onClick={() => setActivePortfolioId('ALL')}
-          style={{
-            padding: '8px 16px',
-            borderRadius: '24px',
-            border: '1px solid var(--md-sys-color-outline-variant)',
-            backgroundColor: activePortfolioId === 'ALL' ? 'var(--md-sys-color-primary-container)' : 'var(--md-sys-color-surface-container-lowest)',
-            color: activePortfolioId === 'ALL' ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface)',
-            fontWeight: 800,
-            fontSize: '12px',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
+          className={`m3-chip ${activePortfolioId === 'ALL' ? 'active' : ''}`}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>language</span>
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>language</span>
           Tất Cả Danh Mục
         </button>
         {portfolios.map((p) => (
           <button
             key={p.id}
+            type="button"
             onClick={() => setActivePortfolioId(p.id)}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '24px',
-              border: '1px solid var(--md-sys-color-outline-variant)',
-              backgroundColor: activePortfolioId === p.id ? 'var(--md-sys-color-primary-container)' : 'var(--md-sys-color-surface-container-lowest)',
-              color: activePortfolioId === p.id ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface)',
-              fontWeight: 800,
-              fontSize: '12px',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
+            className={`m3-chip ${activePortfolioId === p.id ? 'active' : ''}`}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>business_center</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>business_center</span>
             {p.name}
           </button>
         ))}

@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <M3SearchBar placeholder="Tìm kiếm nhanh quỹ, giao dịch, mục tiêu..." />
 
       {/* 2. Horizontal Filter Chips (M3 Subheader Category Chips) */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+      <div className="m3-chips-scroll">
         {[
           { id: 'ALL', label: 'Tất cả quỹ' },
           { id: 'Equity', label: 'Cổ phiếu' },
@@ -69,12 +69,6 @@ export default function DashboardPage() {
               type="button"
               onClick={() => setSelectedCategory(tab.id)}
               className={`m3-chip ${isActive ? 'active' : ''}`}
-              style={{
-                borderRadius: '20px',
-                padding: '8px 16px',
-                whiteSpace: 'nowrap',
-                fontWeight: isActive ? 800 : 600,
-              }}
             >
               {tab.label}
             </button>
