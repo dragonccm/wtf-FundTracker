@@ -804,8 +804,53 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                 </Link>
               </div>
 
-              {/* Account Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {/* Account Actions & Quick Switcher */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {/* Switch to Other Accounts list */}
+                {authService.getRecentAccounts().filter((a) => a.email.toLowerCase() !== user.email.toLowerCase()).length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--md-sys-color-primary)', textTransform: 'uppercase' }}>
+                      Chuyển đổi tài khoản nhanh
+                    </div>
+                    {authService
+                      .getRecentAccounts()
+                      .filter((a) => a.email.toLowerCase() !== user.email.toLowerCase())
+                      .map((acc) => (
+                        <div
+                          key={acc.email}
+                          onClick={() => {
+                            login(acc.email, acc.name, acc.avatarUrl);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            borderRadius: '14px',
+                            backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <img
+                              src={acc.avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(acc.name)}`}
+                              alt={acc.name}
+                              style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover' }}
+                            />
+                            <div>
+                              <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--md-sys-color-on-surface)' }}>{acc.name}</div>
+                              <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>{acc.email}</div>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px', color: 'var(--md-sys-color-primary)' }}>
+                            swap_horiz
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
                 {/* Switch to Another Account / Login */}
                 <Link
                   href="/login"
@@ -878,9 +923,7 @@ export default function AppNavigation({ children }: { children: React.ReactNode 
                   type="button"
                   onClick={() => {
                     setIsProfileMenuOpen(false);
-                    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi thiết bị này?')) {
-                      window.location.href = '/login';
-                    }
+                    logout();
                   }}
                   style={{
                     display: 'flex',

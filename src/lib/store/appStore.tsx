@@ -18,6 +18,7 @@ import {
   initialGoals,
 } from './initialData';
 import { calculateHoldings, calculatePerformanceMetrics } from '../finance/portfolio';
+import { authService } from '../auth/authService';
 
 interface AppContextType {
   user: UserProfile;
@@ -122,8 +123,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const holdings = calculateHoldings(filteredTransactions, funds);
   const metrics = calculatePerformanceMetrics(filteredTransactions, funds);
 
-  const login = (email: string) => {
-    setUser((prev) => ({ ...prev, email, name: email.split('@')[0] }));
+  const login = (email: string, name?: string, avatarUrl?: string) => {
+    const users = authService.getRegisteredUsers();
+    const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    
+    if (existing) {
+      setUser((prev) => ({
+        ...prev,
+        id: existing.id || prev.id,
+        email: existing.email,
+        name: existing.name,
+        avatarUrl: existing.avatarUrl || prev.avatarUrl,
+      }));
+      authService.saveRecentAccount(existing);
+    } else {
+      const newUser = {
+        id: 'usr_' + Date.now(),
+        email,
+        name: name || email.split('@')[0],
+        avatarUrl: avatarUrl || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || email)}&backgroundColor=6750A4`,
+        provider: 'local' as const,
+        createdAt: new Date().toISOString(),
+      };
+      setUser((prev) => ({
+        ...prev,
+        ...newUser,
+      }));
+      authService.saveRecentAccount(newUser);
+    }
     setIsAuthenticated(true);
   };
 

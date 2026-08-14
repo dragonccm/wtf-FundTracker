@@ -6,7 +6,7 @@ import { Currency, DateFormat } from '@/types';
 import Link from 'next/link';
 
 export default function SettingsPage() {
-  const { user, updateProfile, resetToSampleData } = useAppStore();
+  const { user, updateProfile, resetToSampleData, logout } = useAppStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -41,6 +41,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?')) {
+      logout();
       window.location.href = '/login';
     }
   };
