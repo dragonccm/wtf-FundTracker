@@ -4,17 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatPercent, formatVND } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatPercent, formatVND } from '@/lib/finance/portfolio';
 
 const allocationColors = ['#a4c6fb', '#b98bd7', '#73b8fa', '#63d18a', '#d0b36f', '#a9b4d6'];
-
-function compactVND(value: number) {
-  const amount = new Intl.NumberFormat('vi-VN', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value);
-  return `${amount} ₫`;
-}
 
 export default function DashboardPage() {
   const { metrics, holdings, goals, transactions } = useAppStore();
@@ -67,16 +59,16 @@ export default function DashboardPage() {
               <span className="journal-eyebrow" style={{ color: 'var(--journal-muted)' }}>Tổng giá trị tài sản</span>
               <span className="journal-hero-updated">{holdings.length} quỹ đang nắm giữ</span>
             </div>
-            <strong className="journal-hero-value">{formatVND(metrics.currentMarketValue)}</strong>
+            <strong className="journal-hero-value" title={formatVND(metrics.currentMarketValue)}>{formatCompactVND(metrics.currentMarketValue)}</strong>
             <div className="journal-hero-performance">
               <div className={metrics.totalPnL >= 0 ? 'journal-positive' : 'journal-negative'}>
                 <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
                   {metrics.totalPnL >= 0 ? 'trending_up' : 'trending_down'}
                 </span>
-                Lãi/lỗ {formatVND(metrics.totalPnL)} ({formatPercent(metrics.totalPnLPercent)})
+                Lãi/lỗ {formatCompactVND(metrics.totalPnL)} ({formatPercent(metrics.totalPnLPercent)})
               </div>
               <span className={metrics.dailyChange >= 0 ? 'journal-daily-positive' : 'journal-daily-negative'}>
-                Hôm nay {formatVND(metrics.dailyChange)}
+                Hôm nay {formatCompactVND(metrics.dailyChange)}
               </span>
             </div>
             <div className="journal-hero-pie" aria-label={`Biểu đồ phân bổ danh mục: ${allocation.map((item) => `${item.name} ${item.weight.toFixed(1)}%`).join(', ')}`}>
@@ -124,12 +116,12 @@ export default function DashboardPage() {
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>payments</span>
               <span className="journal-eyebrow">Vốn</span>
-              <strong title={formatVND(metrics.totalInvested)}>{compactVND(metrics.totalInvested)}</strong>
+              <strong title={formatVND(metrics.totalInvested)}>{formatCompactVND(metrics.totalInvested)}</strong>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>trending_up</span>
               <span className="journal-eyebrow">Lãi / lỗ</span>
-              <strong className={metrics.totalPnL >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.totalPnL)}>{compactVND(metrics.totalPnL)}</strong>
+              <strong className={metrics.totalPnL >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.totalPnL)}>{formatCompactVND(metrics.totalPnL)}</strong>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>query_stats</span>
@@ -140,7 +132,7 @@ export default function DashboardPage() {
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>today</span>
               <span className="journal-eyebrow">Hôm nay</span>
-              <strong title={formatVND(metrics.dailyChange)}>{compactVND(metrics.dailyChange)}</strong>
+              <strong title={formatVND(metrics.dailyChange)}>{formatCompactVND(metrics.dailyChange)}</strong>
               <small className="journal-metric-hint">{formatPercent(metrics.dailyChangePercent)}</small>
             </div>
           </section>
@@ -166,7 +158,7 @@ export default function DashboardPage() {
                     </small>
                   </span>
                   <span style={{ textAlign: 'right' }}>
-                    <strong style={{ display: 'block', fontSize: 14 }}>{compactVND(holding.currentValue)}</strong>
+                    <strong title={formatVND(holding.currentValue)} style={{ display: 'block', fontSize: 14 }}>{formatCompactVND(holding.currentValue)}</strong>
                     <small style={{ color: holding.unrealizedPnL >= 0 ? 'var(--journal-success)' : 'var(--journal-danger)', fontWeight: 500 }}>
                       {formatPercent(holding.unrealizedPnLPercent)}
                     </small>

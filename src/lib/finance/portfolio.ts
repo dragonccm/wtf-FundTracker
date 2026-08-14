@@ -189,6 +189,25 @@ export function formatVND(amount: number): string {
   }).format(amount);
 }
 
+/** Short money labels for compact cards on small screens. */
+export function formatCompactVND(amount: number): string {
+  const absoluteAmount = Math.abs(amount);
+  const units = [
+    { value: 1_000_000_000, label: 'Tỷ' },
+    { value: 1_000_000, label: 'Tr' },
+    { value: 1_000, label: 'N' },
+  ];
+  const unit = units.find((candidate) => absoluteAmount >= candidate.value);
+
+  if (!unit) return formatVND(amount);
+
+  const value = amount / unit.value;
+  const formatted = new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
+  }).format(value);
+  return `${formatted} ${unit.label}đ`;
+}
+
 export function formatPercent(value: number): string {
   const formatted = value.toFixed(2);
   return value > 0 ? `+${formatted}%` : `${formatted}%`;

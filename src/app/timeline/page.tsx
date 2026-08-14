@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatVND } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND } from '@/lib/finance/portfolio';
 
 export default function TimelinePage() {
   const { transactions } = useAppStore();
@@ -88,7 +88,7 @@ export default function TimelinePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '10px', fontSize: '12px' }}>
                   <div>
                     <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị giao dịch</div>
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
+                    <div title={formatVND(tx.amount)} style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(tx.amount)}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Khối lượng CCQ</div>

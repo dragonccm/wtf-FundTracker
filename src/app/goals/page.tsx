@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatVND } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND } from '@/lib/finance/portfolio';
 import { GoalCategory } from '@/types';
 import { useToast } from '@/components/feedback/ToastProvider';
 
@@ -165,19 +165,19 @@ export default function GoalsPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', backgroundColor: 'var(--md-sys-color-surface-container-low)', padding: '10px 12px', borderRadius: '14px', border: '1px solid var(--md-sys-color-outline-variant)' }}>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Đã tích lũy</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.currentAmount)}</div>
+                  <div title={formatVND(g.currentAmount)} style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(g.currentAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Mục tiêu</div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(g.targetAmount)}</div>
+                  <div title={formatVND(g.targetAmount)} style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(g.targetAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Còn thiếu</div>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#BA1A1A' }}>{formatVND(remainingAmount)}</div>
+                  <div title={formatVND(remainingAmount)} style={{ fontSize: '13px', fontWeight: 500, color: '#BA1A1A' }}>{formatCompactVND(remainingAmount)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Cần nạp / tháng</div>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{formatVND(monthlyRequired)}</div>
+                  <div title={formatVND(monthlyRequired)} style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-primary)' }}>{formatCompactVND(monthlyRequired)}</div>
                 </div>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatVND } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND } from '@/lib/finance/portfolio';
 import AddTransactionModal from '@/components/transactions/AddTransactionModal';
 
 export default function TransactionsPage() {
@@ -171,8 +171,8 @@ export default function TransactionsPage() {
 
                 <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(tx.amount)}</div>
-                    <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>NAV: {formatVND(tx.unitPrice)}</div>
+                    <div title={formatVND(tx.amount)} style={{ fontSize: '14px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(tx.amount)}</div>
+                    <div title={formatVND(tx.unitPrice)} style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>NAV: {formatCompactVND(tx.unitPrice)}</div>
                   </div>
                   <button
                     onClick={() => {

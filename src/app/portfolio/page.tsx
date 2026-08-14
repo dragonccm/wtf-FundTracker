@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatVND, formatPercent } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatPercent } from '@/lib/finance/portfolio';
 
 export default function PortfolioPage() {
   const { holdings, portfolios, activePortfolioId, setActivePortfolioId, addPortfolio, metrics } = useAppStore();
@@ -101,19 +101,19 @@ export default function PortfolioPage() {
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị thị trường</div>
-            <div style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.currentMarketValue)}</div>
+            <div title={formatVND(metrics.currentMarketValue)} style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(metrics.currentMarketValue)}</div>
           </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '16px', borderTop: '1px solid var(--md-sys-color-outline-variant)', paddingTop: '12px' }}>
           <div>
             <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Tổng Vốn</div>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(metrics.totalInvested)}</div>
+            <div title={formatVND(metrics.totalInvested)} style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(metrics.totalInvested)}</div>
           </div>
           <div>
             <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Lợi Nhuận</div>
             <div style={{ fontSize: '13px', fontWeight: 500, color: metrics.totalPnL >= 0 ? '#198754' : '#BA1A1A' }}>
-              {formatVND(metrics.totalPnL)}
+              {formatCompactVND(metrics.totalPnL)}
             </div>
           </div>
           <div>
@@ -153,9 +153,9 @@ export default function PortfolioPage() {
                 </div>
 
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatVND(h.currentValue)}</div>
+                  <div title={formatVND(h.currentValue)} style={{ fontSize: '16px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatCompactVND(h.currentValue)}</div>
                   <span className={h.unrealizedPnL >= 0 ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '11px', marginTop: '2px' }}>
-                    {h.unrealizedPnL >= 0 ? '+' : ''}{formatVND(h.unrealizedPnL)} ({formatPercent(h.unrealizedPnLPercent)})
+                    {h.unrealizedPnL >= 0 ? '+' : ''}{formatCompactVND(h.unrealizedPnL)} ({formatPercent(h.unrealizedPnLPercent)})
                   </span>
                 </div>
               </div>
