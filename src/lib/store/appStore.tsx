@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   UserProfile,
   Fund,
@@ -123,7 +123,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const holdings = calculateHoldings(filteredTransactions, funds);
   const metrics = calculatePerformanceMetrics(filteredTransactions, funds);
 
-  const login = (email: string, name?: string, avatarUrl?: string) => {
+  const login = useCallback((email: string, name?: string, avatarUrl?: string) => {
     const users = authService.getRegisteredUsers();
     const existing = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
     
@@ -152,15 +152,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       authService.saveRecentAccount(newUser);
     }
     setIsAuthenticated(true);
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsAuthenticated(false);
-  };
+  }, []);
 
-  const updateProfile = (updates: Partial<UserProfile>) => {
+  const updateProfile = useCallback((updates: Partial<UserProfile>) => {
     setUser((prev) => ({ ...prev, ...updates }));
-  };
+  }, []);
 
   const addTransaction = (txData: Omit<Transaction, 'id'>) => {
     const newTx: Transaction = {

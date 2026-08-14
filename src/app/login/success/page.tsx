@@ -1,30 +1,29 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import React, { useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppStore } from '@/lib/store/appStore';
 
 function LoginSuccessHandler() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { updateProfile, login } = useAppStore();
+  const { login } = useAppStore();
+  const isProcessedRef = React.useRef(false);
 
   useEffect(() => {
+    if (isProcessedRef.current) return;
+
     const email = searchParams.get('email');
     const name = searchParams.get('name');
     const avatar = searchParams.get('avatar');
 
     if (email) {
-      login(email);
-      updateProfile({
-        email,
-        name: name || email.split('@')[0],
-        avatarUrl: avatar || undefined,
-      });
+      isProcessedRef.current = true;
+      login(email, name || undefined, avatar || undefined);
     }
 
     router.replace('/dashboard');
-  }, [searchParams, router, updateProfile, login]);
+  }, [searchParams, router, login]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '16px' }}>
