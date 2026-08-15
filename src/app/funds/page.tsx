@@ -8,8 +8,18 @@ import { useToast } from '@/components/feedback/ToastProvider';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
+function formatSyncTime(timestamp: number | null) {
+  if (!timestamp) return 'Chưa đồng bộ';
+  const date = new Date(timestamp);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${hours}:${minutes} (${day}/${month})`;
+}
+
 export default function FundsPage() {
-  const { funds, addFund, updateFundNav } = useAppStore();
+  const { funds, addFund, updateFundNav, lastNavSyncAt, isSyncingNav, syncNavAutomatically } = useAppStore();
   const { showToast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingFundId, setEditingFundId] = useState<string | null>(null);
@@ -74,13 +84,57 @@ export default function FundsPage() {
         </button>
       </div>
 
+      {/* Auto-Sync Status Bar */}
+      <div
+        className="journal-card"
+        style={{
+          padding: '12px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 12,
+          backgroundColor: 'var(--journal-surface-variant)',
+          borderRadius: 16,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 20,
+              color: isSyncingNav ? 'var(--journal-primary)' : 'var(--journal-success)',
+              animation: isSyncingNav ? 'spin 1.5s linear infinite' : 'none',
+            }}
+          >
+            {isSyncingNav ? 'sync' : 'cloud_done'}
+          </span>
+          <span style={{ fontSize: 13, color: 'var(--journal-ink)' }}>
+            <strong>Tự động đồng bộ Fmarket</strong>
+            <span style={{ display: 'block', fontSize: 11, color: 'var(--journal-muted)' }}>
+              {isSyncingNav ? 'Đang kiểm tra NAV mới...' : `Cập nhật gần nhất: ${formatSyncTime(lastNavSyncAt)}`}
+            </span>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => syncNavAutomatically(true)}
+          disabled={isSyncingNav}
+          className="journal-text-button"
+          style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
+          Đồng bộ ngay
+        </button>
+      </div>
+
       {funds.length === 0 ? (
         <section className="journal-card journal-empty">
           <div className="journal-empty-visual">
             <span className="material-symbols-outlined" style={{ fontSize: 36 }}>finance</span>
           </div>
           <h2>Chưa có dữ liệu quỹ</h2>
-          <p>Nhập NAV từ công ty quản lý quỹ. Ứng dụng không tự tạo số liệu hiệu suất.</p>
+          <p>Hệ thống tự động cập nhật NAV hàng ngày từ các công ty quản lý quỹ.</p>
           <button className="journal-primary-button" type="button" onClick={() => setIsCreateOpen(true)}>
             Thêm quỹ đầu tiên
           </button>
@@ -105,7 +159,7 @@ export default function FundsPage() {
                 <span style={{ minWidth: 0 }}>
                   <strong style={{ display: 'block', fontSize: 14 }}>{fund.code}</strong>
                   <small style={{ color: 'var(--journal-muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {fund.company}
+                    {fund.company} • {fund.navDate || 'Hôm nay'}
                   </small>
                 </span>
                 <span style={{ textAlign: 'right' }}>
@@ -121,8 +175,8 @@ export default function FundsPage() {
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--journal-muted)', fontSize: 12, paddingInline: 4 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>verified_user</span>
-        NAV do bạn nhập và được lưu cùng tài khoản.
+        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>info</span>
+        Nhấn vào từng quỹ nếu bạn muốn ghi đè hoặc chỉnh sửa NAV thủ công.
       </div>
 
       {isCreateOpen && (
@@ -174,7 +228,7 @@ export default function FundsPage() {
         <div className="journal-scrim" onClick={() => setEditingFundId(null)}>
           <section className="journal-sheet" onClick={(event) => event.stopPropagation()}>
             <div className="journal-sheet-handle" />
-            <h2 style={{ marginBottom: 16 }}>Cập nhật NAV</h2>
+            <h2 style={{ marginBottom: 16 }}>Chỉnh sửa NAV thủ công</h2>
             <form className="journal-form" onSubmit={saveNav}>
               <div className="journal-field">
                 <label htmlFor="new-nav">NAV mới</label>

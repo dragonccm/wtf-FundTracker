@@ -955,6 +955,10 @@ textarea:focus-visible {
   to { transform: rotate(360deg); }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (min-width: 760px) {
   .journal-shell {
     margin-top: 18px;

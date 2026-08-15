@@ -20,6 +20,24 @@ import {
 import { calculateHoldings, calculatePerformanceMetrics } from '../finance/portfolio';
 import { useToast } from '@/components/feedback/ToastProvider';
 
+export function getOptimalNavSyncIntervalMs(): number {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday, 6 = Saturday
+  const hour = now.getHours();
+  const isWeekend = day === 0 || day === 6;
+
+  if (isWeekend) {
+    return 6 * 60 * 60 * 1000; // 6 hours on weekends (NAV doesn't change)
+  }
+  if (hour >= 17 && hour <= 22) {
+    return 30 * 60 * 1000; // 30 minutes during evening peak publication window (17:00 - 22:00)
+  }
+  if (hour >= 8 && hour < 17) {
+    return 2 * 60 * 60 * 1000; // 2 hours during day (08:00 - 17:00)
+  }
+  return 6 * 60 * 60 * 1000; // 6 hours at night (22:00 - 08:00)
+}
+
 interface AppContextType {
   user: UserProfile;
   isAuthenticated: boolean;
@@ -32,6 +50,9 @@ interface AppContextType {
   goals: FinancialGoal[];
   holdings: Holding[];
   metrics: PerformanceMetrics;
+  lastNavSyncAt: number | null;
+  isSyncingNav: boolean;
+  syncNavAutomatically: (force?: boolean) => Promise<{ updatedCount: number }>;
   login: (email: string, name?: string, avatarUrl?: string) => void;
   logout: () => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
@@ -60,6 +81,7 @@ const STORAGE_KEYS = {
   ACTIVE_PORTFOLIO: 'nhatkyquy_active_portfolio',
   TRANSACTIONS: 'nhatkyquy_tx',
   GOALS: 'nhatkyquy_goals',
+  LAST_NAV_SYNC: 'nhatkyquy_last_nav_sync',
 };
 
 function defaultPortfolioFor(email: string): Portfolio {
@@ -85,7 +107,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [hasLoadedRemote, setHasLoadedRemote] = useState(false);
   const [isCloudAvailable, setIsCloudAvailable] = useState(true);
   const [hasHydrated, setHasHydrated] = useState(false);
+  const [lastNavSyncAt, setLastNavSyncAt] = useState<number | null>(null);
+  const [isSyncingNav, setIsSyncingNav] = useState(false);
+
   const hasReportedSyncError = useRef(false);
+  const fundsRef = useRef<Fund[]>(funds);
+  const lastNavSyncAtRef = useRef<number | null>(lastNavSyncAt);
+  const isSyncingNavRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    fundsRef.current = funds;
+  }, [funds]);
+
+  useEffect(() => {
+    lastNavSyncAtRef.current = lastNavSyncAt;
+  }, [lastNavSyncAt]);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -107,6 +143,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const savedGoals = localStorage.getItem(STORAGE_KEYS.GOALS);
       if (savedGoals) setGoals(JSON.parse(savedGoals));
+
+      const savedLastNavSync = localStorage.getItem(STORAGE_KEYS.LAST_NAV_SYNC);
+      if (savedLastNavSync) {
+        const parsed = Number(savedLastNavSync);
+        if (Number.isFinite(parsed)) setLastNavSyncAt(parsed);
+      }
     } catch (e) {
       console.error('Failed to load storage state:', e);
     }
@@ -243,6 +285,116 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [filteredTransactions, funds],
   );
 
+  // Proactive Auto-Sync NAV from Fmarket
+  const syncNavAutomatically = useCallback(async (force = false) => {
+    if (isSyncingNavRef.current) return { updatedCount: 0 };
+
+    const now = Date.now();
+    const optimalInterval = getOptimalNavSyncIntervalMs();
+    const lastSync = lastNavSyncAtRef.current;
+
+    // Skip if throttled within optimal window unless forced
+    if (!force && lastSync && now - lastSync < optimalInterval) {
+      return { updatedCount: 0 };
+    }
+
+    isSyncingNavRef.current = true;
+    setIsSyncingNav(true);
+
+    try {
+      const currentFunds = fundsRef.current;
+      const codes = currentFunds.map((f) => f.code);
+
+      const response = await fetch('/api/funds/auto-sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codes }),
+      });
+
+      if (!response.ok) throw new Error(`Auto-sync HTTP ${response.status}`);
+      const result = await response.json();
+      if (!result?.success || !result?.data) throw new Error('Auto-sync data invalid');
+
+      const fmarketMap = result.data;
+      let count = 0;
+
+      setFunds((prevFunds) => {
+        let hasAnyChange = false;
+        const nextFunds = prevFunds.map((fund) => {
+          const remote = fmarketMap[fund.code.toUpperCase()];
+          if (!remote || !remote.nav || remote.nav <= 0) return fund;
+
+          const isNavDifferent = Math.abs(fund.nav - remote.nav) > 0.001;
+          const isDateDifferent = remote.navDate && fund.navDate !== remote.navDate;
+
+          if (isNavDifferent || isDateDifferent) {
+            hasAnyChange = true;
+            count++;
+            const history = Array.isArray(fund.navHistory) ? [...fund.navHistory] : [];
+            if (!history.some((h) => h.date === remote.navDate)) {
+              history.push({ date: remote.navDate, nav: remote.nav });
+            }
+            return {
+              ...fund,
+              previousNav: fund.nav,
+              nav: remote.nav,
+              navDate: remote.navDate || fund.navDate,
+              company: remote.company || fund.company,
+              navHistory: history,
+            };
+          }
+          return fund;
+        });
+
+        return hasAnyChange ? nextFunds : prevFunds;
+      });
+
+      setLastNavSyncAt(now);
+      localStorage.setItem(STORAGE_KEYS.LAST_NAV_SYNC, String(now));
+
+      if (count > 0) {
+        showToast('info', `Đã tự động cập nhật NAV mới nhất cho ${count} quỹ.`);
+      }
+
+      return { updatedCount: count };
+    } catch (error) {
+      console.debug('Silent NAV auto-sync error:', error instanceof Error ? error.message : error);
+      return { updatedCount: 0 };
+    } finally {
+      isSyncingNavRef.current = false;
+      setIsSyncingNav(false);
+    }
+  }, [showToast]);
+
+  // Periodic Adaptive Background Trigger for Auto-Sync NAV
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    // Check immediately on mount/hydration
+    syncNavAutomatically(false);
+
+    // Run adaptive heartbeat check every 2 minutes
+    const intervalTimer = setInterval(() => {
+      syncNavAutomatically(false);
+    }, 2 * 60 * 1000);
+
+    // Also check when tab becomes active / visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncNavAutomatically(false);
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalTimer);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+  }, [hasHydrated, syncNavAutomatically]);
+
   const login = useCallback((email: string, name?: string, avatarUrl?: string) => {
     setUser((previous) => ({
       ...previous,
@@ -352,7 +504,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFunds((prev) =>
       prev.map((f) => {
         if (f.id === fundId || f.code === fundId) {
-          const updatedHistory = [...f.navHistory, { date: updateDate, nav: newNav }];
+          const updatedHistory = [...(f.navHistory || []), { date: updateDate, nav: newNav }];
           return {
             ...f,
             previousNav: f.nav,
@@ -373,12 +525,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActivePortfolioId('ALL');
     setTransactions(initialTransactions);
     setGoals(initialGoals);
+    setLastNavSyncAt(null);
     [
       STORAGE_KEYS.FUNDS,
       STORAGE_KEYS.PORTFOLIOS,
       STORAGE_KEYS.ACTIVE_PORTFOLIO,
       STORAGE_KEYS.TRANSACTIONS,
       STORAGE_KEYS.GOALS,
+      STORAGE_KEYS.LAST_NAV_SYNC,
     ].forEach((key) => localStorage.removeItem(key));
     showToast('info', 'Đã xóa toàn bộ dữ liệu tài chính.');
   };
@@ -397,6 +551,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         goals,
         holdings,
         metrics,
+        lastNavSyncAt,
+        isSyncingNav,
+        syncNavAutomatically,
         login,
         logout,
         updateProfile,
