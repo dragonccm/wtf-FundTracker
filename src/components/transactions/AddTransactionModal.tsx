@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { TransactionType } from '@/types';
 import { useToast } from '@/components/feedback/ToastProvider';
+import { formatInputCurrency, parseInputCurrency } from '@/lib/finance/portfolio';
 
 export default function AddTransactionModal({ onClose }: { onClose: () => void }) {
   const { funds, portfolios, addTransaction, activePortfolioId } = useAppStore();
@@ -15,27 +16,29 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
   const [fundCode, setFundCode] = useState<string>(funds[0]?.code || 'VESAF');
   const [type, setType] = useState<TransactionType>('BUY');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState<string>('10000000');
+  const [amount, setAmount] = useState<string>('10.000.000');
   const [unitPrice, setUnitPrice] = useState<string>(
-    funds.find((f) => f.code === funds[0]?.code)?.nav.toString() || '28000'
+    formatInputCurrency(funds.find((f) => f.code === funds[0]?.code)?.nav || 28000)
   );
   const [units, setUnits] = useState<string>('');
-  const [fee, setFee] = useState<string>('30000');
+  const [fee, setFee] = useState<string>('30.000');
   const [notes, setNotes] = useState<string>('');
 
   const handleAmountChange = (val: string) => {
-    setAmount(val);
-    const numAmount = parseFloat(val) || 0;
-    const numPrice = parseFloat(unitPrice) || 0;
+    const formatted = formatInputCurrency(val);
+    setAmount(formatted);
+    const numAmount = parseInputCurrency(formatted);
+    const numPrice = parseInputCurrency(unitPrice);
     if (numPrice > 0) {
       setUnits((numAmount / numPrice).toFixed(2));
     }
   };
 
   const handleUnitPriceChange = (val: string) => {
-    setUnitPrice(val);
-    const numPrice = parseFloat(val) || 0;
-    const numAmount = parseFloat(amount) || 0;
+    const formatted = formatInputCurrency(val);
+    setUnitPrice(formatted);
+    const numPrice = parseInputCurrency(formatted);
+    const numAmount = parseInputCurrency(amount);
     if (numPrice > 0) {
       setUnits((numAmount / numPrice).toFixed(2));
     }
@@ -45,8 +48,9 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
     setFundCode(code);
     const selectedFund = funds.find((f) => f.code === code);
     if (selectedFund) {
-      setUnitPrice(selectedFund.nav.toString());
-      const numAmount = parseFloat(amount) || 0;
+      const formattedNav = formatInputCurrency(selectedFund.nav);
+      setUnitPrice(formattedNav);
+      const numAmount = parseInputCurrency(amount);
       if (selectedFund.nav > 0) {
         setUnits((numAmount / selectedFund.nav).toFixed(2));
       }
@@ -56,10 +60,10 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedFund = funds.find((f) => f.code === fundCode);
-    const parsedAmount = parseFloat(amount) || 0;
-    const parsedPrice = parseFloat(unitPrice) || 0;
+    const parsedAmount = parseInputCurrency(amount);
+    const parsedPrice = parseInputCurrency(unitPrice);
     const parsedUnits = parseFloat(units) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
-    const parsedFee = parseFloat(fee) || 0;
+    const parsedFee = parseInputCurrency(fee);
 
     if (!selectedFund) {
       showToast('error', 'Hãy thêm quỹ trước khi ghi nhận giao dịch.');
@@ -227,7 +231,9 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             <div className="m3-form-group">
               <label className="m3-form-label">Tổng số tiền (VND)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                placeholder="10.000.000"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
                 required
@@ -238,10 +244,11 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             <div className="m3-form-group">
-              <label className="m3-form-label">Giá NAV</label>
+              <label className="m3-form-label">Giá NAV (VND)</label>
               <input
-                type="number"
-                step="0.01"
+                type="text"
+                inputMode="numeric"
+                placeholder="28.000"
                 value={unitPrice}
                 onChange={(e) => handleUnitPriceChange(e.target.value)}
                 required
@@ -253,7 +260,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               <label className="m3-form-label">Số CCQ</label>
               <input
                 type="number"
-                step="0.01"
+                step="any"
+                placeholder="0.00"
                 value={units}
                 onChange={(e) => setUnits(e.target.value)}
                 required
@@ -264,9 +272,11 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             <div className="m3-form-group">
               <label className="m3-form-label">Phí (VND)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
+                placeholder="30.000"
                 value={fee}
-                onChange={(e) => setFee(e.target.value)}
+                onChange={(e) => setFee(formatInputCurrency(e.target.value))}
                 className="m3-input"
               />
             </div>

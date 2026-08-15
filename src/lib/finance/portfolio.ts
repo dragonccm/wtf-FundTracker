@@ -181,34 +181,86 @@ export function calculatePerformanceMetrics(
   };
 }
 
-export function formatVND(amount: number): string {
+export function formatNumberWithDots(amount: number): string {
+  if (isNaN(amount) || amount === null || amount === undefined) return '0';
   return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 
-/** Short money labels for compact cards on small screens. */
-export function formatCompactVND(amount: number): string {
-  const absoluteAmount = Math.abs(amount);
-  const units = [
-    { value: 1_000_000_000, label: 'Tỷ' },
-    { value: 1_000_000, label: 'Tr' },
-    { value: 1_000, label: 'N' },
-  ];
-  const unit = units.find((candidate) => absoluteAmount >= candidate.value);
-
-  if (!unit) return formatVND(amount);
-
-  const value = amount / unit.value;
+export function formatVND(amount: number, showSuffix = true): string {
+  if (isNaN(amount) || amount === null || amount === undefined) {
+    return showSuffix ? '0 đ' : '0';
+  }
   const formatted = new Intl.NumberFormat('vi-VN', {
-    maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
-  }).format(value);
-  return `${formatted} ${unit.label}đ`;
+    maximumFractionDigits: 0,
+  }).format(Math.round(amount));
+  return showSuffix ? `${formatted} đ` : formatted;
+}
+
+/**
+ * Rút gọn tiền tệ theo yêu cầu:
+ * >= 1 tỷ: '1,5 tỷ'
+ * >= 1 triệu: '150 tr' (chỉ để 'tr', không có 'đ' hay 'việt nam đồng' phía sau)
+ * >= 1 nghìn: '500 k' hoặc '500.000 đ'
+ */
+export function formatCompactVND(amount: number): string {
+  if (isNaN(amount) || amount === null || amount === undefined) return '0 đ';
+  const absoluteAmount = Math.abs(amount);
+
+  if (absoluteAmount >= 1_000_000_000) {
+    const value = amount / 1_000_000_000;
+    const formatted = new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
+    }).format(value);
+    return `${formatted} tỷ`;
+  }
+
+  if (absoluteAmount >= 1_000_000) {
+    const value = amount / 1_000_000;
+    const formatted = new Intl.NumberFormat('vi-VN', {
+      maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
+    }).format(value);
+    return `${formatted} tr`;
+  }
+
+  return formatVND(amount);
 }
 
 export function formatPercent(value: number): string {
+  if (isNaN(value) || value === null || value === undefined) return '0.00%';
   const formatted = value.toFixed(2);
   return value > 0 ? `+${formatted}%` : `${formatted}%`;
+}
+
+/**
+ * Tự động chèn dấu chấm phân cách mỗi 3 chữ số khi người dùng gõ vào ô input
+ */
+export function formatInputCurrency(raw: string | number): string {
+  if (raw === '' || raw === null || raw === undefined) return '';
+  const str = String(raw).trim();
+  if (!str) return '';
+
+  // Xóa tất cả các ký tự không phải số và dấu chấm thập phân
+  const clean = str.replace(/[^\d.]/g, '');
+  if (!clean) return '';
+
+  const parts = clean.split('.');
+  const integerPart = parts[0] || '0';
+  const decimalPart = parts.length > 1 ? '.' + parts.slice(1).join('') : '';
+
+  // Định dạng phần nguyên với dấu chấm phân cách hàng nghìn
+  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return formattedInteger + decimalPart;
+}
+
+/**
+ * Chuyển chuỗi định dạng có dấu chấm thành số nguyên / thực
+ */
+export function parseInputCurrency(formatted: string | number): number {
+  if (typeof formatted === 'number') return formatted;
+  if (!formatted) return 0;
+  const clean = String(formatted).replace(/\./g, '').replace(/,/g, '.').replace(/[^\d.-]/g, '');
+  const parsed = parseFloat(clean);
+  return isNaN(parsed) ? 0 : parsed;
 }

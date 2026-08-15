@@ -104,7 +104,7 @@ export default function PerformancePage() {
       {/* 2. Chart: Invested vs Market Value */}
       <div className="m3-card">
         <h3 style={{ fontSize: '15px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)', marginBottom: '14px' }}>
-          So Sánh Vốn Đầu Tư & Giá Trị Hiện Tại (Triệu VND)
+          So Sánh Vốn Đầu Tư & Giá Trị Hiện Tại (triệu VND)
         </h3>
 
         <div style={{ width: '100%', height: '230px' }}>
@@ -118,7 +118,7 @@ export default function PerformancePage() {
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(v) => `${v}Tr`}
+                tickFormatter={(v) => `${v} tr`}
               />
               <Tooltip
                 contentStyle={{
@@ -130,7 +130,7 @@ export default function PerformancePage() {
                   boxShadow: 'var(--md-sys-elevation-2)',
                   padding: '8px 12px',
                 }}
-                formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} Triệu VND`]}
+                formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} tr`]}
               />
               <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
               <Bar dataKey="invested" name="Vốn đầu tư" fill="#74777F" radius={[6, 6, 0, 0]} />

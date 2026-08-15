@@ -199,6 +199,34 @@ export default function ImportExportPage() {
     showToast('success', 'Đã tải file sao lưu JSON.');
   };
 
+  const handleDownloadSampleExcel = () => {
+    const sampleData = [
+      ['Ngày', 'Mã Quỹ', 'Loại Lệnh', 'Tổng Tiền (VND)', 'Giá NAV', 'Số CCQ', 'Phí (VND)', 'Ghi Chú'],
+      ['2026-01-15', 'VESAF', 'MUA', 10000000, 31200, 320.51, 30000, 'Mua tích lũy đầu tháng 1'],
+      ['2026-01-20', 'DCDS', 'MUA', 15000000, 92500, 162.16, 45000, 'Đầu tư định kỳ DCDS'],
+      ['2026-02-15', 'VESAF', 'MUA', 10000000, 31800, 314.47, 30000, 'Mua tích lũy tháng 2'],
+      ['2026-02-28', 'SSISCA', 'MUA', 8000000, 40500, 197.53, 24000, 'Đầu tư quỹ SSI'],
+      ['2026-03-10', 'DCDS', 'BÁN', 5000000, 94000, 53.19, 15000, 'Chốt lời một phần'],
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(sampleData);
+    worksheet['!cols'] = [
+      { wch: 14 }, // Ngày
+      { wch: 12 }, // Mã Quỹ
+      { wch: 12 }, // Loại Lệnh
+      { wch: 18 }, // Tổng Tiền
+      { wch: 14 }, // Giá NAV
+      { wch: 14 }, // Số CCQ
+      { wch: 14 }, // Phí
+      { wch: 30 }, // Ghi Chú
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'GiaoDichMau');
+    XLSX.writeFile(workbook, 'Mau_Nhap_Giao_Dich_NhatKyQuy.xlsx');
+    showToast('success', 'Đã tải file Excel mẫu (.xlsx) thành công.');
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Header */}
@@ -239,6 +267,29 @@ export default function ImportExportPage() {
         {/* Step 1: Upload File */}
         {step === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', margin: 0 }}>
+                Bạn chưa có file mẫu? Tải file mẫu bên dưới để điền dữ liệu:
+              </p>
+              <button
+                type="button"
+                onClick={handleDownloadSampleExcel}
+                className="m3-pill-btn"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  backgroundColor: 'var(--md-sys-color-surface-container-high)',
+                  color: 'var(--md-sys-color-primary)',
+                  fontWeight: 500,
+                  fontSize: '12px',
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>download</span>
+                Tải File Excel Mẫu (.xlsx)
+              </button>
+            </div>
+
             <div
               style={{
                 border: '2px dashed var(--md-sys-color-outline-variant)',

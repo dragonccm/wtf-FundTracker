@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { FundCategory } from '@/types';
-import { formatVND } from '@/lib/finance/portfolio';
+import { formatVND, formatInputCurrency, parseInputCurrency } from '@/lib/finance/portfolio';
 import { useToast } from '@/components/feedback/ToastProvider';
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -124,7 +124,7 @@ export default function FundsPage() {
   const createManualFund = (event: React.FormEvent) => {
     event.preventDefault();
     const normalizedCode = code.trim().toUpperCase();
-    const parsedNav = Number(nav);
+    const parsedNav = parseInputCurrency(nav);
     if (!normalizedCode || !name.trim() || !company.trim() || parsedNav <= 0) {
       showToast('error', 'Hãy nhập đủ mã quỹ, tên quỹ, công ty quản lý và NAV hợp lệ.');
       return;
@@ -157,7 +157,7 @@ export default function FundsPage() {
 
   const saveNav = (event: React.FormEvent) => {
     event.preventDefault();
-    const value = Number(newNav);
+    const value = parseInputCurrency(newNav);
     if (!editingFundId || value <= 0) {
       showToast('error', 'NAV mới phải lớn hơn 0.');
       return;
@@ -530,8 +530,16 @@ export default function FundsPage() {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <div className="journal-field">
-                    <label htmlFor="fund-nav">NAV ban đầu</label>
-                    <input id="fund-nav" type="number" min="0" step="any" value={nav} onChange={(event) => setNav(event.target.value)} placeholder="30000" required />
+                    <label htmlFor="fund-nav">NAV ban đầu (VND)</label>
+                    <input
+                      id="fund-nav"
+                      type="text"
+                      inputMode="numeric"
+                      value={nav}
+                      onChange={(event) => setNav(formatInputCurrency(event.target.value))}
+                      placeholder="30.000"
+                      required
+                    />
                   </div>
                   <div className="journal-field">
                     <label htmlFor="fund-date">Ngày NAV</label>
@@ -553,8 +561,16 @@ export default function FundsPage() {
             <h2 style={{ marginBottom: 16 }}>Chỉnh sửa NAV thủ công</h2>
             <form className="journal-form" onSubmit={saveNav}>
               <div className="journal-field">
-                <label htmlFor="new-nav">NAV mới</label>
-                <input id="new-nav" type="number" min="0" step="any" value={newNav} onChange={(event) => setNewNav(event.target.value)} required />
+                <label htmlFor="new-nav">NAV mới (VND)</label>
+                <input
+                  id="new-nav"
+                  type="text"
+                  inputMode="numeric"
+                  value={newNav}
+                  onChange={(event) => setNewNav(formatInputCurrency(event.target.value))}
+                  placeholder="30.000"
+                  required
+                />
               </div>
               <div className="journal-field">
                 <label htmlFor="new-nav-date">Ngày công bố</label>

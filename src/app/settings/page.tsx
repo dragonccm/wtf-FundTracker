@@ -139,22 +139,16 @@ export default function SettingsPage() {
       </form>
 
       <section className="journal-list">
-        <label className="journal-list-item">
+        <div className="journal-list-item">
           <span className="journal-fund-mark"><span className="material-symbols-outlined">payments</span></span>
           <span>
             <strong style={{ display: 'block', fontSize: 14 }}>Tiền tệ</strong>
-            <small style={{ color: 'var(--journal-muted)' }}>Đơn vị hiển thị</small>
+            <small style={{ color: 'var(--journal-muted)' }}>Đơn vị chuẩn hóa</small>
           </span>
-          <select
-            aria-label="Tiền tệ"
-            value={user.currency}
-            onChange={(event) => updateProfile({ currency: event.target.value as Currency })}
-            style={{ border: 0, background: 'transparent', fontWeight: 500, color: 'var(--journal-primary)' }}
-          >
-            <option value="VND">VND</option>
-            <option value="USD">USD</option>
-          </select>
-        </label>
+          <span style={{ fontWeight: 600, color: 'var(--journal-primary)', fontSize: 14 }}>
+            VND (Việt Nam)
+          </span>
+        </div>
         <label className="journal-list-item">
           <span className="journal-fund-mark"><span className="material-symbols-outlined">calendar_today</span></span>
           <span>

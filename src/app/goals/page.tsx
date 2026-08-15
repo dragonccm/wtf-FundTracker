@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatCompactVND, formatVND } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatInputCurrency, parseInputCurrency } from '@/lib/finance/portfolio';
 import { GoalCategory } from '@/types';
 import { useToast } from '@/components/feedback/ToastProvider';
 
@@ -13,8 +13,8 @@ export default function GoalsPage() {
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<GoalCategory>('HOUSE');
-  const [targetAmount, setTargetAmount] = useState('1000000000');
-  const [currentAmount, setCurrentAmount] = useState('100000000');
+  const [targetAmount, setTargetAmount] = useState('1.000.000.000');
+  const [currentAmount, setCurrentAmount] = useState('100.000.000');
   const [targetDate, setTargetDate] = useState('2030-12-31');
   const [notes, setNotes] = useState('');
 
@@ -24,7 +24,10 @@ export default function GoalsPage() {
       showToast('error', 'Hãy đặt tên cho mục tiêu tài chính.');
       return;
     }
-    if ((parseFloat(targetAmount) || 0) <= 0) {
+    const parsedTarget = parseInputCurrency(targetAmount);
+    const parsedCurrent = parseInputCurrency(currentAmount);
+
+    if (parsedTarget <= 0) {
       showToast('error', 'Số tiền mục tiêu phải lớn hơn 0.');
       return;
     }
@@ -32,8 +35,8 @@ export default function GoalsPage() {
     addGoal({
       name,
       category,
-      targetAmount: parseFloat(targetAmount) || 0,
-      currentAmount: parseFloat(currentAmount) || 0,
+      targetAmount: parsedTarget,
+      currentAmount: parsedCurrent,
       targetDate,
       notes,
     });
@@ -237,22 +240,26 @@ export default function GoalsPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div className="m3-form-group">
-                  <label className="m3-form-label">Số tiền mục tiêu</label>
+                  <label className="m3-form-label">Số tiền mục tiêu (VND)</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="1.000.000.000"
                     value={targetAmount}
-                    onChange={(e) => setTargetAmount(e.target.value)}
+                    onChange={(e) => setTargetAmount(formatInputCurrency(e.target.value))}
                     required
                     className="m3-input"
                   />
                 </div>
 
                 <div className="m3-form-group">
-                  <label className="m3-form-label">Đã tích lũy sẵn</label>
+                  <label className="m3-form-label">Đã tích lũy sẵn (VND)</label>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="100.000.000"
                     value={currentAmount}
-                    onChange={(e) => setCurrentAmount(e.target.value)}
+                    onChange={(e) => setCurrentAmount(formatInputCurrency(e.target.value))}
                     required
                     className="m3-input"
                   />
