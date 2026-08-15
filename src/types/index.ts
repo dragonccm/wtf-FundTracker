@@ -55,6 +55,7 @@ export interface Transaction {
   unitPrice: number; // NAV price at transaction date
   units: number; // Number of fund certificates (CCQ)
   fee: number; // Transaction fee
+  goalId?: string; // Optional linked Financial Goal
   notes?: string;
 }
 

@@ -235,32 +235,131 @@ export function formatPercent(value: number): string {
 
 /**
  * Tự động chèn dấu chấm phân cách mỗi 3 chữ số khi người dùng gõ vào ô input
+ * Xử lý chính xác cả khi người dùng gõ số liền, gõ dấu chấm '.', hoặc gõ dấu phẩy ','
  */
 export function formatInputCurrency(raw: string | number): string {
   if (raw === '' || raw === null || raw === undefined) return '';
   const str = String(raw).trim();
   if (!str) return '';
 
-  // Xóa tất cả các ký tự không phải số và dấu chấm thập phân
-  const clean = str.replace(/[^\d.]/g, '');
-  if (!clean) return '';
+  let integerDigits = '';
+  let decimalSuffix = '';
 
-  const parts = clean.split('.');
-  const integerPart = parts[0] || '0';
-  const decimalPart = parts.length > 1 ? '.' + parts.slice(1).join('') : '';
+  if (str.includes(',')) {
+    const parts = str.split(',');
+    integerDigits = parts[0].replace(/\D/g, '');
+    decimalSuffix = parts.length > 1 ? ',' + parts[1].replace(/\D/g, '') : '';
+  } else if (str.includes('.')) {
+    const dotCount = (str.match(/\./g) || []).length;
+    if (dotCount === 1) {
+      const parts = str.split('.');
+      if (str.endsWith('.')) {
+        integerDigits = parts[0].replace(/\D/g, '');
+        decimalSuffix = ',';
+      } else if (parts[1].length === 3 && parts[0].length <= 3) {
+        // Ví dụ: 100.000 -> đây là dấu phân cách hàng nghìn
+        integerDigits = (parts[0] + parts[1]).replace(/\D/g, '');
+        decimalSuffix = '';
+      } else {
+        // Ví dụ: 31953.5 -> đây là số thập phân
+        integerDigits = parts[0].replace(/\D/g, '');
+        decimalSuffix = ',' + parts[1].replace(/\D/g, '');
+      }
+    } else {
+      // Nhiều dấu chấm -> phân cách hàng nghìn
+      integerDigits = str.replace(/\D/g, '');
+      decimalSuffix = '';
+    }
+  } else {
+    integerDigits = str.replace(/\D/g, '');
+    decimalSuffix = '';
+  }
 
-  // Định dạng phần nguyên với dấu chấm phân cách hàng nghìn
-  const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-  return formattedInteger + decimalPart;
+  if (!integerDigits && !decimalSuffix) return '';
+
+  const formattedInteger = integerDigits ? integerDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
+  return formattedInteger + decimalSuffix;
 }
 
 /**
- * Chuyển chuỗi định dạng có dấu chấm thành số nguyên / thực
+ * Chuyển chuỗi định dạng có dấu chấm / dấu phẩy thành số nguyên / thực
  */
 export function parseInputCurrency(formatted: string | number): number {
-  if (typeof formatted === 'number') return formatted;
+  if (typeof formatted === 'number') return isNaN(formatted) ? 0 : formatted;
   if (!formatted) return 0;
-  const clean = String(formatted).replace(/\./g, '').replace(/,/g, '.').replace(/[^\d.-]/g, '');
-  const parsed = parseFloat(clean);
-  return isNaN(parsed) ? 0 : parsed;
+
+  const str = String(formatted).trim();
+  if (!str) return 0;
+
+  if (str.includes(',') && str.includes('.')) {
+    // 10.000.000,50
+    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  if (str.includes(',')) {
+    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  if (str.includes('.')) {
+    const dotParts = str.split('.');
+    if (dotParts.length > 2) {
+      return parseFloat(str.replace(/\./g, '')) || 0;
+    }
+    if (dotParts.length === 2) {
+      if (dotParts[1].length === 3 && dotParts[0].length <= 3) {
+        return parseFloat(str.replace(/\./g, '')) || 0;
+      }
+      return parseFloat(dotParts[0].replace(/\D/g, '') + '.' + dotParts[1].replace(/\D/g, '')) || 0;
+    }
+  }
+
+  return parseFloat(str.replace(/\D/g, '')) || 0;
+}
+
+export interface TransactionPnLResult {
+  currentNav: number;
+  currentValue: number;
+  pnl: number;
+  pnlPercent: number;
+  isProfit: boolean;
+}
+
+/**
+ * Tính toán lãi / lỗ thời gian thực cho từng giao dịch dựa trên NAV hiện tại của quỹ
+ */
+export function calculateTransactionPnL(
+  tx: Transaction,
+  funds: Fund[]
+): TransactionPnLResult | null {
+  const fund = funds.find((f) => f.code === tx.fundCode || f.id === tx.fundId);
+  if (!fund || fund.nav <= 0) return null;
+
+  const currentNav = fund.nav;
+  if (tx.type === 'BUY') {
+    const totalCost = tx.amount + (tx.fee || 0);
+    const currentValue = tx.units * currentNav;
+    const pnl = currentValue - totalCost;
+    const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+    return {
+      currentNav,
+      currentValue,
+      pnl,
+      pnlPercent,
+      isProfit: pnl >= 0,
+    };
+  }
+
+  if (tx.type === 'SELL') {
+    const proceeds = tx.amount - (tx.fee || 0);
+    const costAtOriginalNav = tx.units * tx.unitPrice;
+    const pnl = proceeds - costAtOriginalNav;
+    const pnlPercent = costAtOriginalNav > 0 ? (pnl / costAtOriginalNav) * 100 : 0;
+    return {
+      currentNav,
+      currentValue: proceeds,
+      pnl,
+      pnlPercent,
+      isProfit: pnl >= 0,
+    };
+  }
+
+  return null;
 }

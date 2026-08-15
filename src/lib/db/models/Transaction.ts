@@ -12,6 +12,7 @@ export interface ITransaction extends Document {
   unitPrice: number;
   units: number;
   fee: number;
+  goalId?: string;
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +31,7 @@ const TransactionSchema = new Schema<ITransaction>(
     unitPrice: { type: Number, required: true },
     units: { type: Number, required: true },
     fee: { type: Number, default: 0 },
+    goalId: { type: String },
     notes: { type: String },
   },
   { timestamps: true }

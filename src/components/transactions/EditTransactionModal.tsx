@@ -2,28 +2,29 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { TransactionType } from '@/types';
+import { Transaction, TransactionType } from '@/types';
 import { useToast } from '@/components/feedback/ToastProvider';
 import { formatInputCurrency, parseInputCurrency } from '@/lib/finance/portfolio';
 
-export default function AddTransactionModal({ onClose }: { onClose: () => void }) {
-  const { funds, portfolios, goals, addTransaction, activePortfolioId } = useAppStore();
+interface EditTransactionModalProps {
+  transaction: Transaction;
+  onClose: () => void;
+}
+
+export default function EditTransactionModal({ transaction, onClose }: EditTransactionModalProps) {
+  const { funds, portfolios, goals, updateTransaction } = useAppStore();
   const { showToast } = useToast();
 
-  const [portfolioId, setPortfolioId] = useState<string>(
-    activePortfolioId !== 'ALL' ? activePortfolioId : portfolios[0]?.id || 'p_main'
-  );
-  const [fundCode, setFundCode] = useState<string>(funds[0]?.code || 'VESAF');
-  const [goalId, setGoalId] = useState<string>('');
-  const [type, setType] = useState<TransactionType>('BUY');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [amount, setAmount] = useState<string>('10.000.000');
-  const [unitPrice, setUnitPrice] = useState<string>(
-    formatInputCurrency(funds.find((f) => f.code === funds[0]?.code)?.nav || 28000)
-  );
-  const [units, setUnits] = useState<string>('');
-  const [fee, setFee] = useState<string>('30.000');
-  const [notes, setNotes] = useState<string>('');
+  const [portfolioId, setPortfolioId] = useState<string>(transaction.portfolioId);
+  const [fundCode, setFundCode] = useState<string>(transaction.fundCode);
+  const [goalId, setGoalId] = useState<string>(transaction.goalId || '');
+  const [type, setType] = useState<TransactionType>(transaction.type);
+  const [date, setDate] = useState<string>(transaction.date);
+  const [amount, setAmount] = useState<string>(formatInputCurrency(transaction.amount));
+  const [unitPrice, setUnitPrice] = useState<string>(formatInputCurrency(transaction.unitPrice));
+  const [units, setUnits] = useState<string>(String(transaction.units));
+  const [fee, setFee] = useState<string>(formatInputCurrency(transaction.fee || 0));
+  const [notes, setNotes] = useState<string>(transaction.notes || '');
 
   const handleAmountChange = (val: string) => {
     const formatted = formatInputCurrency(val);
@@ -66,12 +67,8 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
     const parsedUnits = parseFloat(units) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
     const parsedFee = parseInputCurrency(fee);
 
-    if (!selectedFund) {
-      showToast('error', 'Hãy thêm quỹ trước khi ghi nhận giao dịch.');
-      return;
-    }
     if (!portfolioId) {
-      showToast('error', 'Hãy chọn danh mục cho giao dịch này.');
+      showToast('error', 'Hãy chọn danh mục.');
       return;
     }
     if (parsedAmount <= 0 || parsedPrice <= 0 || parsedUnits <= 0) {
@@ -79,9 +76,9 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
       return;
     }
 
-    addTransaction({
+    updateTransaction(transaction.id, {
       portfolioId,
-      fundId: selectedFund?.id || 'f_' + fundCode.toLowerCase(),
+      fundId: selectedFund?.id || transaction.fundId,
       fundCode,
       type,
       date,
@@ -93,7 +90,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
       notes,
     });
 
-    showToast('success', 'Đã lưu giao dịch thành công.');
+    showToast('success', 'Đã cập nhật giao dịch.');
     onClose();
   };
 
@@ -113,7 +110,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
-            Ghi Nhận Giao Dịch CCQ
+            Chỉnh Sửa Giao Dịch CCQ
           </h2>
           <button
             type="button"
@@ -191,7 +188,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
             </div>
           </div>
 
-          {/* 3. Goal Selection (Mục tiêu tài chính) & Date */}
+          {/* 3. Goal Selection & Date */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div className="m3-form-group">
               <label className="m3-form-label">Mục tiêu tài chính (Tùy chọn)</label>
@@ -301,7 +298,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
               className="m3-pill-btn-primary"
               style={{ flex: 1 }}
             >
-              Lưu Giao Dịch
+              Lưu Thay Đổi
             </button>
           </div>
         </form>

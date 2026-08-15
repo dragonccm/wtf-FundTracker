@@ -145,6 +145,7 @@ async function syncTransactions(email: string, items: any[]) {
       unitPrice: Number(item.unitPrice),
       units: Number(item.units),
       fee: Number(item.fee || 0),
+      goalId: item.goalId ? String(item.goalId) : undefined,
       notes: String(item.notes || ''),
     } },
     upsert: true,

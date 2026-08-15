@@ -19,6 +19,7 @@ interface ValidatedRow {
   unitPrice: number;
   units: number;
   fee: number;
+  goalId?: string;
   notes: string;
   isValid: boolean;
   errorReason?: string;
@@ -29,13 +30,10 @@ function parseExcelNumber(val: any): number {
   if (typeof val === 'number') return isNaN(val) ? 0 : val;
 
   const str = String(val).trim();
-  // Clean all non-digits, minus, dots and commas
   const cleaned = str.replace(/[^\d.,-]/g, '');
   if (!cleaned) return 0;
 
-  // Handle dot vs comma decimal
   if (cleaned.includes('.') && cleaned.includes(',')) {
-    // e.g. 10.000.000,50 (dot thousands, comma decimal)
     return parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
   }
   if (cleaned.includes('.') && !cleaned.includes(',')) {
@@ -61,7 +59,6 @@ function parseExcelDate(rawDate: any): string {
     return rawDate.toISOString().split('T')[0];
   }
   if (typeof rawDate === 'number') {
-    // Excel date serial (origin 1899-12-30)
     const date = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
     if (!isNaN(date.getTime())) {
       return date.toISOString().split('T')[0];
@@ -72,10 +69,8 @@ function parseExcelDate(rawDate: any): string {
     const parts = str.split(/[-/.\s]+/);
     if (parts.length === 3) {
       if (parts[0].length === 4) {
-        // YYYY-MM-DD
         return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
       } else if (parts[2].length === 4) {
-        // DD/MM/YYYY
         return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
       }
     }
@@ -88,7 +83,7 @@ function parseExcelDate(rawDate: any): string {
 }
 
 export default function ImportExportPage() {
-  const { funds, portfolios, addBulkTransactions, addFund, syncNavAutomatically, transactions, holdings } = useAppStore();
+  const { funds, portfolios, goals, addBulkTransactions, addFund, syncNavAutomatically, transactions, holdings } = useAppStore();
   const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -104,10 +99,12 @@ export default function ImportExportPage() {
     unitPrice: '',
     units: '',
     fee: '',
+    goal: '',
     notes: '',
   });
 
   const [targetPortfolioId, setTargetPortfolioId] = useState<string>(portfolios[0]?.id || 'p_main');
+  const [targetGoalId, setTargetGoalId] = useState<string>('');
   const [validatedRows, setValidatedRows] = useState<ValidatedRow[]>([]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,6 +144,7 @@ export default function ImportExportPage() {
             else if (lower.includes('nav') || lower.includes('giá') || lower.includes('price') || lower.includes('đơn giá')) autoMap.unitPrice = h;
             else if (lower.includes('số ccq') || lower.includes('số lượng') || lower.includes('khối lượng') || lower.includes('units')) autoMap.units = h;
             else if (lower.includes('phí') || lower.includes('fee')) autoMap.fee = h;
+            else if (lower.includes('mục tiêu') || lower.includes('goal')) autoMap.goal = h;
             else if (lower.includes('ghi chú') || lower.includes('note') || lower.includes('diễn giải') || lower.includes('nội dung')) autoMap.notes = h;
           });
 
@@ -165,6 +163,7 @@ export default function ImportExportPage() {
       const rawDate = row[columnMapping.date];
       const rawFund = String(row[columnMapping.fundCode] || '').trim().toUpperCase();
       const rawType = String(row[columnMapping.type] || '').trim().toUpperCase();
+      const rawGoalName = String(row[columnMapping.goal] || '').trim().toLowerCase();
       let rawAmount = parseExcelNumber(row[columnMapping.amount]);
       let rawPrice = parseExcelNumber(row[columnMapping.unitPrice]);
       let rawUnits = parseExcelNumber(row[columnMapping.units]);
@@ -174,22 +173,18 @@ export default function ImportExportPage() {
       let isValid = true;
       let errorReason = '';
 
-      // Clean and validate Fund Code
       const cleanFundCode = rawFund.replace(/[^A-Z0-9_-]/g, '');
       if (!cleanFundCode || cleanFundCode.length < 2) {
         isValid = false;
         errorReason = `Mã quỹ không hợp lệ (${rawFund || 'Trống'})`;
       }
 
-      // If units & price exist but amount is missing, calculate amount
       if (rawAmount <= 0 && rawUnits > 0 && rawPrice > 0) {
         rawAmount = rawUnits * rawPrice;
       }
-      // If amount & units exist but price is missing, calculate price
       if (rawPrice <= 0 && rawAmount > 0 && rawUnits > 0) {
         rawPrice = rawAmount / rawUnits;
       }
-      // If amount & price exist but units is missing, calculate units
       if (rawUnits <= 0 && rawAmount > 0 && rawPrice > 0) {
         rawUnits = rawAmount / rawPrice;
       }
@@ -197,6 +192,13 @@ export default function ImportExportPage() {
       if (rawAmount <= 0 && rawUnits <= 0) {
         isValid = false;
         errorReason = 'Số tiền hoặc số CCQ phải > 0';
+      }
+
+      // Map goal from column if found, otherwise use targetGoalId
+      let rowGoalId = targetGoalId || undefined;
+      if (rawGoalName) {
+        const foundGoal = goals.find((g) => g.name.toLowerCase().includes(rawGoalName));
+        if (foundGoal) rowGoalId = foundGoal.id;
       }
 
       const txType = rawType.includes('BÁN') || rawType.includes('SELL') ? 'SELL' : 'BUY';
@@ -211,6 +213,7 @@ export default function ImportExportPage() {
         unitPrice: rawPrice > 0 ? rawPrice : (rawUnits > 0 ? rawAmount / rawUnits : 10000),
         units: rawUnits > 0 ? rawUnits : (rawPrice > 0 ? rawAmount / rawPrice : 1),
         fee: rawFee,
+        goalId: rowGoalId,
         notes,
         isValid,
         errorReason,
@@ -228,7 +231,6 @@ export default function ImportExportPage() {
       return;
     }
 
-    // Auto-create any missing funds in user's funds store
     const existingFundCodes = new Set(funds.map((f) => f.code.toUpperCase()));
     const distinctNewFunds = new Map<string, ValidatedRow>();
 
@@ -266,6 +268,7 @@ export default function ImportExportPage() {
         unitPrice: r.unitPrice,
         units: r.units,
         fee: r.fee,
+        goalId: r.goalId || targetGoalId || undefined,
         notes: r.notes ? `[Excel] ${r.notes}` : '[Imported from Excel]',
       };
     });
@@ -275,7 +278,6 @@ export default function ImportExportPage() {
     setStep(1);
     setFileName('');
 
-    // Trigger auto-sync NAV in background so all newly imported funds get latest Fmarket data
     syncNavAutomatically(true).catch(() => undefined);
   };
 
@@ -285,6 +287,7 @@ export default function ImportExportPage() {
       transactions,
       holdings,
       portfolios,
+      goals,
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -298,12 +301,12 @@ export default function ImportExportPage() {
 
   const handleDownloadSampleExcel = () => {
     const sampleData = [
-      ['Ngày', 'Mã Quỹ', 'Loại Lệnh', 'Tổng Tiền (VND)', 'Giá NAV', 'Số CCQ', 'Phí (VND)', 'Ghi Chú'],
-      ['2026-01-15', 'VESAF', 'MUA', 10000000, 31200, 320.51, 30000, 'Mua tích lũy đầu tháng 1'],
-      ['2026-01-20', 'DCDS', 'MUA', 15000000, 92500, 162.16, 45000, 'Đầu tư định kỳ DCDS'],
-      ['2026-02-15', 'VESAF', 'MUA', 10000000, 31800, 314.47, 30000, 'Mua tích lũy tháng 2'],
-      ['2026-02-28', 'SSISCA', 'MUA', 8000000, 40500, 197.53, 24000, 'Đầu tư quỹ SSI'],
-      ['2026-03-10', 'DCDS', 'BÁN', 5000000, 94000, 53.19, 15000, 'Chốt lời một phần'],
+      ['Ngày', 'Mã Quỹ', 'Loại Lệnh', 'Tổng Tiền (VND)', 'Giá NAV', 'Số CCQ', 'Phí (VND)', 'Mục Tiêu', 'Ghi Chú'],
+      ['2026-01-15', 'VESAF', 'MUA', 10000000, 31200, 320.51, 30000, 'Mua nhà', 'Mua tích lũy đầu tháng 1'],
+      ['2026-01-20', 'DCDS', 'MUA', 15000000, 92500, 162.16, 45000, 'Hưu trí', 'Đầu tư định kỳ DCDS'],
+      ['2026-02-15', 'VESAF', 'MUA', 10000000, 31800, 314.47, 30000, 'Mua nhà', 'Mua tích lũy tháng 2'],
+      ['2026-02-28', 'SSISCA', 'MUA', 8000000, 40500, 197.53, 24000, '', 'Đầu tư quỹ SSI'],
+      ['2026-03-10', 'DCDS', 'BÁN', 5000000, 94000, 53.19, 15000, '', 'Chốt lời một phần'],
     ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(sampleData);
@@ -315,6 +318,7 @@ export default function ImportExportPage() {
       { wch: 14 }, // Giá NAV
       { wch: 14 }, // Số CCQ
       { wch: 14 }, // Phí
+      { wch: 18 }, // Mục Tiêu
       { wch: 30 }, // Ghi Chú
     ];
 
@@ -425,24 +429,41 @@ export default function ImportExportPage() {
           </div>
         )}
 
-        {/* Step 2: Column Mapping */}
+        {/* Step 2: Column Mapping & Configuration */}
         {step === 2 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
               Đang mở: <span style={{ color: 'var(--md-sys-color-primary)' }}>{fileName}</span> ({rawRows.length} dòng)
             </div>
 
-            <div className="m3-form-group">
-              <label className="m3-form-label">Danh mục đích nhập vào</label>
-              <select
-                value={targetPortfolioId}
-                onChange={(e) => setTargetPortfolioId(e.target.value)}
-                className="m3-select"
-              >
-                {portfolios.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
+            {/* Target Portfolio & Goal Selector */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div className="m3-form-group">
+                <label className="m3-form-label">Danh mục đích nhập vào (*)</label>
+                <select
+                  value={targetPortfolioId}
+                  onChange={(e) => setTargetPortfolioId(e.target.value)}
+                  className="m3-select"
+                >
+                  {portfolios.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="m3-form-group">
+                <label className="m3-form-label">Mục tiêu tài chính gán vào (Tùy chọn)</label>
+                <select
+                  value={targetGoalId}
+                  onChange={(e) => setTargetGoalId(e.target.value)}
+                  className="m3-select"
+                >
+                  <option value="">-- Không gán mục tiêu mặc định --</option>
+                  {goals.map((g) => (
+                    <option key={g.id} value={g.id}>🎯 {g.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -511,6 +532,30 @@ export default function ImportExportPage() {
                 <select
                   value={columnMapping.units}
                   onChange={(e) => setColumnMapping({ ...columnMapping, units: e.target.value })}
+                  className="m3-select"
+                >
+                  <option value="">-- Chọn cột --</option>
+                  {excelHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
+                </select>
+              </div>
+
+              <div className="m3-form-group">
+                <label className="m3-form-label">Cột Mục Tiêu (Tùy chọn)</label>
+                <select
+                  value={columnMapping.goal}
+                  onChange={(e) => setColumnMapping({ ...columnMapping, goal: e.target.value })}
+                  className="m3-select"
+                >
+                  <option value="">-- Chọn cột (nếu có) --</option>
+                  {excelHeaders.map((h) => <option key={h} value={h}>{h}</option>)}
+                </select>
+              </div>
+
+              <div className="m3-form-group">
+                <label className="m3-form-label">Cột Phí (Tùy chọn)</label>
+                <select
+                  value={columnMapping.fee}
+                  onChange={(e) => setColumnMapping({ ...columnMapping, fee: e.target.value })}
                   className="m3-select"
                 >
                   <option value="">-- Chọn cột --</option>
