@@ -27,7 +27,7 @@ export function getOptimalNavSyncIntervalMs(): number {
   const isWeekend = day === 0 || day === 6;
 
   if (isWeekend) {
-    return 6 * 60 * 60 * 1000; // 6 hours on weekends (NAV doesn't change)
+    return 6 * 60 * 60 * 1000; // 6 hours on weekends
   }
   if (hour >= 17 && hour <= 22) {
     return 30 * 60 * 1000; // 30 minutes during evening peak publication window (17:00 - 22:00)
@@ -73,23 +73,19 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null);
 
-const STORAGE_KEYS = {
-  PROFILE: 'nhatkyquy_profile',
-  AUTH: 'nhatkyquy_auth',
-  FUNDS: 'nhatkyquy_funds',
-  PORTFOLIOS: 'nhatkyquy_portfolios',
-  ACTIVE_PORTFOLIO: 'nhatkyquy_active_portfolio',
-  TRANSACTIONS: 'nhatkyquy_tx',
-  GOALS: 'nhatkyquy_goals',
-  LAST_NAV_SYNC: 'nhatkyquy_last_nav_sync',
-};
+function getStorageKey(key: string, email?: string): string {
+  const normalized = (email || '').trim().toLowerCase();
+  return normalized ? `nhatkyquy_u_${normalized}_${key}` : `nhatkyquy_guest_${key}`;
+}
 
 function defaultPortfolioFor(email: string): Portfolio {
   let hash = 0;
   for (const character of email.toLowerCase()) hash = ((hash << 5) - hash + character.charCodeAt(0)) | 0;
   return {
-    ...initialPortfolios[0],
     id: `p_main_${Math.abs(hash).toString(36)}`,
+    name: 'Danh mục chính',
+    color: '#1f6b45',
+    isDefault: true,
     createdAt: new Date().toISOString().slice(0, 10),
   };
 }
@@ -114,6 +110,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const fundsRef = useRef<Fund[]>(funds);
   const lastNavSyncAtRef = useRef<number | null>(lastNavSyncAt);
   const isSyncingNavRef = useRef<boolean>(false);
+  const activeEmailRef = useRef<string>('');
 
   useEffect(() => {
     fundsRef.current = funds;
@@ -123,78 +120,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     lastNavSyncAtRef.current = lastNavSyncAt;
   }, [lastNavSyncAt]);
 
-  // Load state from localStorage on mount
   useEffect(() => {
-    try {
-      const savedProfile = localStorage.getItem(STORAGE_KEYS.PROFILE);
-      if (savedProfile) setUser(JSON.parse(savedProfile));
+    activeEmailRef.current = user.email.trim().toLowerCase();
+  }, [user.email]);
 
-      const savedFunds = localStorage.getItem(STORAGE_KEYS.FUNDS);
-      if (savedFunds) setFunds(JSON.parse(savedFunds));
-
-      const savedPortfolios = localStorage.getItem(STORAGE_KEYS.PORTFOLIOS);
-      if (savedPortfolios) setPortfolios(JSON.parse(savedPortfolios));
-
-      const savedActivePort = localStorage.getItem(STORAGE_KEYS.ACTIVE_PORTFOLIO);
-      if (savedActivePort) setActivePortfolioId(savedActivePort);
-
-      const savedTx = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-      if (savedTx) setTransactions(JSON.parse(savedTx));
-
-      const savedGoals = localStorage.getItem(STORAGE_KEYS.GOALS);
-      if (savedGoals) setGoals(JSON.parse(savedGoals));
-
-      const savedLastNavSync = localStorage.getItem(STORAGE_KEYS.LAST_NAV_SYNC);
-      if (savedLastNavSync) {
-        const parsed = Number(savedLastNavSync);
-        if (Number.isFinite(parsed)) setLastNavSyncAt(parsed);
-      }
-    } catch (e) {
-      console.error('Failed to load storage state:', e);
-    }
-    setHasHydrated(true);
+  // Initial Auth Verification on Mount
+  useEffect(() => {
+    let cancelled = false;
 
     fetch('/api/auth/me', { cache: 'no-store' })
       .then((response) => response.json())
       .then((data) => {
-        if (!data?.success || !data?.user) throw new Error('No active session');
-        setUser((previous) => ({ ...previous, ...data.user }));
+        if (cancelled) return;
+        if (!data?.success || !data?.user?.email) {
+          setIsAuthenticated(false);
+          setUser(initialProfile);
+          setFunds([]);
+          setTransactions([]);
+          setGoals([]);
+          setPortfolios(initialPortfolios);
+          return;
+        }
+
+        const email = data.user.email.trim().toLowerCase();
+        setUser((prev) => ({ ...prev, ...data.user, email }));
         setIsCloudAvailable(data.storageMode !== 'local');
         setIsAuthenticated(true);
+
+        // Load local cache for this specific user if exists
+        try {
+          const cachedProfile = localStorage.getItem(getStorageKey('profile', email));
+          if (cachedProfile) setUser((prev) => ({ ...prev, ...JSON.parse(cachedProfile) }));
+
+          const cachedFunds = localStorage.getItem(getStorageKey('funds', email));
+          if (cachedFunds) setFunds(JSON.parse(cachedFunds));
+
+          const cachedPortfolios = localStorage.getItem(getStorageKey('portfolios', email));
+          if (cachedPortfolios) setPortfolios(JSON.parse(cachedPortfolios));
+
+          const cachedActivePort = localStorage.getItem(getStorageKey('active_port', email));
+          if (cachedActivePort) setActivePortfolioId(cachedActivePort);
+
+          const cachedTx = localStorage.getItem(getStorageKey('tx', email));
+          if (cachedTx) setTransactions(JSON.parse(cachedTx));
+
+          const cachedGoals = localStorage.getItem(getStorageKey('goals', email));
+          if (cachedGoals) setGoals(JSON.parse(cachedGoals));
+
+          const cachedSyncAt = localStorage.getItem(getStorageKey('last_nav_sync', email));
+          if (cachedSyncAt) setLastNavSyncAt(Number(cachedSyncAt));
+        } catch (e) {
+          console.debug('Failed to read user-scoped localStorage:', e);
+        }
       })
-      .catch(() => setIsAuthenticated(false))
-      .finally(() => setIsAuthResolved(true));
+      .catch(() => {
+        if (!cancelled) setIsAuthenticated(false);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsAuthResolved(true);
+          setHasHydrated(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // Sync to localStorage
+  // Sync to User-Scoped localStorage
   useEffect(() => {
-    if (!hasHydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEYS.AUTH, JSON.stringify(isAuthenticated));
-      localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(user));
-      localStorage.setItem(STORAGE_KEYS.FUNDS, JSON.stringify(funds));
-      localStorage.setItem(STORAGE_KEYS.PORTFOLIOS, JSON.stringify(portfolios));
-      localStorage.setItem(STORAGE_KEYS.ACTIVE_PORTFOLIO, activePortfolioId);
-      localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-      localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
-    } catch (e) {
-      console.error('Failed to sync to storage:', e);
-    }
-  }, [hasHydrated, isAuthenticated, user, funds, portfolios, activePortfolioId, transactions, goals]);
+    if (!hasHydrated || !isAuthenticated || !user.email) return;
+    const email = user.email.trim().toLowerCase();
 
-  // Initial Load from MongoDB on Login
+    try {
+      localStorage.setItem(getStorageKey('profile', email), JSON.stringify(user));
+      localStorage.setItem(getStorageKey('funds', email), JSON.stringify(funds));
+      localStorage.setItem(getStorageKey('portfolios', email), JSON.stringify(portfolios));
+      localStorage.setItem(getStorageKey('active_port', email), activePortfolioId);
+      localStorage.setItem(getStorageKey('tx', email), JSON.stringify(transactions));
+      localStorage.setItem(getStorageKey('goals', email), JSON.stringify(goals));
+      if (lastNavSyncAt) {
+        localStorage.setItem(getStorageKey('last_nav_sync', email), String(lastNavSyncAt));
+      }
+    } catch (e) {
+      console.error('Failed to sync to user-scoped storage:', e);
+    }
+  }, [hasHydrated, isAuthenticated, user, funds, portfolios, activePortfolioId, transactions, goals, lastNavSyncAt]);
+
+  // Initial Load from MongoDB on Login (Strict Isolation per Email)
   useEffect(() => {
     if (!isAuthenticated || !user?.email) {
       setHasLoadedRemote(false);
       return;
     }
 
+    const currentTargetEmail = user.email.trim().toLowerCase();
+    setHasLoadedRemote(false);
+
     if (!isCloudAvailable) {
       setHasLoadedRemote(true);
       return;
     }
 
-    setHasLoadedRemote(false);
     let cancelled = false;
 
     const loadRemoteData = async () => {
@@ -203,22 +231,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         if (!data?.success || !data?.data) throw new Error('Initial sync rejected');
-        if (cancelled) return;
+        if (cancelled || activeEmailRef.current !== currentTargetEmail) return;
 
-        if (data.data.user) setUser((previous) => ({ ...previous, ...data.data.user }));
-        setTransactions(data.data.transactions || []);
-        setPortfolios(data.data.portfolios?.length ? data.data.portfolios : [defaultPortfolioFor(user.email)]);
-        setGoals(data.data.goals || []);
-        setFunds(data.data.funds || []);
+        if (data.data.user) {
+          setUser((prev) => ({ ...prev, ...data.data.user }));
+        }
+
+        const remoteTransactions = data.data.transactions || [];
+        const remotePortfolios = data.data.portfolios?.length
+          ? data.data.portfolios
+          : [defaultPortfolioFor(currentTargetEmail)];
+        const remoteGoals = data.data.goals || [];
+        const remoteFunds = data.data.funds || [];
+
+        setTransactions(remoteTransactions);
+        setPortfolios(remotePortfolios);
+        setGoals(remoteGoals);
+        setFunds(remoteFunds);
+
         setHasLoadedRemote(true);
         hasReportedSyncError.current = false;
       } catch (err) {
         console.debug('MongoDB initial sync:', err instanceof Error ? err.message : err);
-        if (!cancelled) {
+        if (!cancelled && activeEmailRef.current === currentTargetEmail) {
           setHasLoadedRemote(false);
           if (!hasReportedSyncError.current) {
             hasReportedSyncError.current = true;
-            showToast('error', 'Chưa thể tải dữ liệu từ đám mây. Dữ liệu trên máy chủ sẽ không bị thay đổi.');
+            showToast('error', 'Chưa thể tải dữ liệu từ đám mây.');
           }
         }
       }
@@ -230,16 +269,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isAuthenticated, user?.email, isCloudAvailable, showToast]);
 
-  // Background Auto-Sync to MongoDB
+  // Background Auto-Sync to MongoDB (Guarded to current user)
   useEffect(() => {
-    if (!isAuthenticated || !user?.email || !hasLoadedRemote || !isCloudAvailable) return;
+    const email = user.email.trim().toLowerCase();
+    if (!isAuthenticated || !email || !hasLoadedRemote || !isCloudAvailable) return;
+    if (activeEmailRef.current !== email) return;
 
     const timer = setTimeout(() => {
+      if (activeEmailRef.current !== email) return;
+
       fetch('/api/user/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: user.email,
+          email,
           profile: user,
           portfolios,
           transactions,
@@ -257,7 +300,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.debug('MongoDB background sync:', err.message);
           if (!hasReportedSyncError.current) {
             hasReportedSyncError.current = true;
-            showToast('error', 'Chưa thể đồng bộ dữ liệu. Vui lòng kiểm tra kết nối và thử lại.');
+            showToast('error', 'Chưa thể đồng bộ dữ liệu với đám mây.');
           }
         });
     }, 2000);
@@ -293,7 +336,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const optimalInterval = getOptimalNavSyncIntervalMs();
     const lastSync = lastNavSyncAtRef.current;
 
-    // Skip if throttled within optimal window unless forced
     if (!force && lastSync && now - lastSync < optimalInterval) {
       return { updatedCount: 0 };
     }
@@ -350,7 +392,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
 
       setLastNavSyncAt(now);
-      localStorage.setItem(STORAGE_KEYS.LAST_NAV_SYNC, String(now));
+      if (activeEmailRef.current) {
+        localStorage.setItem(getStorageKey('last_nav_sync', activeEmailRef.current), String(now));
+      }
 
       if (count > 0) {
         showToast('info', `Đã tự động cập nhật NAV mới nhất cho ${count} quỹ.`);
@@ -368,17 +412,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Periodic Adaptive Background Trigger for Auto-Sync NAV
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated || !isAuthenticated) return;
 
-    // Check immediately on mount/hydration
     syncNavAutomatically(false);
 
-    // Run adaptive heartbeat check every 2 minutes
     const intervalTimer = setInterval(() => {
       syncNavAutomatically(false);
     }, 2 * 60 * 1000);
 
-    // Also check when tab becomes active / visible
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncNavAutomatically(false);
@@ -393,15 +434,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleVisibilityChange);
     };
-  }, [hasHydrated, syncNavAutomatically]);
+  }, [hasHydrated, isAuthenticated, syncNavAutomatically]);
 
   const login = useCallback((email: string, name?: string, avatarUrl?: string) => {
-    setUser((previous) => ({
-      ...previous,
-      email: email.trim().toLowerCase(),
-      name: name || previous.name || email.split('@')[0],
-      avatarUrl: avatarUrl || previous.avatarUrl,
-    }));
+    const normalizedEmail = email.trim().toLowerCase();
+    const isNewUser = activeEmailRef.current !== normalizedEmail;
+
+    if (isNewUser) {
+      // Clean slate for new user before loading their specific data
+      setHasLoadedRemote(false);
+      setTransactions([]);
+      setFunds([]);
+      setGoals([]);
+      setPortfolios([defaultPortfolioFor(normalizedEmail)]);
+      setActivePortfolioId('ALL');
+      setLastNavSyncAt(null);
+    }
+
+    setUser({
+      id: `usr_${Math.abs(normalizedEmail.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)).toString(36)}`,
+      email: normalizedEmail,
+      name: name || normalizedEmail.split('@')[0],
+      avatarUrl: avatarUrl || '',
+      currency: 'VND',
+      dateFormat: 'DD/MM/YYYY',
+      createdAt: new Date().toISOString(),
+    });
     setIsAuthenticated(true);
     showToast('success', 'Đăng nhập thành công.');
   }, [showToast]);
@@ -410,7 +468,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
     setIsAuthenticated(false);
     setHasLoadedRemote(false);
-    localStorage.removeItem(STORAGE_KEYS.AUTH);
+    setUser(initialProfile);
+    setTransactions([]);
+    setFunds([]);
+    setGoals([]);
+    setPortfolios(initialPortfolios);
+    setActivePortfolioId('ALL');
+    setLastNavSyncAt(null);
     showToast('info', 'Bạn đã đăng xuất.');
   }, [showToast]);
 
@@ -520,20 +584,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const clearFinancialData = () => {
-    setFunds(initialFunds);
-    setPortfolios([defaultPortfolioFor(user.email)]);
+    const email = user.email.trim().toLowerCase();
+    setFunds([]);
+    setPortfolios([defaultPortfolioFor(email)]);
     setActivePortfolioId('ALL');
-    setTransactions(initialTransactions);
-    setGoals(initialGoals);
+    setTransactions([]);
+    setGoals([]);
     setLastNavSyncAt(null);
-    [
-      STORAGE_KEYS.FUNDS,
-      STORAGE_KEYS.PORTFOLIOS,
-      STORAGE_KEYS.ACTIVE_PORTFOLIO,
-      STORAGE_KEYS.TRANSACTIONS,
-      STORAGE_KEYS.GOALS,
-      STORAGE_KEYS.LAST_NAV_SYNC,
-    ].forEach((key) => localStorage.removeItem(key));
+
+    if (email) {
+      localStorage.removeItem(getStorageKey('funds', email));
+      localStorage.removeItem(getStorageKey('portfolios', email));
+      localStorage.removeItem(getStorageKey('active_port', email));
+      localStorage.removeItem(getStorageKey('tx', email));
+      localStorage.removeItem(getStorageKey('goals', email));
+      localStorage.removeItem(getStorageKey('last_nav_sync', email));
+    }
     showToast('info', 'Đã xóa toàn bộ dữ liệu tài chính.');
   };
 
