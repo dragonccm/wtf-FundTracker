@@ -24,8 +24,71 @@ interface ValidatedRow {
   errorReason?: string;
 }
 
+function parseExcelNumber(val: any): number {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+
+  const str = String(val).trim();
+  // Clean all non-digits, minus, dots and commas
+  const cleaned = str.replace(/[^\d.,-]/g, '');
+  if (!cleaned) return 0;
+
+  // Handle dot vs comma decimal
+  if (cleaned.includes('.') && cleaned.includes(',')) {
+    // e.g. 10.000.000,50 (dot thousands, comma decimal)
+    return parseFloat(cleaned.replace(/\./g, '').replace(',', '.')) || 0;
+  }
+  if (cleaned.includes('.') && !cleaned.includes(',')) {
+    const dotParts = cleaned.split('.');
+    if (dotParts.length > 2 || (dotParts.length === 2 && dotParts[1].length === 3 && parseFloat(cleaned) >= 1000)) {
+      return parseFloat(cleaned.replace(/\./g, '')) || 0;
+    }
+    return parseFloat(cleaned) || 0;
+  }
+  if (cleaned.includes(',') && !cleaned.includes('.')) {
+    const commaParts = cleaned.split(',');
+    if (commaParts.length > 2 || (commaParts.length === 2 && commaParts[1].length === 3 && parseFloat(cleaned.replace(/,/g, '')) >= 1000)) {
+      return parseFloat(cleaned.replace(/,/g, '')) || 0;
+    }
+    return parseFloat(cleaned.replace(',', '.')) || 0;
+  }
+  return parseFloat(cleaned) || 0;
+}
+
+function parseExcelDate(rawDate: any): string {
+  if (!rawDate) return new Date().toISOString().split('T')[0];
+  if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
+    return rawDate.toISOString().split('T')[0];
+  }
+  if (typeof rawDate === 'number') {
+    // Excel date serial (origin 1899-12-30)
+    const date = new Date(Math.round((rawDate - 25569) * 86400 * 1000));
+    if (!isNaN(date.getTime())) {
+      return date.toISOString().split('T')[0];
+    }
+  }
+  if (typeof rawDate === 'string') {
+    const str = rawDate.trim();
+    const parts = str.split(/[-/.\s]+/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        // YYYY-MM-DD
+        return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      } else if (parts[2].length === 4) {
+        // DD/MM/YYYY
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+      }
+    }
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+  }
+  return new Date().toISOString().split('T')[0];
+}
+
 export default function ImportExportPage() {
-  const { funds, portfolios, addBulkTransactions, transactions, holdings } = useAppStore();
+  const { funds, portfolios, addBulkTransactions, addFund, syncNavAutomatically, transactions, holdings } = useAppStore();
   const { showToast } = useToast();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -76,15 +139,15 @@ export default function ImportExportPage() {
 
           const autoMap: { [key: string]: string } = {};
           headers.forEach((h) => {
-            const lower = h.toLowerCase();
-            if (lower.includes('ngày') || lower.includes('date')) autoMap.date = h;
-            else if (lower.includes('quỹ') || lower.includes('fund') || lower.includes('mã')) autoMap.fundCode = h;
-            else if (lower.includes('loại') || lower.includes('type')) autoMap.type = h;
-            else if (lower.includes('tiền') || lower.includes('amount') || lower.includes('vốn')) autoMap.amount = h;
-            else if (lower.includes('nav') || lower.includes('giá') || lower.includes('price')) autoMap.unitPrice = h;
-            else if (lower.includes('ccq') || lower.includes('units') || lower.includes('số lượng')) autoMap.units = h;
+            const lower = h.toLowerCase().trim();
+            if (lower.includes('ngày') || lower.includes('date') || lower.includes('time')) autoMap.date = h;
+            else if (lower.includes('mã') || lower.includes('quỹ') || lower.includes('fund') || lower.includes('symbol') || lower.includes('ccq') && !lower.includes('số')) autoMap.fundCode = h;
+            else if (lower.includes('loại') || lower.includes('type') || lower.includes('lệnh') || lower.includes('chiều')) autoMap.type = h;
+            else if (lower.includes('tổng tiền') || lower.includes('tiền') || lower.includes('amount') || lower.includes('giá trị') || lower.includes('vốn')) autoMap.amount = h;
+            else if (lower.includes('nav') || lower.includes('giá') || lower.includes('price') || lower.includes('đơn giá')) autoMap.unitPrice = h;
+            else if (lower.includes('số ccq') || lower.includes('số lượng') || lower.includes('khối lượng') || lower.includes('units')) autoMap.units = h;
             else if (lower.includes('phí') || lower.includes('fee')) autoMap.fee = h;
-            else if (lower.includes('ghi chú') || lower.includes('note')) autoMap.notes = h;
+            else if (lower.includes('ghi chú') || lower.includes('note') || lower.includes('diễn giải') || lower.includes('nội dung')) autoMap.notes = h;
           });
 
           setColumnMapping((prev) => ({ ...prev, ...autoMap }));
@@ -98,51 +161,55 @@ export default function ImportExportPage() {
   };
 
   const handleValidateMapping = () => {
-    const validFunds = new Set(funds.map((f) => f.code.toUpperCase()));
-
     const validated: ValidatedRow[] = rawRows.map((row, idx) => {
       const rawDate = row[columnMapping.date];
       const rawFund = String(row[columnMapping.fundCode] || '').trim().toUpperCase();
       const rawType = String(row[columnMapping.type] || '').trim().toUpperCase();
-      const rawAmount = parseFloat(String(row[columnMapping.amount] || '0').replace(/,/g, '')) || 0;
-      const rawPrice = parseFloat(String(row[columnMapping.unitPrice] || '0').replace(/,/g, '')) || 0;
-      const rawUnits = parseFloat(String(row[columnMapping.units] || '0').replace(/,/g, '')) || (rawPrice > 0 ? rawAmount / rawPrice : 0);
-      const rawFee = parseFloat(String(row[columnMapping.fee] || '0').replace(/,/g, '')) || 0;
+      let rawAmount = parseExcelNumber(row[columnMapping.amount]);
+      let rawPrice = parseExcelNumber(row[columnMapping.unitPrice]);
+      let rawUnits = parseExcelNumber(row[columnMapping.units]);
+      const rawFee = parseExcelNumber(row[columnMapping.fee]);
       const notes = String(row[columnMapping.notes] || '');
 
       let isValid = true;
       let errorReason = '';
 
-      if (!rawFund || !validFunds.has(rawFund)) {
+      // Clean and validate Fund Code
+      const cleanFundCode = rawFund.replace(/[^A-Z0-9_-]/g, '');
+      if (!cleanFundCode || cleanFundCode.length < 2) {
         isValid = false;
-        errorReason = `Mã quỹ không hợp lệ (${rawFund})`;
-      } else if (rawAmount <= 0) {
+        errorReason = `Mã quỹ không hợp lệ (${rawFund || 'Trống'})`;
+      }
+
+      // If units & price exist but amount is missing, calculate amount
+      if (rawAmount <= 0 && rawUnits > 0 && rawPrice > 0) {
+        rawAmount = rawUnits * rawPrice;
+      }
+      // If amount & units exist but price is missing, calculate price
+      if (rawPrice <= 0 && rawAmount > 0 && rawUnits > 0) {
+        rawPrice = rawAmount / rawUnits;
+      }
+      // If amount & price exist but units is missing, calculate units
+      if (rawUnits <= 0 && rawAmount > 0 && rawPrice > 0) {
+        rawUnits = rawAmount / rawPrice;
+      }
+
+      if (rawAmount <= 0 && rawUnits <= 0) {
         isValid = false;
-        errorReason = 'Số tiền phải > 0';
+        errorReason = 'Số tiền hoặc số CCQ phải > 0';
       }
 
       const txType = rawType.includes('BÁN') || rawType.includes('SELL') ? 'SELL' : 'BUY';
-
-      let formattedDate = new Date().toISOString().split('T')[0];
-      if (typeof rawDate === 'number') {
-        const jsDate = new Date((rawDate - (25567 + 2)) * 86400 * 1000);
-        formattedDate = jsDate.toISOString().split('T')[0];
-      } else if (typeof rawDate === 'string' && rawDate.trim()) {
-        const parts = rawDate.trim().split(/[-/]/);
-        if (parts.length === 3) {
-          if (parts[0].length === 4) formattedDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
-          else formattedDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-      }
+      const formattedDate = parseExcelDate(rawDate);
 
       return {
         index: idx + 1,
         date: formattedDate,
-        fundCode: rawFund,
+        fundCode: cleanFundCode || rawFund,
         type: txType,
         amount: rawAmount,
-        unitPrice: rawPrice,
-        units: rawUnits,
+        unitPrice: rawPrice > 0 ? rawPrice : (rawUnits > 0 ? rawAmount / rawUnits : 10000),
+        units: rawUnits > 0 ? rawUnits : (rawPrice > 0 ? rawAmount / rawPrice : 1),
         fee: rawFee,
         notes,
         isValid,
@@ -157,15 +224,41 @@ export default function ImportExportPage() {
   const handleConfirmImport = () => {
     const validRowsToImport = validatedRows.filter((r) => r.isValid);
     if (validRowsToImport.length === 0) {
-      showToast('error', 'Không có giao dịch hợp lệ để nhập. Hãy kiểm tra các cột và mã quỹ.');
+      showToast('error', 'Không có giao dịch hợp lệ để nhập. Hãy kiểm tra lại các cột đã chọn.');
       return;
     }
 
+    // Auto-create any missing funds in user's funds store
+    const existingFundCodes = new Set(funds.map((f) => f.code.toUpperCase()));
+    const distinctNewFunds = new Map<string, ValidatedRow>();
+
+    validRowsToImport.forEach((r) => {
+      const code = r.fundCode.toUpperCase();
+      if (!existingFundCodes.has(code) && !distinctNewFunds.has(code)) {
+        distinctNewFunds.set(code, r);
+      }
+    });
+
+    distinctNewFunds.forEach((r, code) => {
+      addFund({
+        code,
+        name: `QUỸ ${code}`,
+        company: 'Quỹ Mở',
+        category: 'Equity',
+        nav: r.unitPrice > 0 ? r.unitPrice : 10000,
+        previousNav: r.unitPrice > 0 ? r.unitPrice : 10000,
+        navDate: r.date,
+        inceptionDate: r.date,
+        expenseRatioPercent: 0,
+        description: 'Tự động tạo từ dữ liệu Excel import',
+      });
+    });
+
     const newTransactions = validRowsToImport.map((r) => {
-      const fund = funds.find((f) => f.code === r.fundCode);
+      const existingFund = funds.find((f) => f.code === r.fundCode);
       return {
         portfolioId: targetPortfolioId,
-        fundId: fund?.id || 'f_' + r.fundCode.toLowerCase(),
+        fundId: existingFund?.id || 'f_' + r.fundCode.toLowerCase(),
         fundCode: r.fundCode,
         type: r.type,
         date: r.date,
@@ -178,8 +271,12 @@ export default function ImportExportPage() {
     });
 
     addBulkTransactions(newTransactions);
+    showToast('success', `Đã nhập thành công ${newTransactions.length} giao dịch vào danh mục.`);
     setStep(1);
     setFileName('');
+
+    // Trigger auto-sync NAV in background so all newly imported funds get latest Fmarket data
+    syncNavAutomatically(true).catch(() => undefined);
   };
 
   const handleExportJSON = () => {
