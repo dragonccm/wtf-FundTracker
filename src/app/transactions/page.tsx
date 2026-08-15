@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { Transaction } from '@/types';
-import { formatCompactVND, formatVND, calculateTransactionPnL } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnL } from '@/lib/finance/portfolio';
 import AddTransactionModal from '@/components/transactions/AddTransactionModal';
 import EditTransactionModal from '@/components/transactions/EditTransactionModal';
 
@@ -213,7 +213,7 @@ export default function TransactionsPage() {
                           )}
                         </div>
                         <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
-                          {tx.units.toLocaleString('vi-VN')} CCQ • Ngày: {tx.date}
+                          {formatUnits(tx.units)} CCQ • Ngày: {tx.date}
                         </div>
                       </div>
                     </div>

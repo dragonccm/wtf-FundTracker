@@ -199,32 +199,23 @@ export function formatVND(amount: number, showSuffix = true): string {
 }
 
 /**
- * Rút gọn tiền tệ theo yêu cầu:
- * >= 1 tỷ: '1,5 tỷ'
- * >= 1 triệu: '150 tr' (chỉ để 'tr', không có 'VND' phía sau)
- * < 1 triệu: hiển thị định dạng '... VND'
+ * Định dạng tiền tệ VND đầy đủ cho toàn bộ ứng dụng theo yêu cầu
+ * Hiển thị đầy đủ số tiền có dấu chấm phân cách và đuôi VND (Ví dụ: 4.848.445 VND, 12.000.000.000 VND)
  */
 export function formatCompactVND(amount: number): string {
-  if (isNaN(amount) || amount === null || amount === undefined) return '0 VND';
-  const absoluteAmount = Math.abs(amount);
-
-  if (absoluteAmount >= 1_000_000_000) {
-    const value = amount / 1_000_000_000;
-    const formatted = new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
-    }).format(value);
-    return `${formatted} tỷ`;
-  }
-
-  if (absoluteAmount >= 1_000_000) {
-    const value = amount / 1_000_000;
-    const formatted = new Intl.NumberFormat('vi-VN', {
-      maximumFractionDigits: Math.abs(value) >= 100 ? 0 : 1,
-    }).format(value);
-    return `${formatted} tr`;
-  }
-
   return formatVND(amount);
+}
+
+/**
+ * Định dạng số CCQ hoặc số thập phân chuẩn tiếng Việt:
+ * Ví dụ: 9135.49 -> "9.135,49" (không bao giờ bị "9.135.49")
+ * Ví dụ: 1000 -> "1.000"
+ */
+export function formatUnits(units: number): string {
+  if (isNaN(units) || units === null || units === undefined) return '0';
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 4,
+  }).format(units);
 }
 
 export function formatPercent(value: number): string {
@@ -235,10 +226,16 @@ export function formatPercent(value: number): string {
 
 /**
  * Tự động chèn dấu chấm phân cách mỗi 3 chữ số khi người dùng gõ vào ô input
- * Khắc phục hoàn toàn lỗi khi gõ số liên tiếp (100000 -> 100.000, không bao giờ bị 1,00000)
+ * Khắc phục hoàn toàn lỗi khi gõ số liên tiếp và hỗ trợ số thập phân mượt mà
  */
 export function formatInputCurrency(raw: string | number): string {
   if (raw === '' || raw === null || raw === undefined) return '';
+  
+  if (typeof raw === 'number') {
+    if (isNaN(raw)) return '';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 4 }).format(raw);
+  }
+
   const str = String(raw).trim();
   if (!str) return '';
 
@@ -251,6 +248,17 @@ export function formatInputCurrency(raw: string | number): string {
     return decDigits ? `${formattedInt},${decDigits}` : `${formattedInt},`;
   }
 
+  // Nếu chuỗi đến từ số thực JS có dấu chấm thập phân (VD "9135.49" hoặc "28000.5")
+  if (str.includes('.') && !str.endsWith('.')) {
+    const dotParts = str.split('.');
+    if (dotParts.length === 2 && dotParts[1].length !== 3 && dotParts[1].length <= 4) {
+      const intDigits = dotParts[0].replace(/\D/g, '');
+      const decDigits = dotParts[1].replace(/\D/g, '');
+      const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
+      return `${formattedInt},${decDigits}`;
+    }
+  }
+
   // Nếu chuỗi kết thúc bằng dấu chấm (người dùng vừa bấm '.' để gõ số thập phân)
   if (str.endsWith('.')) {
     const intDigits = str.slice(0, -1).replace(/\D/g, '');
@@ -259,7 +267,6 @@ export function formatInputCurrency(raw: string | number): string {
   }
 
   // Với toàn bộ trường hợp số nguyên hoặc số có dấu chấm phân cách hàng nghìn sẵn có:
-  // Lấy toàn bộ các chữ số (bỏ qua mọi dấu chấm trước đó) và định dạng lại chuẩn 3 chữ số một dấu chấm
   const digits = str.replace(/\D/g, '');
   if (!digits) return '';
 
@@ -276,7 +283,7 @@ export function parseInputCurrency(formatted: string | number): number {
   const str = String(formatted).trim();
   if (!str) return 0;
 
-  // Nếu có dấu phẩy thập phân: "100.000,50" -> 100000.5
+  // Nếu có dấu phẩy thập phân: "9.135,49" -> 9135.49
   if (str.includes(',')) {
     const parts = str.split(',');
     const intPart = parts[0].replace(/\D/g, '') || '0';
@@ -284,7 +291,17 @@ export function parseInputCurrency(formatted: string | number): number {
     return parseFloat(`${intPart}.${decPart}`) || 0;
   }
 
-  // Nếu không có dấu phẩy, mọi dấu chấm đều là phân cách hàng nghìn
+  // Nếu là số thực US có dấu chấm (VD "9135.49")
+  if (str.includes('.')) {
+    const dotParts = str.split('.');
+    if (dotParts.length === 2 && dotParts[1].length !== 3) {
+      const intPart = dotParts[0].replace(/\D/g, '') || '0';
+      const decPart = dotParts[1].replace(/\D/g, '') || '0';
+      return parseFloat(`${intPart}.${decPart}`) || 0;
+    }
+  }
+
+  // Nếu không có dấu phẩy/thập phân, mọi dấu chấm đều là phân cách hàng nghìn
   const digits = str.replace(/\D/g, '');
   return digits ? parseFloat(digits) : 0;
 }

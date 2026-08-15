@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatCompactVND, formatVND, calculateTransactionPnL } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnL } from '@/lib/finance/portfolio';
 
 export default function TimelinePage() {
   const { transactions, funds, goals } = useAppStore();
@@ -124,7 +124,7 @@ export default function TimelinePage() {
                       <div>
                         <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Khối lượng CCQ</div>
                         <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
-                          {tx.units.toLocaleString('vi-VN')} CCQ
+                          {formatUnits(tx.units)} CCQ
                         </div>
                       </div>
                     </div>

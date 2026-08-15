@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatCompactVND, formatVND, formatPercent } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatUnits, formatPercent } from '@/lib/finance/portfolio';
 
 export default function PortfolioPage() {
   const { holdings, portfolios, activePortfolioId, setActivePortfolioId, addPortfolio, metrics } = useAppStore();
@@ -178,7 +178,7 @@ export default function PortfolioPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', backgroundColor: 'var(--md-sys-color-surface-container-low)', padding: '10px 12px', borderRadius: '14px', border: '1px solid var(--md-sys-color-outline-variant)' }}>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Số lượng CCQ</div>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{h.totalUnits.toLocaleString('vi-VN')} CCQ</div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>{formatUnits(h.totalUnits)} CCQ</div>
                 </div>
                 <div>
                   <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá vốn bình quân</div>
