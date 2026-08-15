@@ -190,22 +190,22 @@ export function formatNumberWithDots(amount: number): string {
 
 export function formatVND(amount: number, showSuffix = true): string {
   if (isNaN(amount) || amount === null || amount === undefined) {
-    return showSuffix ? '0 đ' : '0';
+    return showSuffix ? '0 VND' : '0';
   }
   const formatted = new Intl.NumberFormat('vi-VN', {
     maximumFractionDigits: 0,
   }).format(Math.round(amount));
-  return showSuffix ? `${formatted} đ` : formatted;
+  return showSuffix ? `${formatted} VND` : formatted;
 }
 
 /**
  * Rút gọn tiền tệ theo yêu cầu:
  * >= 1 tỷ: '1,5 tỷ'
- * >= 1 triệu: '150 tr' (chỉ để 'tr', không có 'đ' hay 'việt nam đồng' phía sau)
- * >= 1 nghìn: '500 k' hoặc '500.000 đ'
+ * >= 1 triệu: '150 tr' (chỉ để 'tr', không có 'VND' phía sau)
+ * < 1 triệu: hiển thị định dạng '... VND'
  */
 export function formatCompactVND(amount: number): string {
-  if (isNaN(amount) || amount === null || amount === undefined) return '0 đ';
+  if (isNaN(amount) || amount === null || amount === undefined) return '0 VND';
   const absoluteAmount = Math.abs(amount);
 
   if (absoluteAmount >= 1_000_000_000) {
