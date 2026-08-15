@@ -235,54 +235,39 @@ export function formatPercent(value: number): string {
 
 /**
  * Tự động chèn dấu chấm phân cách mỗi 3 chữ số khi người dùng gõ vào ô input
- * Xử lý chính xác cả khi người dùng gõ số liền, gõ dấu chấm '.', hoặc gõ dấu phẩy ','
+ * Khắc phục hoàn toàn lỗi khi gõ số liên tiếp (100000 -> 100.000, không bao giờ bị 1,00000)
  */
 export function formatInputCurrency(raw: string | number): string {
   if (raw === '' || raw === null || raw === undefined) return '';
   const str = String(raw).trim();
   if (!str) return '';
 
-  let integerDigits = '';
-  let decimalSuffix = '';
-
+  // Nếu người dùng nhập dấu phẩy ',' (phân cách thập phân kiểu Việt Nam)
   if (str.includes(',')) {
     const parts = str.split(',');
-    integerDigits = parts[0].replace(/\D/g, '');
-    decimalSuffix = parts.length > 1 ? ',' + parts[1].replace(/\D/g, '') : '';
-  } else if (str.includes('.')) {
-    const dotCount = (str.match(/\./g) || []).length;
-    if (dotCount === 1) {
-      const parts = str.split('.');
-      if (str.endsWith('.')) {
-        integerDigits = parts[0].replace(/\D/g, '');
-        decimalSuffix = ',';
-      } else if (parts[1].length === 3 && parts[0].length <= 3) {
-        // Ví dụ: 100.000 -> đây là dấu phân cách hàng nghìn
-        integerDigits = (parts[0] + parts[1]).replace(/\D/g, '');
-        decimalSuffix = '';
-      } else {
-        // Ví dụ: 31953.5 -> đây là số thập phân
-        integerDigits = parts[0].replace(/\D/g, '');
-        decimalSuffix = ',' + parts[1].replace(/\D/g, '');
-      }
-    } else {
-      // Nhiều dấu chấm -> phân cách hàng nghìn
-      integerDigits = str.replace(/\D/g, '');
-      decimalSuffix = '';
-    }
-  } else {
-    integerDigits = str.replace(/\D/g, '');
-    decimalSuffix = '';
+    const intDigits = parts[0].replace(/\D/g, '');
+    const decDigits = parts.slice(1).join('').replace(/\D/g, '');
+    const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
+    return decDigits ? `${formattedInt},${decDigits}` : `${formattedInt},`;
   }
 
-  if (!integerDigits && !decimalSuffix) return '';
+  // Nếu chuỗi kết thúc bằng dấu chấm (người dùng vừa bấm '.' để gõ số thập phân)
+  if (str.endsWith('.')) {
+    const intDigits = str.slice(0, -1).replace(/\D/g, '');
+    const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
+    return `${formattedInt},`;
+  }
 
-  const formattedInteger = integerDigits ? integerDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
-  return formattedInteger + decimalSuffix;
+  // Với toàn bộ trường hợp số nguyên hoặc số có dấu chấm phân cách hàng nghìn sẵn có:
+  // Lấy toàn bộ các chữ số (bỏ qua mọi dấu chấm trước đó) và định dạng lại chuẩn 3 chữ số một dấu chấm
+  const digits = str.replace(/\D/g, '');
+  if (!digits) return '';
+
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 /**
- * Chuyển chuỗi định dạng có dấu chấm / dấu phẩy thành số nguyên / thực
+ * Chuyển chuỗi định dạng có dấu chấm / dấu phẩy thành số nguyên / thực chuẩn xác
  */
 export function parseInputCurrency(formatted: string | number): number {
   if (typeof formatted === 'number') return isNaN(formatted) ? 0 : formatted;
@@ -291,27 +276,17 @@ export function parseInputCurrency(formatted: string | number): number {
   const str = String(formatted).trim();
   if (!str) return 0;
 
-  if (str.includes(',') && str.includes('.')) {
-    // 10.000.000,50
-    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  }
+  // Nếu có dấu phẩy thập phân: "100.000,50" -> 100000.5
   if (str.includes(',')) {
-    return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
-  }
-  if (str.includes('.')) {
-    const dotParts = str.split('.');
-    if (dotParts.length > 2) {
-      return parseFloat(str.replace(/\./g, '')) || 0;
-    }
-    if (dotParts.length === 2) {
-      if (dotParts[1].length === 3 && dotParts[0].length <= 3) {
-        return parseFloat(str.replace(/\./g, '')) || 0;
-      }
-      return parseFloat(dotParts[0].replace(/\D/g, '') + '.' + dotParts[1].replace(/\D/g, '')) || 0;
-    }
+    const parts = str.split(',');
+    const intPart = parts[0].replace(/\D/g, '') || '0';
+    const decPart = parts[1] ? parts[1].replace(/\D/g, '') : '0';
+    return parseFloat(`${intPart}.${decPart}`) || 0;
   }
 
-  return parseFloat(str.replace(/\D/g, '')) || 0;
+  // Nếu không có dấu phẩy, mọi dấu chấm đều là phân cách hàng nghìn
+  const digits = str.replace(/\D/g, '');
+  return digits ? parseFloat(digits) : 0;
 }
 
 export interface TransactionPnLResult {
