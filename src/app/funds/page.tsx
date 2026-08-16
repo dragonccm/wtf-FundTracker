@@ -275,8 +275,13 @@ export default function FundsPage() {
                 </span>
                 <span style={{ textAlign: 'right' }}>
                   <strong style={{ display: 'block', fontSize: 14 }}>{formatVND(fund.nav)}</strong>
-                  <small style={{ color: change >= 0 ? 'var(--journal-success)' : 'var(--journal-danger)', fontWeight: 500 }}>
-                    {change >= 0 ? '+' : ''}{change.toFixed(2)}%
+                  <small
+                    style={{
+                      color: change > 0 ? 'var(--journal-success)' : change < 0 ? 'var(--journal-danger)' : 'var(--journal-muted)',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {change > 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`}
                   </small>
                 </span>
               </button>

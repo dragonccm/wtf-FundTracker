@@ -370,10 +370,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const remote = fmarketMap[fund.code.toUpperCase()];
           if (!remote || !remote.nav || remote.nav <= 0) return fund;
 
+          const remotePrevNav = remote.previousNav || remote.nav;
           const isNavDifferent = Math.abs(fund.nav - remote.nav) > 0.001;
+          const isPrevNavDifferent = Math.abs((fund.previousNav || 0) - remotePrevNav) > 0.001;
           const isDateDifferent = remote.navDate && fund.navDate !== remote.navDate;
 
-          if (isNavDifferent || isDateDifferent) {
+          if (isNavDifferent || isPrevNavDifferent || isDateDifferent) {
             hasAnyChange = true;
             count++;
             const history = Array.isArray(fund.navHistory) ? [...fund.navHistory] : [];
@@ -382,7 +384,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
             return {
               ...fund,
-              previousNav: fund.nav,
+              previousNav: remotePrevNav,
               nav: remote.nav,
               navDate: remote.navDate || fund.navDate,
               company: remote.company || fund.company,

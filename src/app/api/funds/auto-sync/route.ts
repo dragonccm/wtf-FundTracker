@@ -91,12 +91,15 @@ export async function POST(req: NextRequest) {
       }
 
       const currentNav = Number(row.nav || row.extra?.currentNAV || row.extra?.lastNAV || 0);
-      const previousNav = Number(row.extra?.lastNAV || currentNav);
-      const changePercent = row.productNavChange?.navToPrevious ?? (
-        previousNav > 0 && currentNav !== previousNav
-          ? ((currentNav - previousNav) / previousNav) * 100
-          : 0
-      );
+      let changePercent = 0;
+      if (typeof row.productNavChange?.navToPrevious === 'number') {
+        changePercent = row.productNavChange.navToPrevious;
+      }
+
+      // Calculate accurate previousNav based on Fmarket navToPrevious % change
+      const previousNav = changePercent !== 0 && currentNav > 0
+        ? currentNav / (1 + changePercent / 100)
+        : Number(row.extra?.lastNAV || currentNav);
 
       fundsMap[code] = {
         code,
