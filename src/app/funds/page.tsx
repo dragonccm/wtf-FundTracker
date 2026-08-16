@@ -29,19 +29,36 @@ function formatSyncTime(timestamp: number | null) {
   return `${hours}:${minutes} (${day}/${month})`;
 }
 
+const getCategoryMeta = (cat: FundCategory) => {
+  switch (cat) {
+    case 'Equity':
+      return { label: 'Cổ phiếu', bg: '#e8eaf6', text: '#283593', icon: 'trending_up' };
+    case 'Bond':
+      return { label: 'Trái phiếu', bg: '#e8f5e9', text: '#2e7d32', icon: 'shield' };
+    case 'Balanced':
+      return { label: 'Cân bằng', bg: '#fff3e0', text: '#e65100', icon: 'balance' };
+    case 'Index':
+    default:
+      return { label: 'Chỉ số', bg: '#f3e5f5', text: '#6a1b9a', icon: 'analytics' };
+  }
+};
+
 export default function FundsPage() {
-  const { funds, addFund, updateFundNav, lastNavSyncAt, isSyncingNav, syncNavAutomatically } = useAppStore();
+  const { funds, addFund, addFundsBatch, updateFundNav, lastNavSyncAt, isSyncingNav, syncNavAutomatically } = useAppStore();
   const { showToast } = useToast();
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [createMode, setCreateMode] = useState<'LOOKUP' | 'MANUAL'>('LOOKUP');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<'CATALOG' | 'MANUAL'>('CATALOG');
   const [editingFundId, setEditingFundId] = useState<string | null>(null);
 
-  // Market Catalog State
+  // Search & Filters on main list
+  const [mainFilterCategory, setMainFilterCategory] = useState<'ALL' | FundCategory>('ALL');
+
+  // Market Catalog State in Modal
   const [marketCatalog, setMarketCatalog] = useState<MarketFundItem[]>([]);
   const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<'ALL' | FundCategory>('ALL');
+  const [modalSearch, setModalSearch] = useState('');
+  const [modalCategoryFilter, setModalCategoryFilter] = useState<'ALL' | 'UNADDED' | 'ADDED' | FundCategory>('ALL');
 
   // Manual Form State
   const [code, setCode] = useState('');
@@ -61,10 +78,9 @@ export default function FundsPage() {
     [funds]
   );
 
-  // Fetch full Fmarket catalog when modal opens
-  useEffect(() => {
-    if (!isCreateOpen || marketCatalog.length > 0) return;
-
+  // Fetch full Fmarket catalog when modal opens or on demand
+  const loadMarketCatalog = () => {
+    if (isLoadingCatalog) return;
     setIsLoadingCatalog(true);
     fetch('/api/funds/auto-sync', { method: 'GET' })
       .then((res) => res.json())
@@ -80,13 +96,27 @@ export default function FundsPage() {
       .finally(() => {
         setIsLoadingCatalog(false);
       });
-  }, [isCreateOpen, marketCatalog.length]);
+  };
 
-  // Filtered Catalog
+  useEffect(() => {
+    if (isModalOpen && marketCatalog.length === 0) {
+      loadMarketCatalog();
+    }
+  }, [isModalOpen, marketCatalog.length]);
+
+  // Filtered Catalog in Modal
   const filteredCatalog = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+    const query = modalSearch.trim().toLowerCase();
     return marketCatalog.filter((item) => {
-      if (selectedCategoryFilter !== 'ALL' && item.category !== selectedCategoryFilter) {
+      const isAdded = existingFundCodes.has(item.code.toUpperCase());
+      if (modalCategoryFilter === 'UNADDED' && isAdded) return false;
+      if (modalCategoryFilter === 'ADDED' && !isAdded) return false;
+      if (
+        modalCategoryFilter !== 'ALL' &&
+        modalCategoryFilter !== 'UNADDED' &&
+        modalCategoryFilter !== 'ADDED' &&
+        item.category !== modalCategoryFilter
+      ) {
         return false;
       }
       if (!query) return true;
@@ -96,7 +126,17 @@ export default function FundsPage() {
         item.company.toLowerCase().includes(query)
       );
     });
-  }, [marketCatalog, searchQuery, selectedCategoryFilter]);
+  }, [marketCatalog, modalSearch, modalCategoryFilter, existingFundCodes]);
+
+  const unaddedCountInFilter = useMemo(() => {
+    return filteredCatalog.filter((item) => !existingFundCodes.has(item.code.toUpperCase())).length;
+  }, [filteredCatalog, existingFundCodes]);
+
+  // Main Page Filtered Funds
+  const filteredMainFunds = useMemo(() => {
+    if (mainFilterCategory === 'ALL') return funds;
+    return funds.filter((f) => f.category === mainFilterCategory);
+  }, [funds, mainFilterCategory]);
 
   const handleAddFromMarket = (marketItem: MarketFundItem) => {
     if (existingFundCodes.has(marketItem.code.toUpperCase())) {
@@ -116,12 +156,32 @@ export default function FundsPage() {
       expenseRatioPercent: 0,
       description: '',
     });
-
-    showToast('success', `Đã thêm quỹ ${marketItem.code} vào danh mục.`);
-    setIsCreateOpen(false);
   };
 
-  const createManualFund = (event: React.FormEvent) => {
+  const handleAddAllFiltered = () => {
+    const toAdd = filteredCatalog.filter((item) => !existingFundCodes.has(item.code.toUpperCase()));
+    if (toAdd.length === 0) {
+      showToast('info', 'Tất cả quỹ trong danh sách đã được thêm.');
+      return;
+    }
+
+    addFundsBatch(
+      toAdd.map((item) => ({
+        code: item.code,
+        name: item.name,
+        company: item.company,
+        category: item.category,
+        nav: item.nav,
+        previousNav: item.previousNav || item.nav,
+        navDate: item.navDate || today(),
+        inceptionDate: item.navDate || today(),
+        expenseRatioPercent: 0,
+        description: '',
+      }))
+    );
+  };
+
+  const handleCreateManualFund = (event: React.FormEvent) => {
     event.preventDefault();
     const normalizedCode = code.trim().toUpperCase();
     const parsedNav = parseInputCurrency(nav);
@@ -152,10 +212,10 @@ export default function FundsPage() {
     setName('');
     setCompany('');
     setNav('');
-    setIsCreateOpen(false);
+    setIsModalOpen(false);
   };
 
-  const saveNav = (event: React.FormEvent) => {
+  const handleSaveNav = (event: React.FormEvent) => {
     event.preventDefault();
     const value = parseInputCurrency(newNav);
     if (!editingFundId || value <= 0) {
@@ -168,332 +228,556 @@ export default function FundsPage() {
   };
 
   return (
-    <div className="journal-page">
-      <div className="journal-page-header">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Header Section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <span className="journal-eyebrow">Nguồn dữ liệu</span>
-          <h1 className="journal-page-title">Quỹ đầu tư</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', margin: 0 }}>
+              Quỹ Đầu Tư
+            </h1>
+            <span
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                padding: '2px 8px',
+                borderRadius: '999px',
+                backgroundColor: 'var(--journal-primary-container)',
+                color: 'var(--journal-primary-strong)',
+              }}
+            >
+              {funds.length} quỹ
+            </span>
+          </div>
+          <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px', margin: 0 }}>
+            Dữ liệu giá NAV thời gian thực đồng bộ từ Fmarket
+          </p>
         </div>
-        <button
-          type="button"
-          className="journal-icon-button"
-          onClick={() => {
-            setSearchQuery('');
-            setIsCreateOpen(true);
-          }}
-          aria-label="Thêm quỹ"
-        >
-          <span className="material-symbols-outlined">add</span>
-        </button>
+
+        {/* Top Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setModalSearch('');
+              setModalCategoryFilter('ALL');
+              setIsModalOpen(true);
+            }}
+            className="m3-pill-btn-primary"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
+            Thêm Quỹ
+          </button>
+        </div>
       </div>
 
-      {/* Auto-Sync Status Bar */}
+      {/* Sync Status Banner */}
       <div
-        className="journal-card"
+        className="m3-card"
         style={{
-          padding: '12px 16px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          gap: 12,
-          backgroundColor: 'var(--journal-surface-variant)',
-          borderRadius: 16,
+          padding: '12px 16px',
+          gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span
             className="material-symbols-outlined"
             style={{
-              fontSize: 20,
-              color: isSyncingNav ? 'var(--journal-primary)' : 'var(--journal-success)',
+              fontSize: '22px',
+              color: isSyncingNav ? 'var(--md-sys-color-primary)' : 'var(--journal-success)',
               animation: isSyncingNav ? 'spin 1.5s linear infinite' : 'none',
             }}
           >
             {isSyncingNav ? 'sync' : 'cloud_done'}
           </span>
-          <span style={{ fontSize: 13, color: 'var(--journal-ink)' }}>
-            <strong>Tự động đồng bộ Fmarket</strong>
-            <span style={{ display: 'block', fontSize: 11, color: 'var(--journal-muted)' }}>
-              {isSyncingNav ? 'Đang kiểm tra NAV mới...' : `Cập nhật gần nhất: ${formatSyncTime(lastNavSyncAt)}`}
-            </span>
-          </span>
+          <div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+              Tự động đồng bộ Fmarket
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+              {isSyncingNav ? 'Đang cập nhật NAV mới nhất...' : `Cập nhật gần nhất: ${formatSyncTime(lastNavSyncAt)}`}
+            </div>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => syncNavAutomatically(true)}
-          disabled={isSyncingNav}
-          className="journal-text-button"
-          style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>refresh</span>
-          Đồng bộ ngay
-        </button>
-      </div>
-
-      {funds.length === 0 ? (
-        <section className="journal-card journal-empty">
-          <div className="journal-empty-visual">
-            <span className="material-symbols-outlined" style={{ fontSize: 36 }}>finance</span>
-          </div>
-          <h2>Chưa có dữ liệu quỹ</h2>
-          <p>Tra cứu và thêm các quỹ từ Fmarket để bắt đầu theo dõi tự động.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            className="journal-primary-button"
             type="button"
             onClick={() => {
-              setSearchQuery('');
-              setIsCreateOpen(true);
+              setModalSearch('');
+              setModalCategoryFilter('ALL');
+              setIsModalOpen(true);
             }}
+            className="m3-pill-btn"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
           >
-            <span className="material-symbols-outlined">search</span>
-            Tra cứu & Thêm quỹ
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>explore</span>
+            Xem hết 68 quỹ
           </button>
-        </section>
-      ) : (
-        <section className="journal-list">
-          {funds.map((fund) => {
-            const change = fund.previousNav > 0 ? ((fund.nav - fund.previousNav) / fund.previousNav) * 100 : 0;
+          <button
+            type="button"
+            onClick={() => syncNavAutomatically(true)}
+            disabled={isSyncingNav}
+            className="m3-pill-btn"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>refresh</span>
+            Đồng bộ ngay
+          </button>
+        </div>
+      </div>
+
+      {/* Category Filter Chips on Main Page */}
+      {funds.length > 0 && (
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+          {[
+            { id: 'ALL', label: `Tất cả (${funds.length})` },
+            { id: 'Equity', label: `Cổ phiếu (${funds.filter((f) => f.category === 'Equity').length})` },
+            { id: 'Bond', label: `Trái phiếu (${funds.filter((f) => f.category === 'Bond').length})` },
+            { id: 'Balanced', label: `Cân bằng (${funds.filter((f) => f.category === 'Balanced').length})` },
+          ].map((tab) => {
+            const isActive = mainFilterCategory === tab.id;
             return (
               <button
+                key={tab.id}
                 type="button"
-                className="journal-list-item"
-                key={fund.id}
-                style={{ width: '100%', border: 0, background: 'transparent', textAlign: 'left', cursor: 'pointer' }}
-                onClick={() => {
-                  setEditingFundId(fund.id);
-                  setNewNav(String(fund.nav));
-                  setNewNavDate(today());
-                }}
+                onClick={() => setMainFilterCategory(tab.id as any)}
+                className={`m3-chip ${isActive ? 'active' : ''}`}
+                style={{ fontSize: '12px', padding: '6px 14px', height: '32px' }}
               >
-                <span className="journal-fund-mark">{fund.code.slice(0, 4)}</span>
-                <span style={{ minWidth: 0 }}>
-                  <strong style={{ display: 'block', fontSize: 14 }}>{fund.code}</strong>
-                  <small style={{ color: 'var(--journal-muted)', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {fund.company} • {fund.navDate || 'Hôm nay'}
-                  </small>
-                </span>
-                <span style={{ textAlign: 'right' }}>
-                  <strong style={{ display: 'block', fontSize: 14 }}>{formatVND(fund.nav)}</strong>
-                  <small
-                    style={{
-                      color: change > 0 ? 'var(--journal-success)' : change < 0 ? 'var(--journal-danger)' : 'var(--journal-muted)',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {change > 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`}
-                  </small>
-                </span>
+                {tab.label}
               </button>
             );
           })}
-        </section>
+        </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--journal-muted)', fontSize: 12, paddingInline: 4 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>info</span>
-        Nhấn vào từng quỹ để xem chi tiết hoặc chỉnh sửa NAV thủ công nếu cần.
-      </div>
-
-      {/* MODAL: Thêm Quỹ & Tra cứu từ Fmarket */}
-      {isCreateOpen && (
-        <div className="journal-scrim" onClick={() => setIsCreateOpen(false)}>
-          <section
-            className="journal-sheet"
-            style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}
-            onClick={(event) => event.stopPropagation()}
+      {/* Main Funds List (Clean M3 Material UI) */}
+      {funds.length === 0 ? (
+        <div className="m3-card" style={{ textAlign: 'center', padding: '36px 16px' }}>
+          <span className="material-symbols-outlined" style={{ fontSize: '44px', color: 'var(--md-sys-color-outline)' }}>
+            account_balance_wallet
+          </span>
+          <h3 style={{ marginTop: '10px', fontSize: '15px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+            Chưa có quỹ nào trong danh mục
+          </h3>
+          <p style={{ marginTop: '4px', fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', maxWidth: '340px', margin: '6px auto 16px auto' }}>
+            Tra cứu và thêm các quỹ từ Fmarket để theo dõi NAV và ghi nhận giao dịch mua/bán.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setModalSearch('');
+              setIsModalOpen(true);
+            }}
+            className="m3-pill-btn-primary"
+            style={{ margin: '0 auto', display: 'inline-flex' }}
           >
-            <div className="journal-sheet-handle" />
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>search</span>
+            Tra cứu & Thêm Quỹ
+          </button>
+        </div>
+      ) : (
+        <div
+          className="m3-card"
+          style={{
+            padding: 0,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {filteredMainFunds.map((fund, index) => {
+            const change = fund.previousNav > 0 ? ((fund.nav - fund.previousNav) / fund.previousNav) * 100 : 0;
+            const meta = getCategoryMeta(fund.category);
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 style={{ fontSize: 18, margin: 0 }}>Thêm Quỹ Đầu Tư</h2>
+            return (
+              <div
+                key={fund.id}
+                onClick={() => {
+                  setEditingFundId(fund.id);
+                  setNewNav(formatInputCurrency(fund.nav));
+                  setNewNavDate(today());
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '14px 16px',
+                  cursor: 'pointer',
+                  borderBottom: index < filteredMainFunds.length - 1 ? '1px solid var(--md-sys-color-outline-variant)' : 'none',
+                  backgroundColor: 'transparent',
+                  transition: 'background-color 0.15s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--md-sys-color-surface-container)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+              >
+                {/* Left: Avatar & Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                  <div
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '12px',
+                      backgroundColor: meta.bg,
+                      color: meta.text,
+                      display: 'grid',
+                      placeItems: 'center',
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {fund.code.slice(0, 4)}
+                  </div>
+
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+                        {fund.code}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          padding: '1px 6px',
+                          borderRadius: '6px',
+                          backgroundColor: meta.bg,
+                          color: meta.text,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {meta.label}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {fund.company} • {fund.navDate || 'Hôm nay'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: NAV Price & Change % */}
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontVariantNumeric: 'tabular-nums' }}>
+                    {formatVND(fund.nav)}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: change > 0 ? 'var(--journal-success)' : change < 0 ? 'var(--journal-danger)' : 'var(--md-sys-color-on-surface-variant)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                    }}
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>
+                      {change > 0 ? 'trending_up' : change < 0 ? 'trending_down' : 'remove'}
+                    </span>
+                    {change > 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* MODAL: Tra cứu & Thêm Quỹ Fmarket (Clean Google M3 Layout) */}
+      {isModalOpen && (
+        <div
+          className="journal-scrim"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div
+            className="journal-sheet"
+            style={{
+              width: 'min(100%, 560px)',
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '20px',
+              borderRadius: '24px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <div>
+                <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', margin: 0 }}>
+                  Thêm Quỹ Đầu Tư
+                </h2>
+                <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', margin: '2px 0 0' }}>
+                  Toàn bộ 68+ quỹ mở và ETF niêm yết trên Fmarket
+                </p>
+              </div>
+
               <button
                 type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="journal-icon-button"
-                aria-label="Đóng"
+                onClick={() => setIsModalOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  color: 'var(--md-sys-color-on-surface-variant)',
+                  display: 'flex',
+                }}
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>close</span>
               </button>
             </div>
 
-            {/* Switch Mode Segmented Tabs */}
-            <div className="m3-segmented-control" style={{ marginBottom: 14 }}>
+            {/* Segmented Mode Tabs */}
+            <div className="m3-segmented-group" style={{ marginBottom: '12px' }}>
               <button
                 type="button"
-                className={`m3-segment-btn ${createMode === 'LOOKUP' ? 'active' : ''}`}
-                onClick={() => setCreateMode('LOOKUP')}
+                onClick={() => setModalTab('CATALOG')}
+                className={`m3-segmented-item ${modalTab === 'CATALOG' ? 'active' : ''}`}
+                style={{ flex: 1, justifyContent: 'center' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>search</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>search</span>
                 Tra cứu Fmarket ({marketCatalog.length || '68+'})
               </button>
               <button
                 type="button"
-                className={`m3-segment-btn ${createMode === 'MANUAL' ? 'active' : ''}`}
-                onClick={() => setCreateMode('MANUAL')}
+                onClick={() => setModalTab('MANUAL')}
+                className={`m3-segmented-item ${modalTab === 'MANUAL' ? 'active' : ''}`}
+                style={{ flex: 1, justifyContent: 'center' }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>edit_note</span>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>edit_note</span>
                 Tự nhập thủ công
               </button>
             </div>
 
-            {/* TAB 1: LOOKUP FROM FMARKET */}
-            {createMode === 'LOOKUP' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1, minHeight: 0 }}>
-                <div className="journal-field" style={{ margin: 0 }}>
+            {/* TAB 1: CATALOG FROM FMARKET */}
+            {modalTab === 'CATALOG' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, minHeight: 0 }}>
+                {/* Search Input */}
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: '18px',
+                      color: 'var(--md-sys-color-on-surface-variant)',
+                    }}
+                  >
+                    search
+                  </span>
                   <input
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Tìm theo mã quỹ hoặc công ty (VD: VESAF, DCDS, SSI, Vina...)"
+                    value={modalSearch}
+                    onChange={(e) => setModalSearch(e.target.value)}
+                    placeholder="Tìm theo mã hoặc tên (VD: VESAF, DCDS, SSI...)"
+                    className="m3-input"
+                    style={{ paddingLeft: '38px', height: '42px', fontSize: '13px' }}
                     autoFocus
                   />
-                </div>
-
-                {/* Category Chips Filter */}
-                <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
-                  {[
-                    { id: 'ALL', label: 'Tất cả' },
-                    { id: 'Equity', label: 'Cổ phiếu' },
-                    { id: 'Bond', label: 'Trái phiếu' },
-                    { id: 'Balanced', label: 'Cân bằng' },
-                  ].map((cat) => (
+                  {modalSearch.trim() && (
                     <button
-                      key={cat.id}
                       type="button"
-                      onClick={() => setSelectedCategoryFilter(cat.id as any)}
-                      className={`m3-chip ${selectedCategoryFilter === cat.id ? 'active' : ''}`}
-                      style={{ padding: '4px 12px', fontSize: 12, height: 30 }}
+                      onClick={() => setModalSearch('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: 'var(--md-sys-color-on-surface-variant)',
+                        padding: '4px',
+                      }}
                     >
-                      {cat.label}
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>cancel</span>
                     </button>
-                  ))}
+                  )}
                 </div>
 
-                {/* Fund List Results */}
+                {/* Filters & Bulk Action Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                  {/* Category Chips */}
+                  <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px' }}>
+                    {[
+                      { id: 'ALL', label: 'Tất cả (68)' },
+                      { id: 'UNADDED', label: 'Chưa thêm' },
+                      { id: 'ADDED', label: 'Đã thêm' },
+                      { id: 'Equity', label: 'Cổ phiếu' },
+                      { id: 'Bond', label: 'Trái phiếu' },
+                      { id: 'Balanced', label: 'Cân bằng' },
+                    ].map((tab) => {
+                      const isActive = modalCategoryFilter === tab.id;
+                      return (
+                        <button
+                          key={tab.id}
+                          type="button"
+                          onClick={() => setModalCategoryFilter(tab.id as any)}
+                          className={`m3-chip ${isActive ? 'active' : ''}`}
+                          style={{ padding: '3px 10px', fontSize: '11px', height: '26px' }}
+                        >
+                          {tab.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* "Thêm tất cả" button */}
+                  {unaddedCountInFilter > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleAddAllFiltered}
+                      className="m3-pill-btn-primary"
+                      style={{ padding: '4px 10px', fontSize: '11px' }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>playlist_add</span>
+                      Thêm tất cả ({unaddedCountInFilter})
+                    </button>
+                  )}
+                </div>
+
+                {/* Catalog List (Material 3 Surface List) */}
                 <div
                   style={{
                     flex: 1,
                     overflowY: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
-                    maxHeight: '45vh',
-                    paddingRight: 2,
+                    border: '1px solid var(--md-sys-color-outline-variant)',
+                    borderRadius: '16px',
+                    backgroundColor: 'var(--md-sys-color-surface-container-lowest)',
+                    maxHeight: '44vh',
                   }}
                 >
                   {isLoadingCatalog ? (
-                    <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--journal-muted)' }}>
-                      <span className="material-symbols-outlined" style={{ animation: 'spin 1.5s linear infinite', fontSize: 28 }}>
+                    <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                      <span className="material-symbols-outlined" style={{ animation: 'spin 1.5s linear infinite', fontSize: '28px' }}>
                         progress_activity
                       </span>
-                      <p style={{ marginTop: 8, fontSize: 13 }}>Đang tải danh sách 68 quỹ từ Fmarket...</p>
+                      <p style={{ marginTop: '8px', fontSize: '12px' }}>Đang tải 68 quỹ từ Fmarket...</p>
                     </div>
                   ) : filteredCatalog.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--journal-muted)' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 32 }}>search_off</span>
-                      <p style={{ marginTop: 6, fontSize: 13 }}>Không tìm thấy quỹ nào khớp với từ khóa "{searchQuery}"</p>
+                    <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                      <span className="material-symbols-outlined" style={{ fontSize: '32px' }}>search_off</span>
+                      <p style={{ marginTop: '6px', fontSize: '12px' }}>
+                        Không có quỹ nào khớp với bộ lọc
+                      </p>
                       <button
                         type="button"
-                        className="journal-text-button"
                         onClick={() => {
-                          setCode(searchQuery.toUpperCase());
-                          setCreateMode('MANUAL');
+                          setModalSearch('');
+                          setModalCategoryFilter('ALL');
                         }}
-                        style={{ marginTop: 8 }}
+                        className="m3-pill-btn"
+                        style={{ marginTop: '8px', fontSize: '11px' }}
                       >
-                        + Tự tạo quỹ "{searchQuery.toUpperCase()}"
+                        Xem lại tất cả 68 quỹ
                       </button>
                     </div>
                   ) : (
-                    filteredCatalog.map((item) => {
+                    filteredCatalog.map((item, idx) => {
                       const isAdded = existingFundCodes.has(item.code.toUpperCase());
+                      const meta = getCategoryMeta(item.category);
+
                       return (
                         <div
                           key={item.code}
                           style={{
                             display: 'flex',
-                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            padding: '12px 14px',
-                            borderRadius: 16,
-                            backgroundColor: 'var(--journal-surface-variant)',
-                            border: isAdded ? '1px solid var(--journal-primary)' : '1px solid transparent',
+                            justifyContent: 'space-between',
+                            padding: '10px 14px',
+                            borderBottom: idx < filteredCatalog.length - 1 ? '1px solid var(--md-sys-color-outline-variant)' : 'none',
+                            backgroundColor: isAdded ? 'var(--md-sys-color-surface-container-low)' : 'transparent',
+                            gap: '10px',
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
-                            <span className="journal-fund-mark" style={{ minWidth: 38, width: 38, height: 38 }}>
+                          {/* Left: Mark & Info */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                            <div
+                              style={{
+                                width: '36px',
+                                height: '36px',
+                                minWidth: '36px',
+                                borderRadius: '10px',
+                                backgroundColor: meta.bg,
+                                color: meta.text,
+                                display: 'grid',
+                                placeItems: 'center',
+                                fontWeight: 700,
+                                fontSize: '10px',
+                              }}
+                            >
                               {item.code.slice(0, 4)}
-                            </span>
-                            <div style={{ minWidth: 0, paddingRight: 8 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <strong style={{ fontSize: 14 }}>{item.code}</strong>
+                            </div>
+
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+                                  {item.code}
+                                </span>
                                 <span
                                   style={{
-                                    fontSize: 10,
-                                    padding: '2px 6px',
-                                    borderRadius: 6,
-                                    backgroundColor: 'var(--journal-canvas)',
-                                    color: 'var(--journal-muted)',
+                                    fontSize: '9px',
+                                    padding: '1px 5px',
+                                    borderRadius: '4px',
+                                    backgroundColor: meta.bg,
+                                    color: meta.text,
+                                    fontWeight: 600,
                                   }}
                                 >
-                                  {item.category === 'Equity' ? 'Cổ phiếu' : item.category === 'Bond' ? 'Trái phiếu' : 'Cân bằng'}
+                                  {meta.label}
                                 </span>
                               </div>
-                              <small
-                                style={{
-                                  color: 'var(--journal-muted)',
-                                  display: 'block',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  fontSize: 11,
-                                }}
-                              >
+                              <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {item.company} • {item.name}
-                              </small>
+                              </div>
                             </div>
                           </div>
 
-                          <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div>
-                              <strong style={{ display: 'block', fontSize: 13 }}>{formatVND(item.nav)}</strong>
-                              <small
+                          {/* Right: Price & Action */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', fontVariantNumeric: 'tabular-nums' }}>
+                                {formatVND(item.nav)}
+                              </div>
+                              <div
                                 style={{
-                                  fontSize: 10,
-                                  color: item.changePercent >= 0 ? 'var(--journal-success)' : 'var(--journal-danger)',
-                                  fontWeight: 500,
+                                  fontSize: '10px',
+                                  fontWeight: 600,
+                                  color: item.changePercent > 0 ? 'var(--journal-success)' : item.changePercent < 0 ? 'var(--journal-danger)' : 'var(--md-sys-color-on-surface-variant)',
                                 }}
                               >
-                                {item.changePercent >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
-                              </small>
+                                {item.changePercent > 0 ? `+${item.changePercent.toFixed(2)}%` : `${item.changePercent.toFixed(2)}%`}
+                              </div>
                             </div>
 
                             {isAdded ? (
                               <span
                                 style={{
-                                  fontSize: 11,
-                                  color: 'var(--journal-primary)',
-                                  display: 'flex',
+                                  display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: 2,
-                                  fontWeight: 500,
+                                  gap: '3px',
+                                  fontSize: '11px',
+                                  fontWeight: 600,
+                                  color: 'var(--journal-success)',
+                                  padding: '4px 8px',
+                                  borderRadius: '999px',
+                                  backgroundColor: 'rgba(56, 142, 60, 0.1)',
                                 }}
                               >
-                                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>check_circle</span>
+                                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>check</span>
                                 Đã thêm
                               </span>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleAddFromMarket(item)}
-                                className="journal-primary-button"
-                                style={{
-                                  minHeight: 32,
-                                  padding: '0 12px',
-                                  fontSize: 12,
-                                  borderRadius: 12,
-                                }}
+                                className="m3-pill-btn-primary"
+                                style={{ padding: '4px 10px', fontSize: '11px' }}
                               >
                                 + Thêm
                               </button>
@@ -504,86 +788,192 @@ export default function FundsPage() {
                     })
                   )}
                 </div>
+
+                {/* Footer close button */}
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="m3-pill-btn"
+                  style={{ width: '100%', marginTop: '4px' }}
+                >
+                  Xong ({funds.length} quỹ đang theo dõi)
+                </button>
               </div>
             )}
 
-            {/* TAB 2: MANUAL INPUT */}
-            {createMode === 'MANUAL' && (
-              <form className="journal-form" onSubmit={createManualFund}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div className="journal-field">
-                    <label htmlFor="fund-code">Mã quỹ</label>
-                    <input id="fund-code" value={code} onChange={(event) => setCode(event.target.value)} placeholder="VESAF" required />
+            {/* TAB 2: MANUAL FORM */}
+            {modalTab === 'MANUAL' && (
+              <form onSubmit={handleCreateManualFund} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                  <div className="m3-form-group">
+                    <label className="m3-form-label">Mã quỹ (*)</label>
+                    <input
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      placeholder="VD: VESAF"
+                      required
+                      className="m3-input"
+                    />
                   </div>
-                  <div className="journal-field">
-                    <label htmlFor="fund-category">Loại</label>
-                    <select id="fund-category" value={category} onChange={(event) => setCategory(event.target.value as FundCategory)}>
-                      <option value="Equity">Cổ phiếu</option>
-                      <option value="Bond">Trái phiếu</option>
-                      <option value="Balanced">Cân bằng</option>
-                      <option value="Index">Chỉ số</option>
+
+                  <div className="m3-form-group">
+                    <label className="m3-form-label">Loại quỹ</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value as FundCategory)}
+                      className="m3-select"
+                    >
+                      <option value="Equity">Cổ phiếu (Equity)</option>
+                      <option value="Bond">Trái phiếu (Bond)</option>
+                      <option value="Balanced">Cân bằng (Balanced)</option>
+                      <option value="Index">Chỉ số (Index)</option>
                     </select>
                   </div>
                 </div>
-                <div className="journal-field">
-                  <label htmlFor="fund-name">Tên quỹ</label>
-                  <input id="fund-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Tên đầy đủ của quỹ" required />
+
+                <div className="m3-form-group">
+                  <label className="m3-form-label">Tên đầy đủ của quỹ (*)</label>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="VD: Quỹ Đầu Tư Cổ Phiếu Tiếp Cận Thị Trường..."
+                    required
+                    className="m3-input"
+                  />
                 </div>
-                <div className="journal-field">
-                  <label htmlFor="fund-company">Công ty quản lý</label>
-                  <input id="fund-company" value={company} onChange={(event) => setCompany(event.target.value)} placeholder="VinaCapital / Dragon Capital..." required />
+
+                <div className="m3-form-group">
+                  <label className="m3-form-label">Công ty quản lý (*)</label>
+                  <input
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="VD: VinaCapital / Dragon Capital..."
+                    required
+                    className="m3-input"
+                  />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div className="journal-field">
-                    <label htmlFor="fund-nav">NAV ban đầu (VND)</label>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                  <div className="m3-form-group">
+                    <label className="m3-form-label">NAV ban đầu (VND) (*)</label>
                     <input
-                      id="fund-nav"
                       type="text"
                       inputMode="numeric"
                       value={nav}
-                      onChange={(event) => setNav(formatInputCurrency(event.target.value))}
+                      onChange={(e) => setNav(formatInputCurrency(e.target.value))}
                       placeholder="30.000"
                       required
+                      className="m3-input"
                     />
                   </div>
-                  <div className="journal-field">
-                    <label htmlFor="fund-date">Ngày NAV</label>
-                    <input id="fund-date" type="date" value={navDate} onChange={(event) => setNavDate(event.target.value)} required />
+
+                  <div className="m3-form-group">
+                    <label className="m3-form-label">Ngày NAV (*)</label>
+                    <input
+                      type="date"
+                      value={navDate}
+                      onChange={(e) => setNavDate(e.target.value)}
+                      required
+                      className="m3-input"
+                    />
                   </div>
                 </div>
-                <button className="journal-primary-button" type="submit">Lưu quỹ vào danh mục</button>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="m3-pill-btn"
+                    style={{ flex: 1 }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="m3-pill-btn-primary"
+                    style={{ flex: 1 }}
+                  >
+                    Lưu Quỹ Mới
+                  </button>
+                </div>
               </form>
             )}
-          </section>
+          </div>
         </div>
       )}
 
       {/* MODAL: Chỉnh Sửa NAV Thủ Công */}
       {editingFundId && (
-        <div className="journal-scrim" onClick={() => setEditingFundId(null)}>
-          <section className="journal-sheet" onClick={(event) => event.stopPropagation()}>
-            <div className="journal-sheet-handle" />
-            <h2 style={{ marginBottom: 16 }}>Chỉnh sửa NAV thủ công</h2>
-            <form className="journal-form" onSubmit={saveNav}>
-              <div className="journal-field">
-                <label htmlFor="new-nav">NAV mới (VND)</label>
+        <div
+          className="journal-scrim"
+          onClick={() => setEditingFundId(null)}
+        >
+          <div
+            className="journal-sheet"
+            style={{
+              width: 'min(100%, 420px)',
+              padding: '20px',
+              borderRadius: '24px',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+              <h2 style={{ fontSize: '17px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)', margin: 0 }}>
+                Chỉnh sửa NAV thủ công
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditingFundId(null)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNav} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="m3-form-group">
+                <label className="m3-form-label">NAV mới (VND) (*)</label>
                 <input
-                  id="new-nav"
                   type="text"
                   inputMode="numeric"
                   value={newNav}
-                  onChange={(event) => setNewNav(formatInputCurrency(event.target.value))}
+                  onChange={(e) => setNewNav(formatInputCurrency(e.target.value))}
                   placeholder="30.000"
                   required
+                  className="m3-input"
                 />
               </div>
-              <div className="journal-field">
-                <label htmlFor="new-nav-date">Ngày công bố</label>
-                <input id="new-nav-date" type="date" value={newNavDate} onChange={(event) => setNewNavDate(event.target.value)} required />
+
+              <div className="m3-form-group">
+                <label className="m3-form-label">Ngày công bố (*)</label>
+                <input
+                  type="date"
+                  value={newNavDate}
+                  onChange={(e) => setNewNavDate(e.target.value)}
+                  required
+                  className="m3-input"
+                />
               </div>
-              <button className="journal-primary-button" type="submit">Cập nhật</button>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingFundId(null)}
+                  className="m3-pill-btn"
+                  style={{ flex: 1 }}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="m3-pill-btn-primary"
+                  style={{ flex: 1 }}
+                >
+                  Cập nhật
+                </button>
+              </div>
             </form>
-          </section>
+          </div>
         </div>
       )}
     </div>

@@ -67,6 +67,7 @@ interface AppContextType {
   updateGoal: (id: string, updates: Partial<FinancialGoal>) => void;
   deleteGoal: (id: string) => void;
   addFund: (fund: Omit<Fund, 'id' | 'navHistory'>) => void;
+  addFundsBatch: (funds: Omit<Fund, 'id' | 'navHistory'>[]) => void;
   updateFundNav: (fundId: string, newNav: number, date?: string) => void;
   clearFinancialData: () => void;
 }
@@ -569,6 +570,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('success', `Đã thêm quỹ ${newFund.code}.`);
   };
 
+  const addFundsBatch = (fundsDataList: Omit<Fund, 'id' | 'navHistory'>[]) => {
+    if (!fundsDataList.length) return;
+    const existingCodes = new Set(funds.map((f) => f.code.toUpperCase()));
+    const newFunds: Fund[] = [];
+
+    for (const fundData of fundsDataList) {
+      const codeUpper = fundData.code.toUpperCase();
+      if (!existingCodes.has(codeUpper)) {
+        existingCodes.add(codeUpper);
+        newFunds.push({
+          ...fundData,
+          id: 'f_' + fundData.code.toLowerCase(),
+          navHistory: [{ date: fundData.navDate, nav: fundData.nav }],
+        });
+      }
+    }
+
+    if (newFunds.length > 0) {
+      setFunds((prev) => [...prev, ...newFunds]);
+      showToast('success', `Đã thêm ${newFunds.length} quỹ vào hệ thống.`);
+    } else {
+      showToast('info', 'Tất cả các quỹ này đã có trong danh mục.');
+    }
+  };
+
   const updateFundNav = (fundId: string, newNav: number, date?: string) => {
     const updateDate = date || new Date().toISOString().split('T')[0];
     setFunds((prev) =>
@@ -640,6 +666,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateGoal,
         deleteGoal,
         addFund,
+        addFundsBatch,
         updateFundNav,
         clearFinancialData,
       }}
