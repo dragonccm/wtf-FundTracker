@@ -249,12 +249,12 @@ export default function FundsPage() {
               {funds.length} quỹ
             </span>
           </div>
-          <p style={{ fontSize: '13px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px', margin: 0 }}>
-            Dữ liệu giá NAV thời gian thực đồng bộ từ Fmarket
+          <p style={{ fontSize: '12px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px', margin: 0 }}>
+            {isSyncingNav ? 'Đang đồng bộ NAV từ Fmarket...' : `Fmarket • Cập nhật: ${formatSyncTime(lastNavSyncAt)}`}
           </p>
         </div>
 
-        {/* Top Actions */}
+        {/* Top Actions: Thêm Quỹ & Icon Reload Đồng Bộ */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             type="button"
@@ -268,64 +268,32 @@ export default function FundsPage() {
             <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
             Thêm Quỹ
           </button>
-        </div>
-      </div>
 
-      {/* Sync Status Banner */}
-      <div
-        className="m3-card"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '12px 16px',
-          gap: '12px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: '22px',
-              color: isSyncingNav ? 'var(--md-sys-color-primary)' : 'var(--journal-success)',
-              animation: isSyncingNav ? 'spin 1.5s linear infinite' : 'none',
-            }}
-          >
-            {isSyncingNav ? 'sync' : 'cloud_done'}
-          </span>
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
-              Tự động đồng bộ Fmarket
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-              {isSyncingNav ? 'Đang cập nhật NAV mới nhất...' : `Cập nhật gần nhất: ${formatSyncTime(lastNavSyncAt)}`}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => {
-              setModalSearch('');
-              setModalCategoryFilter('ALL');
-              setIsModalOpen(true);
-            }}
-            className="m3-pill-btn"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>explore</span>
-            Xem hết 68 quỹ
-          </button>
           <button
             type="button"
             onClick={() => syncNavAutomatically(true)}
             disabled={isSyncingNav}
+            title={isSyncingNav ? 'Đang đồng bộ...' : `Đồng bộ NAV từ Fmarket (Cập nhật: ${formatSyncTime(lastNavSyncAt)})`}
+            aria-label="Đồng bộ NAV Fmarket"
             className="m3-pill-btn"
-            style={{ fontSize: '12px', padding: '6px 12px' }}
+            style={{
+              width: '40px',
+              height: '40px',
+              padding: 0,
+              display: 'grid',
+              placeItems: 'center',
+              borderRadius: '50%',
+            }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>refresh</span>
-            Đồng bộ ngay
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: '20px',
+                animation: isSyncingNav ? 'spin 1.5s linear infinite' : 'none',
+              }}
+            >
+              refresh
+            </span>
           </button>
         </div>
       </div>
