@@ -238,7 +238,7 @@ export default function GoalsPage() {
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%' }}>
                 <div className="m3-form-group">
                   <label className="m3-form-label">Số tiền mục tiêu (VND)</label>
                   <input

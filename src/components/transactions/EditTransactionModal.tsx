@@ -167,7 +167,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
           </div>
 
           {/* 2. Portfolio and Fund Selection */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%' }}>
             <div className="m3-form-group">
               <label className="m3-form-label">Danh mục (*)</label>
               <select
@@ -198,9 +198,9 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
           </div>
 
           {/* 3. Goal Selection & Date */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%' }}>
             <div className="m3-form-group">
-              <label className="m3-form-label">Mục tiêu tài chính (Tùy chọn)</label>
+              <label className="m3-form-label">Mục tiêu tài chính</label>
               <select
                 value={goalId}
                 onChange={(e) => setGoalId(e.target.value)}
@@ -226,9 +226,9 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
           </div>
 
           {/* 4. Financial Figures (Amount, NAV, Units, Fee) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%' }}>
             <div className="m3-form-group">
-              <label className="m3-form-label">Tổng số tiền (VND) (*)</label>
+              <label className="m3-form-label">Tổng tiền (VND) (*)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -241,7 +241,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
             </div>
 
             <div className="m3-form-group">
-              <label className="m3-form-label">Giá NAV khớp lệnh (VND)</label>
+              <label className="m3-form-label">Giá NAV khớp (VND)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -254,7 +254,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px', width: '100%' }}>
             <div className="m3-form-group">
               <label className="m3-form-label">Số CCQ</label>
               <input
