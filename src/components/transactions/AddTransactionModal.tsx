@@ -17,12 +17,11 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
   const [goalId, setGoalId] = useState<string>('');
   const [type, setType] = useState<TransactionType>('BUY');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const initialNav = funds.find((f) => f.code === funds[0]?.code)?.nav || 28000;
   const [amount, setAmount] = useState<string>('10.000.000');
-  const [unitPrice, setUnitPrice] = useState<string>(
-    formatInputCurrency(funds.find((f) => f.code === funds[0]?.code)?.nav || 28000)
-  );
-  const [units, setUnits] = useState<string>('');
-  const [fee, setFee] = useState<string>('30.000');
+  const [unitPrice, setUnitPrice] = useState<string>(formatInputCurrency(initialNav));
+  const [units, setUnits] = useState<string>((10000000 / initialNav).toFixed(2));
+  const [fee, setFee] = useState<string>('0');
   const [notes, setNotes] = useState<string>('');
 
   const handleAmountChange = (val: string) => {
@@ -45,6 +44,15 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
     }
   };
 
+  const handleUnitsChange = (val: string) => {
+    setUnits(val);
+    const numUnits = parseFloat(String(val).replace(',', '.')) || 0;
+    const numPrice = parseInputCurrency(unitPrice);
+    if (numUnits > 0 && numPrice > 0) {
+      setAmount(formatInputCurrency(Math.round(numUnits * numPrice)));
+    }
+  };
+
   const handleFundChange = (code: string) => {
     setFundCode(code);
     const selectedFund = funds.find((f) => f.code === code);
@@ -63,7 +71,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
     const selectedFund = funds.find((f) => f.code === fundCode);
     const parsedAmount = parseInputCurrency(amount);
     const parsedPrice = parseInputCurrency(unitPrice);
-    const parsedUnits = parseFloat(units) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
+    const parsedUnits = parseFloat(String(units).replace(',', '.')) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
     const parsedFee = parseInputCurrency(fee);
 
     if (!selectedFund) {
@@ -256,7 +264,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
                 step="any"
                 placeholder="0.00"
                 value={units}
-                onChange={(e) => setUnits(e.target.value)}
+                onChange={(e) => handleUnitsChange(e.target.value)}
                 required
                 className="m3-input"
               />

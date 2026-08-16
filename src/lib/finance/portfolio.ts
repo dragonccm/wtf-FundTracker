@@ -1,4 +1,4 @@
-import { Transaction, Holding, Fund, PerformanceMetrics } from '@/types';
+import { Transaction, Holding, Fund, PerformanceMetrics, FinancialGoal } from '@/types';
 import { calculateXIRR, CashFlow } from './xirr';
 
 export function calculateHoldings(transactions: Transaction[], funds: Fund[]): Holding[] {
@@ -30,16 +30,16 @@ export function calculateHoldings(transactions: Transaction[], funds: Fund[]): H
       totalCost: 0,
     };
 
-    if (tx.type === 'BUY') {
-      const grossAmount = tx.amount + tx.fee;
+    if (tx.type === 'BUY' || tx.type === 'DEPOSIT') {
+      const grossAmount = tx.amount + (tx.fee || 0);
       existing.totalUnits += tx.units;
       existing.totalCost += grossAmount;
-    } else if (tx.type === 'SELL') {
+    } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL') {
       if (existing.totalUnits > 0) {
         const avgCost = existing.totalCost / existing.totalUnits;
         const unitsSold = Math.min(tx.units, existing.totalUnits);
-        existing.totalUnits -= unitsSold;
-        existing.totalCost -= unitsSold * avgCost;
+        existing.totalUnits = Math.max(0, existing.totalUnits - unitsSold);
+        existing.totalCost = Math.max(0, existing.totalCost - unitsSold * avgCost);
       }
     }
 
@@ -95,7 +95,7 @@ export function calculatePerformanceMetrics(
   let realizedPnL = 0;
   let cumulativePurchaseCost = 0;
 
-  // Track realized PnL across history
+  // Track realized PnL across history with exact weighted average cost basis
   const tempHoldings = new Map<string, { units: number; cost: number }>();
 
   const sortedTx = [...transactions].sort(
@@ -104,20 +104,20 @@ export function calculatePerformanceMetrics(
 
   sortedTx.forEach((tx) => {
     const cur = tempHoldings.get(tx.fundCode) || { units: 0, cost: 0 };
-    if (tx.type === 'BUY') {
+    if (tx.type === 'BUY' || tx.type === 'DEPOSIT') {
       cur.units += tx.units;
-      cur.cost += tx.amount + tx.fee;
-      cumulativePurchaseCost += tx.amount + tx.fee;
-    } else if (tx.type === 'SELL') {
+      cur.cost += tx.amount + (tx.fee || 0);
+      cumulativePurchaseCost += tx.amount + (tx.fee || 0);
+    } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL') {
       const avgCost = cur.units > 0 ? cur.cost / cur.units : 0;
       const unitsSold = Math.min(tx.units, cur.units);
       const soldCost = unitsSold * avgCost;
-      const proceeds = tx.amount - tx.fee;
+      const proceeds = tx.amount - (tx.fee || 0);
       realizedPnL += proceeds - soldCost;
       cur.units = Math.max(0, cur.units - unitsSold);
       cur.cost = Math.max(0, cur.cost - soldCost);
     } else if (tx.type === 'DIVIDEND') {
-      realizedPnL += tx.amount - tx.fee;
+      realizedPnL += tx.amount - (tx.fee || 0);
     }
     tempHoldings.set(tx.fundCode, cur);
   });
@@ -129,20 +129,16 @@ export function calculatePerformanceMetrics(
   // Build CashFlows for XIRR
   const cashFlows: CashFlow[] = [];
   transactions.forEach((tx) => {
-    if (tx.type === 'BUY') {
+    if (tx.type === 'BUY' || tx.type === 'DEPOSIT') {
       cashFlows.push({
-        amount: -(tx.amount + tx.fee),
+        amount: -(tx.amount + (tx.fee || 0)),
         date: new Date(tx.date),
       });
-    } else if (tx.type === 'SELL') {
+    } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL' || tx.type === 'DIVIDEND') {
       cashFlows.push({
-        amount: tx.amount - tx.fee,
+        amount: tx.amount - (tx.fee || 0),
         date: new Date(tx.date),
       });
-    } else if (tx.type === 'DIVIDEND' || tx.type === 'WITHDRAWAL') {
-      cashFlows.push({ amount: tx.amount - tx.fee, date: new Date(tx.date) });
-    } else if (tx.type === 'DEPOSIT') {
-      cashFlows.push({ amount: -(tx.amount + tx.fee), date: new Date(tx.date) });
     }
   });
 
@@ -159,8 +155,8 @@ export function calculatePerformanceMetrics(
   // Daily change estimation
   let dailyChange = 0;
   holdings.forEach((h) => {
-    const fund = funds.find((f) => f.code === h.fundCode);
-    if (fund) {
+    const fund = funds.find((f) => f.code === h.fundCode || f.id === h.fundId);
+    if (fund && fund.previousNav && fund.previousNav > 0) {
       const changePerUnit = fund.nav - fund.previousNav;
       dailyChange += changePerUnit * h.totalUnits;
     }
@@ -198,19 +194,10 @@ export function formatVND(amount: number, showSuffix = true): string {
   return showSuffix ? `${formatted} VND` : formatted;
 }
 
-/**
- * Định dạng tiền tệ VND đầy đủ cho toàn bộ ứng dụng theo yêu cầu
- * Hiển thị đầy đủ số tiền có dấu chấm phân cách và đuôi VND (Ví dụ: 4.848.445 VND, 12.000.000.000 VND)
- */
 export function formatCompactVND(amount: number): string {
   return formatVND(amount);
 }
 
-/**
- * Định dạng số CCQ hoặc số thập phân chuẩn tiếng Việt:
- * Ví dụ: 9135.49 -> "9.135,49" (không bao giờ bị "9.135.49")
- * Ví dụ: 1000 -> "1.000"
- */
 export function formatUnits(units: number): string {
   if (isNaN(units) || units === null || units === undefined) return '0';
   return new Intl.NumberFormat('vi-VN', {
@@ -225,48 +212,44 @@ export function formatPercent(value: number): string {
 }
 
 /**
- * Tự động chèn dấu chấm phân cách mỗi 3 chữ số khi người dùng gõ vào ô input
- * Khắc phục hoàn toàn lỗi khi gõ số liên tiếp và hỗ trợ số thập phân mượt mà
+ * Tự động chèn dấu chấm phân cách hàng nghìn mỗi 3 chữ số khi gõ số tiền hoặc giá NAV.
+ * Khắc phục triệt để lỗi biến số thành số lẻ thập phân (như 1,000000).
  */
 export function formatInputCurrency(raw: string | number): string {
   if (raw === '' || raw === null || raw === undefined) return '';
-  
+
   if (typeof raw === 'number') {
     if (isNaN(raw)) return '';
-    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 4 }).format(raw);
+    // Format number with dots for thousands, commas for decimals
+    const parts = raw.toString().split('.');
+    const intPart = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Number(parts[0]));
+    return parts.length > 1 && parts[1] ? `${intPart},${parts[1].slice(0, 4)}` : intPart;
   }
 
   const str = String(raw).trim();
   if (!str) return '';
 
-  // Nếu người dùng nhập dấu phẩy ',' (phân cách thập phân kiểu Việt Nam)
+  // If user typed comma ',' (Vietnamese decimal separator)
   if (str.includes(',')) {
     const parts = str.split(',');
     const intDigits = parts[0].replace(/\D/g, '');
-    const decDigits = parts.slice(1).join('').replace(/\D/g, '');
+    const decDigits = parts.slice(1).join('').replace(/\D/g, '').slice(0, 4);
     const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
-    return decDigits ? `${formattedInt},${decDigits}` : `${formattedInt},`;
+    return parts.length > 1 && str.endsWith(',') && !decDigits
+      ? `${formattedInt},`
+      : decDigits
+        ? `${formattedInt},${decDigits}`
+        : formattedInt;
   }
 
-  // Nếu chuỗi đến từ số thực JS có dấu chấm thập phân (VD "9135.49" hoặc "28000.5")
-  if (str.includes('.') && !str.endsWith('.')) {
-    const dotParts = str.split('.');
-    if (dotParts.length === 2 && dotParts[1].length !== 3 && dotParts[1].length <= 4) {
-      const intDigits = dotParts[0].replace(/\D/g, '');
-      const decDigits = dotParts[1].replace(/\D/g, '');
-      const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
-      return `${formattedInt},${decDigits}`;
-    }
-  }
-
-  // Nếu chuỗi kết thúc bằng dấu chấm (người dùng vừa bấm '.' để gõ số thập phân)
+  // If user typed dot '.' at the end, treat as wanting to type decimal
   if (str.endsWith('.')) {
     const intDigits = str.slice(0, -1).replace(/\D/g, '');
     const formattedInt = intDigits ? intDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '0';
     return `${formattedInt},`;
   }
 
-  // Với toàn bộ trường hợp số nguyên hoặc số có dấu chấm phân cách hàng nghìn sẵn có:
+  // All other input: strip non-digits and format integer with dots
   const digits = str.replace(/\D/g, '');
   if (!digits) return '';
 
@@ -274,7 +257,7 @@ export function formatInputCurrency(raw: string | number): string {
 }
 
 /**
- * Chuyển chuỗi định dạng có dấu chấm / dấu phẩy thành số nguyên / thực chuẩn xác
+ * Chuyển chuỗi định dạng có dấu chấm / dấu phẩy thành số thực / nguyên chính xác 100%
  */
 export function parseInputCurrency(formatted: string | number): number {
   if (typeof formatted === 'number') return isNaN(formatted) ? 0 : formatted;
@@ -283,7 +266,7 @@ export function parseInputCurrency(formatted: string | number): number {
   const str = String(formatted).trim();
   if (!str) return 0;
 
-  // Nếu có dấu phẩy thập phân: "9.135,49" -> 9135.49
+  // If contains comma for decimals (e.g. "15.806,5")
   if (str.includes(',')) {
     const parts = str.split(',');
     const intPart = parts[0].replace(/\D/g, '') || '0';
@@ -291,67 +274,139 @@ export function parseInputCurrency(formatted: string | number): number {
     return parseFloat(`${intPart}.${decPart}`) || 0;
   }
 
-  // Nếu là số thực US có dấu chấm (VD "9135.49")
-  if (str.includes('.')) {
-    const dotParts = str.split('.');
-    if (dotParts.length === 2 && dotParts[1].length !== 3) {
-      const intPart = dotParts[0].replace(/\D/g, '') || '0';
-      const decPart = dotParts[1].replace(/\D/g, '') || '0';
-      return parseFloat(`${intPart}.${decPart}`) || 0;
-    }
-  }
-
-  // Nếu không có dấu phẩy/thập phân, mọi dấu chấm đều là phân cách hàng nghìn
+  // Otherwise all non-digits are thousand separators
   const digits = str.replace(/\D/g, '');
   return digits ? parseFloat(digits) : 0;
 }
 
 export interface TransactionPnLResult {
   currentNav: number;
-  currentValue: number;
+  costBasis: number;
   pnl: number;
   pnlPercent: number;
   isProfit: boolean;
+  isRealized: boolean;
 }
 
 /**
- * Tính toán lãi / lỗ thời gian thực cho từng giao dịch dựa trên NAV hiện tại của quỹ
+ * Tính toán Lãi / Lỗ chuẩn xác cho từng giao dịch:
+ * - Lệnh MUA: Lãi/Lỗ tạm tính theo NAV hiện tại so với giá mua (bao gồm phí).
+ * - Lệnh BÁN: Lãi/Lỗ đã chốt = (Tiền bán - Phí) - (Số CCQ bán * Giá vốn bình quân của quỹ tại thời điểm bán).
  */
-export function calculateTransactionPnL(
-  tx: Transaction,
+export function calculateTransactionPnLMap(
+  transactions: Transaction[],
   funds: Fund[]
-): TransactionPnLResult | null {
-  const fund = funds.find((f) => f.code === tx.fundCode || f.id === tx.fundId);
-  if (!fund || fund.nav <= 0) return null;
+): Map<string, TransactionPnLResult> {
+  const resultMap = new Map<string, TransactionPnLResult>();
+  const fundMap = new Map<string, Fund>();
+  funds.forEach((f) => fundMap.set(f.code, f));
+  funds.forEach((f) => fundMap.set(f.id, f));
 
-  const currentNav = fund.nav;
-  if (tx.type === 'BUY') {
-    const totalCost = tx.amount + (tx.fee || 0);
-    const currentValue = tx.units * currentNav;
-    const pnl = currentValue - totalCost;
-    const pnlPercent = totalCost > 0 ? (pnl / totalCost) * 100 : 0;
+  // Sort chronologically to compute running cost basis for SELL orders
+  const sortedTx = [...transactions].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  const runningHoldings = new Map<string, { units: number; cost: number }>();
+
+  sortedTx.forEach((tx) => {
+    const fund = fundMap.get(tx.fundCode) || fundMap.get(tx.fundId);
+    const currentNav = fund ? fund.nav : tx.unitPrice;
+    const cur = runningHoldings.get(tx.fundCode) || { units: 0, cost: 0 };
+
+    if (tx.type === 'BUY' || tx.type === 'DEPOSIT') {
+      const grossCost = tx.amount + (tx.fee || 0);
+      const unitCost = tx.units > 0 ? grossCost / tx.units : tx.unitPrice;
+      const currentValue = tx.units * currentNav;
+      const pnl = currentValue - grossCost;
+      const pnlPercent = grossCost > 0 ? (pnl / grossCost) * 100 : 0;
+
+      resultMap.set(tx.id, {
+        currentNav,
+        costBasis: unitCost,
+        pnl,
+        pnlPercent,
+        isProfit: pnl >= 0,
+        isRealized: false,
+      });
+
+      cur.units += tx.units;
+      cur.cost += grossCost;
+      runningHoldings.set(tx.fundCode, cur);
+    } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL') {
+      // Cost basis per unit at the moment of sale
+      const avgCostBasisAtSale = cur.units > 0 ? cur.cost / cur.units : (fund?.nav || tx.unitPrice);
+      const unitsSold = tx.units;
+      const soldCost = unitsSold * avgCostBasisAtSale;
+      const netProceeds = tx.amount - (tx.fee || 0);
+      const realizedPnL = netProceeds - soldCost;
+      const realizedPnLPercent = soldCost > 0 ? (realizedPnL / soldCost) * 100 : 0;
+
+      resultMap.set(tx.id, {
+        currentNav: tx.unitPrice, // Price sold at
+        costBasis: avgCostBasisAtSale,
+        pnl: realizedPnL,
+        pnlPercent: realizedPnLPercent,
+        isProfit: realizedPnL >= 0,
+        isRealized: true,
+      });
+
+      cur.units = Math.max(0, cur.units - unitsSold);
+      cur.cost = Math.max(0, cur.cost - soldCost);
+      runningHoldings.set(tx.fundCode, cur);
+    }
+  });
+
+  return resultMap;
+}
+
+/**
+ * Helper tính toán tiến độ mục tiêu tài chính tự động đồng bộ từ các giao dịch & tài sản
+ */
+export function calculateLiveGoals(
+  goals: FinancialGoal[],
+  transactions: Transaction[],
+  funds: Fund[]
+): FinancialGoal[] {
+  const fundMap = new Map<string, Fund>();
+  funds.forEach((f) => fundMap.set(f.code, f));
+  funds.forEach((f) => fundMap.set(f.id, f));
+
+  return goals.map((goal) => {
+    // Find all transactions linked to this goal
+    const goalTx = transactions.filter((tx) => tx.goalId === goal.id);
+
+    // Calculate active holdings value contributed to this goal
+    const goalFundUnits = new Map<string, number>();
+    let netContributedCash = 0;
+
+    goalTx.forEach((tx) => {
+      const units = goalFundUnits.get(tx.fundCode) || 0;
+      if (tx.type === 'BUY' || tx.type === 'DEPOSIT') {
+        goalFundUnits.set(tx.fundCode, units + tx.units);
+        netContributedCash += tx.amount;
+      } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL') {
+        goalFundUnits.set(tx.fundCode, Math.max(0, units - tx.units));
+        netContributedCash -= tx.amount;
+      }
+    });
+
+    let liveMarketValue = 0;
+    goalFundUnits.forEach((units, fundCode) => {
+      const fund = fundMap.get(fundCode);
+      const nav = fund ? fund.nav : 0;
+      liveMarketValue += units * nav;
+    });
+
+    // If transactions exist for this goal, live amount is the current market value of its holdings (or net contributions)
+    // If base amount exists, add to it
+    const effectiveAmount = goalTx.length > 0
+      ? (liveMarketValue > 0 ? liveMarketValue : Math.max(0, netContributedCash))
+      : goal.currentAmount;
+
     return {
-      currentNav,
-      currentValue,
-      pnl,
-      pnlPercent,
-      isProfit: pnl >= 0,
+      ...goal,
+      currentAmount: effectiveAmount,
     };
-  }
-
-  if (tx.type === 'SELL') {
-    const proceeds = tx.amount - (tx.fee || 0);
-    const costAtOriginalNav = tx.units * tx.unitPrice;
-    const pnl = proceeds - costAtOriginalNav;
-    const pnlPercent = costAtOriginalNav > 0 ? (pnl / costAtOriginalNav) * 100 : 0;
-    return {
-      currentNav,
-      currentValue: proceeds,
-      pnl,
-      pnlPercent,
-      isProfit: pnl >= 0,
-    };
-  }
-
-  return null;
+  });
 }

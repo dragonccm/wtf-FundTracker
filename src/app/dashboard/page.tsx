@@ -59,16 +59,21 @@ export default function DashboardPage() {
               <span className="journal-eyebrow" style={{ color: 'var(--journal-muted)' }}>Tổng giá trị tài sản</span>
               <span className="journal-hero-updated">{holdings.length} quỹ đang nắm giữ</span>
             </div>
-            <strong className="journal-hero-value" title={formatVND(metrics.currentMarketValue)}>{formatCompactVND(metrics.currentMarketValue)}</strong>
+            <strong className="journal-hero-value" title={formatVND(metrics.currentMarketValue)}>
+              {formatCompactVND(metrics.currentMarketValue)}
+            </strong>
             <div className="journal-hero-performance">
               <div className={metrics.totalPnL >= 0 ? 'journal-positive' : 'journal-negative'}>
                 <span className="material-symbols-outlined" style={{ fontSize: 15 }}>
                   {metrics.totalPnL >= 0 ? 'trending_up' : 'trending_down'}
                 </span>
-                Lãi/lỗ {formatCompactVND(metrics.totalPnL)} ({formatPercent(metrics.totalPnLPercent)})
+                Lãi/lỗ {metrics.totalPnL >= 0 ? '+' : ''}{formatCompactVND(metrics.totalPnL)} ({formatPercent(metrics.totalPnLPercent)})
               </div>
-              <span className={metrics.dailyChange >= 0 ? 'journal-daily-positive' : 'journal-daily-negative'}>
-                Hôm nay {formatCompactVND(metrics.dailyChange)}
+              <span
+                className={metrics.dailyChange >= 0 ? 'journal-daily-positive' : 'journal-daily-negative'}
+                title="Biến động NAV của các quỹ đang nắm giữ so với phiên gần nhất"
+              >
+                Hôm nay {metrics.dailyChange >= 0 ? '+' : ''}{formatCompactVND(metrics.dailyChange)} ({formatPercent(metrics.dailyChangePercent)})
               </span>
             </div>
             <div className="journal-hero-pie" aria-label={`Biểu đồ phân bổ danh mục: ${allocation.map((item) => `${item.name} ${item.weight.toFixed(1)}%`).join(', ')}`}>
@@ -115,24 +120,28 @@ export default function DashboardPage() {
           <section className="journal-metrics" aria-label="Chỉ số danh mục">
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>payments</span>
-              <span className="journal-eyebrow">Vốn</span>
+              <span className="journal-eyebrow">Vốn đầu tư</span>
               <strong title={formatVND(metrics.totalInvested)}>{formatCompactVND(metrics.totalInvested)}</strong>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>trending_up</span>
               <span className="journal-eyebrow">Lãi / lỗ</span>
-              <strong className={metrics.totalPnL >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.totalPnL)}>{formatCompactVND(metrics.totalPnL)}</strong>
+              <strong className={metrics.totalPnL >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.totalPnL)}>
+                {metrics.totalPnL >= 0 ? '+' : ''}{formatCompactVND(metrics.totalPnL)}
+              </strong>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>query_stats</span>
-              <span className="journal-eyebrow">XIRR</span>
+              <span className="journal-eyebrow">Tỷ suất XIRR</span>
               <strong className={hasSuspiciousXirr || !hasMatureXirr ? 'journal-value-muted' : undefined}>{xirrLabel}</strong>
               <small className="journal-metric-hint">{xirrHint}</small>
             </div>
             <div className="journal-metric">
               <span className="material-symbols-outlined" style={{ color: 'var(--journal-primary)', fontSize: 21 }}>today</span>
-              <span className="journal-eyebrow">Hôm nay</span>
-              <strong title={formatVND(metrics.dailyChange)}>{formatCompactVND(metrics.dailyChange)}</strong>
+              <span className="journal-eyebrow">Biến động ngày</span>
+              <strong className={metrics.dailyChange >= 0 ? 'journal-value-positive' : 'journal-value-negative'} title={formatVND(metrics.dailyChange)}>
+                {metrics.dailyChange >= 0 ? '+' : ''}{formatCompactVND(metrics.dailyChange)}
+              </strong>
               <small className="journal-metric-hint">{formatPercent(metrics.dailyChangePercent)}</small>
             </div>
           </section>

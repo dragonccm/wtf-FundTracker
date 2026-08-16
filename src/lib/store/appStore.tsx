@@ -17,7 +17,7 @@ import {
   initialTransactions,
   initialGoals,
 } from './initialData';
-import { calculateHoldings, calculatePerformanceMetrics } from '../finance/portfolio';
+import { calculateHoldings, calculatePerformanceMetrics, calculateLiveGoals } from '../finance/portfolio';
 import { useToast } from '@/components/feedback/ToastProvider';
 
 export function getOptimalNavSyncIntervalMs(): number {
@@ -327,6 +327,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     () => calculatePerformanceMetrics(filteredTransactions, funds),
     [filteredTransactions, funds],
   );
+  const liveGoals = useMemo(
+    () => calculateLiveGoals(goals, transactions, funds),
+    [goals, transactions, funds],
+  );
 
   // Proactive Auto-Sync NAV from Fmarket
   const syncNavAutomatically = useCallback(async (force = false) => {
@@ -614,7 +618,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activePortfolioId,
         setActivePortfolioId,
         transactions: filteredTransactions,
-        goals,
+        goals: liveGoals,
         holdings,
         metrics,
         lastNavSyncAt,

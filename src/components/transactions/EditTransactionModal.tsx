@@ -46,6 +46,15 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
     }
   };
 
+  const handleUnitsChange = (val: string) => {
+    setUnits(val);
+    const numUnits = parseFloat(String(val).replace(',', '.')) || 0;
+    const numPrice = parseInputCurrency(unitPrice);
+    if (numUnits > 0 && numPrice > 0) {
+      setAmount(formatInputCurrency(Math.round(numUnits * numPrice)));
+    }
+  };
+
   const handleFundChange = (code: string) => {
     setFundCode(code);
     const selectedFund = funds.find((f) => f.code === code);
@@ -64,7 +73,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
     const selectedFund = funds.find((f) => f.code === fundCode);
     const parsedAmount = parseInputCurrency(amount);
     const parsedPrice = parseInputCurrency(unitPrice);
-    const parsedUnits = parseFloat(units) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
+    const parsedUnits = parseFloat(String(units).replace(',', '.')) || (parsedPrice > 0 ? parsedAmount / parsedPrice : 0);
     const parsedFee = parseInputCurrency(fee);
 
     if (!portfolioId) {
@@ -253,7 +262,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
                 step="any"
                 placeholder="0.00"
                 value={units}
-                onChange={(e) => setUnits(e.target.value)}
+                onChange={(e) => handleUnitsChange(e.target.value)}
                 required
                 className="m3-input"
               />

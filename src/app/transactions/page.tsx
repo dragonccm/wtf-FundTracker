@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '@/lib/store/appStore';
 import { Transaction } from '@/types';
-import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnL } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnLMap } from '@/lib/finance/portfolio';
 import AddTransactionModal from '@/components/transactions/AddTransactionModal';
 import EditTransactionModal from '@/components/transactions/EditTransactionModal';
 
@@ -162,166 +162,173 @@ export default function TransactionsPage() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {filteredTx.map((tx) => {
-              const pnlResult = calculateTransactionPnL(tx, funds);
-              const linkedGoal = tx.goalId ? goals.find((g) => g.id === tx.goalId) : null;
+            {(() => {
+              const pnlMap = calculateTransactionPnLMap(transactions, funds);
+              return filteredTx.map((tx) => {
+                const pnlResult = pnlMap.get(tx.id);
+                const linkedGoal = tx.goalId ? goals.find((g) => g.id === tx.goalId) : null;
+                const isSell = tx.type === 'SELL' || tx.type === 'WITHDRAWAL';
 
-              return (
-                <div
-                  key={tx.id}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                    padding: '14px 16px',
-                    borderRadius: '18px',
-                    backgroundColor: 'var(--md-sys-color-surface-container-low)',
-                    border: '1px solid var(--md-sys-color-outline-variant)',
-                    transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
-                  }}
-                >
-                  {/* Top row: Fund, Type, Goal, Actions */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
-                      <div className={getFundBadgeClass(tx.fundCode)}>
-                        <span style={{ fontWeight: 600, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
-                      </div>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
-                            {tx.fundCode}
-                          </span>
-                          <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
-                            {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
-                          </span>
-                          {linkedGoal && (
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '3px',
-                                fontSize: '10px',
-                                padding: '2px 8px',
-                                borderRadius: '999px',
-                                backgroundColor: 'var(--journal-primary-container)',
-                                color: 'var(--journal-primary-strong)',
-                                fontWeight: 500,
-                              }}
-                            >
-                              🎯 {linkedGoal.name}
-                            </span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
-                          {formatUnits(tx.units)} CCQ • Ngày: {tx.date}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action buttons (Edit, Delete) */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setEditingTransaction(tx)}
-                        title="Chỉnh sửa giao dịch"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--journal-primary)',
-                          cursor: 'pointer',
-                          padding: '6px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
-                            deleteTransaction(tx.id);
-                          }
-                        }}
-                        title="Xóa giao dịch"
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--md-sys-color-outline)',
-                          cursor: 'pointer',
-                          padding: '6px',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Bottom row: Value, Price NAV, and PnL */}
+                return (
                   <div
+                    key={tx.id}
                     style={{
                       display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
+                      flexDirection: 'column',
                       gap: '8px',
-                      paddingTop: '8px',
-                      borderTop: '1px solid var(--md-sys-color-outline-variant)',
+                      padding: '14px 16px',
+                      borderRadius: '18px',
+                      backgroundColor: 'var(--md-sys-color-surface-container-low)',
+                      border: '1px solid var(--md-sys-color-outline-variant)',
+                      transition: 'all 0.2s cubic-bezier(0.2, 0, 0, 1)',
                     }}
                   >
-                    <div>
-                      <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị giao dịch</div>
-                      <div title={formatVND(tx.amount)} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
-                        {formatCompactVND(tx.amount)}
+                    {/* Top row: Fund, Type, Goal, Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                        <div className={getFundBadgeClass(tx.fundCode)}>
+                          <span style={{ fontWeight: 600, fontSize: '11px' }}>{tx.fundCode.slice(0, 3)}</span>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+                              {tx.fundCode}
+                            </span>
+                            <span className={tx.type === 'BUY' ? 'badge-positive' : 'badge-negative'} style={{ fontSize: '10px' }}>
+                              {tx.type === 'BUY' ? 'MUA' : 'BÁN'}
+                            </span>
+                            {linkedGoal && (
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                  fontSize: '10px',
+                                  padding: '2px 8px',
+                                  borderRadius: '999px',
+                                  backgroundColor: 'var(--journal-primary-container)',
+                                  color: 'var(--journal-primary-strong)',
+                                  fontWeight: 500,
+                                }}
+                              >
+                                🎯 {linkedGoal.name}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '11px', color: 'var(--md-sys-color-on-surface-variant)', marginTop: '2px' }}>
+                            {formatUnits(tx.units)} CCQ • Ngày: {tx.date}
+                          </div>
+                        </div>
                       </div>
-                      <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-                        NAV mua: {formatCompactVND(tx.unitPrice)}
+
+                      {/* Action buttons (Edit, Delete) */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setEditingTransaction(tx)}
+                          title="Chỉnh sửa giao dịch"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--journal-primary)',
+                            cursor: 'pointer',
+                            padding: '6px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) {
+                              deleteTransaction(tx.id);
+                            }
+                          }}
+                          title="Xóa giao dịch"
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--md-sys-color-outline)',
+                            cursor: 'pointer',
+                            padding: '6px',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
+                        </button>
                       </div>
                     </div>
 
-                    {pnlResult && (
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-                          {tx.type === 'BUY' ? 'Lãi / Lỗ hiện tại' : 'Lãi / Lỗ chốt'}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            color: pnlResult.isProfit ? 'var(--journal-success)' : 'var(--journal-danger)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            gap: '3px',
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>
-                            {pnlResult.isProfit ? 'trending_up' : 'trending_down'}
-                          </span>
-                          {pnlResult.isProfit ? '+' : ''}{formatCompactVND(pnlResult.pnl)} ({pnlResult.isProfit ? '+' : ''}{pnlResult.pnlPercent.toFixed(2)}%)
+                    {/* Bottom row: Value, Price NAV, and PnL */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        paddingTop: '8px',
+                        borderTop: '1px solid var(--md-sys-color-outline-variant)',
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>Giá trị giao dịch</div>
+                        <div title={formatVND(tx.amount)} style={{ fontSize: '14px', fontWeight: 600, color: 'var(--md-sys-color-on-surface)' }}>
+                          {formatCompactVND(tx.amount)}
                         </div>
                         <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
-                          NAV hiện tại: {formatCompactVND(pnlResult.currentNav)}
+                          {isSell ? 'NAV bán: ' : 'NAV mua: '}
+                          {formatCompactVND(tx.unitPrice)}
                         </div>
+                      </div>
+
+                      {pnlResult && (
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                            {isSell ? 'Lãi / Lỗ chốt' : 'Lãi / Lỗ hiện tại'}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: pnlResult.isProfit ? 'var(--journal-success)' : 'var(--journal-danger)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: '3px',
+                            }}
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>
+                              {pnlResult.isProfit ? 'trending_up' : 'trending_down'}
+                            </span>
+                            {pnlResult.isProfit ? '+' : ''}{formatCompactVND(pnlResult.pnl)} ({pnlResult.isProfit ? '+' : ''}{pnlResult.pnlPercent.toFixed(2)}%)
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--md-sys-color-on-surface-variant)' }}>
+                            {isSell
+                              ? `Giá vốn BQ: ${formatCompactVND(pnlResult.costBasis)}`
+                              : `NAV hiện tại: ${formatCompactVND(pnlResult.currentNav)}`}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {tx.notes && (
+                      <div style={{ fontSize: '11px', color: 'var(--journal-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>notes</span>
+                        {tx.notes}
                       </div>
                     )}
                   </div>
-
-                  {tx.notes && (
-                    <div style={{ fontSize: '11px', color: 'var(--journal-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>notes</span>
-                      {tx.notes}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         )}
       </div>

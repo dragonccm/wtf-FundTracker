@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAppStore } from '@/lib/store/appStore';
-import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnL } from '@/lib/finance/portfolio';
+import { formatCompactVND, formatVND, formatUnits, calculateTransactionPnLMap } from '@/lib/finance/portfolio';
 
 export default function TimelinePage() {
   const { transactions, funds, goals } = useAppStore();
@@ -10,6 +10,8 @@ export default function TimelinePage() {
   const sortedTx = [...transactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
+
+  const pnlMap = calculateTransactionPnLMap(transactions, funds);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -45,7 +47,7 @@ export default function TimelinePage() {
             />
 
             {sortedTx.map((tx) => {
-              const pnlResult = calculateTransactionPnL(tx, funds);
+              const pnlResult = pnlMap.get(tx.id);
               const linkedGoal = tx.goalId ? goals.find((g) => g.id === tx.goalId) : null;
 
               return (
