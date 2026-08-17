@@ -1,118 +1,270 @@
-# Nhật Ký Quỹ
+# 📊 Nhật Ký Quỹ (Fund Tracker) - Hệ Thống Quản Lý Danh Mục Quỹ Mở & ETF
 
-Ứng dụng theo dõi danh mục quỹ đầu tư cá nhân, xây dựng với Next.js 15, Material 3 và MongoDB. Dữ liệu quỹ, giao dịch, danh mục và mục tiêu được lưu theo từng tài khoản; dashboard chỉ tính toán từ các dữ liệu đó.
+> **Tài liệu Hướng dẫn Cài đặt, Triển khai và Bàn giao Hệ thống**  
+> *Phiên bản: 1.0.0 (Production Ready) • Chuẩn thiết kế: Google Material Design 3*
 
-## Chức năng
+---
 
-- Đăng ký/đăng nhập bằng email hoặc Google OAuth.
-- Quản lý danh mục, quỹ, giao dịch và mục tiêu tài chính.
-- Tổng hợp giá trị tài sản, lãi/lỗ, XIRR và phân bổ danh mục.
-- Đồng bộ MongoDB theo tài khoản, import/export giao dịch.
-- Giao diện Material 3 tối ưu cho màn hình nhỏ.
+## 📖 1. Giới thiệu Tổng quan
 
-## Chạy local
+**Nhật Ký Quỹ** là hệ thống quản lý danh mục đầu tư chứng chỉ quỹ (CCQ) cá nhân toàn diện, chuyên nghiệp. Hệ thống được thiết kế theo tiêu chuẩn Google Material Design 3, cung cấp công cụ theo dõi tài sản, tính toán lợi nhuận, phân bổ danh mục, đo lường tỷ suất sinh lời hàng năm (XIRR) và tự động đồng bộ giá trị tài sản ròng (NAV) từ hơn 68 quỹ mở trên thị trường Việt Nam (Fmarket).
 
-Yêu cầu: Node.js 20 trở lên và npm.
+### 🛠️ Công nghệ sử dụng:
+- **Frontend / Fullstack Framework**: [Next.js 15 (App Router)](https://nextjs.org/) + [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Giao diện & Trải nghiệm**: Vanilla CSS theo chuẩn Google Material Design 3 Tokens, font chữ [MoMo Trust Sans / Plus Jakarta Sans](https://fonts.google.com/), tối ưu 100% cho màn hình di động (iOS Safari & Android).
+- **Cơ sở dữ liệu (Database)**: [MongoDB](https://www.mongodb.com/) (Hỗ trợ MongoDB Atlas hoặc MongoDB Server tự lưu trữ).
+- **Xác thực & Bảo mật**: JWT Authentication với thư viện `jose`, mã hóa mật khẩu `bcryptjs`, tích hợp đăng nhập bảo mật qua Google OAuth 2.0.
+- **Tính toán tài chính**: Công cụ tính toán danh mục tự động, thuật toán Newton-Raphson tính tỷ suất lợi nhuận nội bộ hàng năm (XIRR / CAGR).
+- **Xử lý dữ liệu**: Hỗ trợ xuất/nhập sao lưu Excel (`xlsx`), JSON và CSV.
 
+---
+
+## ✨ 2. Các Tính năng Cốt lõi
+
+1. **Quản lý Quỹ & Tự động đồng bộ NAV**:
+   - Tích hợp sẵn danh mục hơn 68 quỹ mở (Cổ phiếu, Trái phiếu, Cân bằng, Chỉ số).
+   - Tự động lấy NAV mới nhất và lịch sử biến động từ Fmarket API.
+   - Hỗ trợ thêm hàng loạt (*Thêm tất cả*) hoặc thêm quỹ tùy chỉnh thủ công.
+2. **Ghi nhận & Quản lý Giao dịch**:
+   - Ghi nhận lệnh Mua / Bán CCQ với tính toán tức thời theo giá trị NAV khớp lệnh, phí giao dịch và số lượng CCQ.
+   - Gán giao dịch theo từng danh mục riêng biệt và liên kết với các Mục tiêu tài chính.
+   - Hỗ trợ xem dòng thời gian (Timeline) và chỉnh sửa/xóa giao dịch linh hoạt.
+3. **Phân tích Hiệu quả Đầu tư (Dashboard & Performance)**:
+   - Tổng tài sản, tổng vốn đầu tư, lợi nhuận ròng (PnL) và tỷ lệ sinh lời.
+   - Biểu đồ phân bổ tỷ trọng theo loại tài sản (Cổ phiếu, Trái phiếu, Tiền mặt).
+   - Bảng theo dõi mục tiêu tài chính với thanh tiến độ thông minh.
+   - Tính toán chỉ số XIRR cá nhân hóa theo từng mốc thời gian thực.
+4. **Nhập / Xuất dữ liệu (Import & Export)**:
+   - Xuất báo cáo danh mục ra file Excel (.xlsx).
+   - Khôi phục và nhập dữ liệu lịch sử giao dịch từ file Excel / CSV.
+5. **Hỗ trợ Đa nền tảng (PWA & Mobile Ready)**:
+   - Giao diện chuẩn App di động, hỗ trợ cài đặt PWA lên màn hình chính.
+   - Tối ưu hóa triệt để hiển thị trên trình duyệt di động (iOS Safari, Android Chrome, Edge).
+
+---
+
+## 💻 3. Yêu cầu Môi trường (System Prerequisites)
+
+Trước khi bắt đầu cài đặt, máy chủ hoặc máy tính phát triển cần cài đặt sẵn:
+- **Node.js**: Phiên bản **20.x LTS** trở lên (Khuyến nghị Node.js 20 hoặc 22).
+- **npm** (đi kèm Node.js) hoặc **pnpm** / **yarn**.
+- **MongoDB**: MongoDB 6.0+ (Cài đặt cục bộ) HOẶC chuỗi kết nối **MongoDB Atlas** (Cloud).
+- **Git**: Dùng để quản lý mã nguồn.
+
+---
+
+## 🚀 4. Hướng dẫn Cài đặt & Chạy Cục bộ (Local Development)
+
+### Bước 1: Clone mã nguồn
 ```bash
 git clone https://github.com/dragonccm/wtf-FundTracker.git
 cd wtf-FundTracker
+```
+
+### Bước 2: Cài đặt các gói phụ thuộc (Dependencies)
+```bash
+npm install
+# hoặc nếu dùng npm ci cho môi trường chuẩn:
 npm ci
 ```
 
-Tạo `.env.local` từ `.env.example`, rồi đặt URI MongoDB local:
-
+### Bước 3: Cấu hình biến môi trường
+Tạo file `.env.local` tại thư mục gốc của dự án:
 ```env
+# 1. Cấu hình Database MongoDB (Local hoặc MongoDB Atlas Cloud)
 MONGODB_URI=mongodb://127.0.0.1:27017/wtf-FundTracker
+
+# 2. Đường dẫn ứng dụng
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-AUTH_SECRET=mot-chuoi-ngau-nhien-dai-it-nhat-32-ky-tu
+
+# 3. Khóa bí mật JWT Auth (Tạo một chuỗi ngẫu nhiên dài từ 32 ký tự trở lên)
+AUTH_SECRET=nhat-ky-quy-secret-key-production-change-this-32-chars-long
+
+# 4. Cấu hình Google OAuth 2.0 (Tùy chọn - xem Mục 6 nếu muốn bật Google Login)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 ```
 
-Mở hai terminal:
-
+### Bước 4: Khởi tạo dữ liệu mẫu (Seed Database)
+Hệ thống cung cấp sẵn script khởi tạo dữ liệu mẫu (quỹ, danh mục, giao dịch mẫu):
 ```bash
-# Terminal 1: MongoDB local có dữ liệu được giữ trong .data/mongodb
-npm run db:local
+# Khởi tạo tài khoản demo mặc định (demo@nhatkyquy.local / NhatKyQuy2026!)
+npm run db:seed
+```
 
-# Terminal 2: web app
+### Bước 5: Chạy ứng dụng ở chế độ phát triển (Development Mode)
+```bash
 npm run dev
 ```
+Mở trình duyệt và truy cập: **`http://localhost:3000`** (hoặc port được hiển thị trên màn hình).
 
-Truy cập `http://localhost:3000`.
+---
 
-## Seed dữ liệu phát triển
+## 🌐 5. Hướng dẫn Triển khai Production (Deployment Guides)
 
-Seed ghi document thật vào MongoDB bằng upsert, vì vậy chạy lại không tạo bản ghi trùng và không xóa dữ liệu đã có.
+### 🌟 Phương pháp 1: Triển khai lên Vercel (Khuyến nghị nhanh nhất)
+1. Đăng nhập [Vercel](https://vercel.com/) và bấm **Add New Project**.
+2. Kết nối tới Git repository `wtf-FundTracker`.
+3. Trong phần **Environment Variables**, thêm các biến sau:
+   - `MONGODB_URI`: Chuỗi kết nối MongoDB Atlas (VD: `mongodb+srv://user:pass@cluster.mongodb.net/fundtracker?retryWrites=true&w=majority`)
+   - `NEXT_PUBLIC_APP_URL`: Domain thật của bạn (VD: `https://fundtracker.yourdomain.com`)
+   - `AUTH_SECRET`: Chuỗi bảo mật ngẫu nhiên dài tối thiểu 32 ký tự.
+   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID`: (Nếu có dùng Google Login).
+   - `GOOGLE_CLIENT_SECRET`: (Nếu có dùng Google Login).
+4. Bấm **Deploy**. Vercel sẽ tự động build và cấp phát HTTPS miễn phí.
 
-```bash
-npm run db:seed
-```
+---
 
-Lệnh mặc định tạo tài khoản demo local:
-
-```text
-Email: demo@nhatkyquy.local
-Mật khẩu: NhatKyQuy2026!
-```
-
-Để seed cho một tài khoản đã tồn tại, truyền biến môi trường trước khi chạy:
-
-```bash
-# PowerShell
-$env:SEED_EMAIL="you@example.com"
-npm run db:seed
-Remove-Item Env:SEED_EMAIL
-```
-
-## Triển khai Dokploy
-
-1. Tạo một MongoDB service trong Dokploy và lấy **internal connection URI**. Không đưa URI hay mật khẩu vào Git.
-2. Tạo Application mới từ repository GitHub này, chọn nhánh `main`.
-3. Cấu hình build/start command:
-
-   ```text
-   Build: npm ci && npm run build
-   Start: npm run start
-   Port: 3000
-   ```
-
-4. Gắn domain HTTPS cho Application và thêm các biến môi trường sau trong Dokploy:
-
+### 🐳 Phương pháp 2: Triển khai trên Dokploy / Docker (Self-hosted VPS)
+1. **Tạo MongoDB Service**: Tạo một MongoDB Database container trên Dokploy và lấy Internal Connection String.
+2. **Tạo Application Service**:
+   - Repository: Chọn nhánh `main` của repository này.
+   - Build Command: `npm ci && npm run build`
+   - Start Command: `npm run start`
+   - Port: `3000`
+3. **Cấu hình Environment Variables**:
    ```env
    NODE_ENV=production
-   MONGODB_URI=mongodb://<user>:<password>@<mongo-host>:<port>/wtf-FundTracker?authSource=admin
-   NEXT_PUBLIC_APP_URL=https://your-domain.example
-   AUTH_SECRET=<chuoi-ngau-nhien-dai-it-nhat-32-ky-tu>
+   MONGODB_URI=mongodb://<username>:<password>@<mongodb-host>:27017/wtf-FundTracker?authSource=admin
+   NEXT_PUBLIC_APP_URL=https://your-app-domain.com
+   AUTH_SECRET=<chuoi-bao-mat-ngau-nhien-it-nhat-32-ky-tu>
    ```
+4. **Cấu hình SSL / Domain**: Trỏ Domain về IP máy chủ, Dokploy sẽ tự động cấp chứng chỉ SSL Let's Encrypt.
 
-5. Nếu dùng Google login, bổ sung:
+---
 
-   ```env
-   NEXT_PUBLIC_GOOGLE_CLIENT_ID=<google-client-id>
-   GOOGLE_CLIENT_SECRET=<google-client-secret>
-   ```
+### 🖥️ Phương pháp 3: Triển khai trên VPS Ubuntu với Node.js, PM2 & Nginx
 
-   Trong Google Cloud Console, thêm Redirect URI chính xác:
-
-   ```text
-   https://your-domain.example/api/auth/callback/google
-   ```
-
-6. Deploy, rồi mở `/login` để tạo tài khoản và kiểm tra thêm một giao dịch. Ứng dụng cần trả HTTP 200 ở domain trước khi cấu hình OAuth.
-
-### Seed trên Dokploy (tùy chọn)
-
-Chỉ chạy seed trong môi trường thử nghiệm hoặc cho tài khoản bạn kiểm soát. Mở terminal của application, đặt `SEED_EMAIL` nếu cần rồi chạy `npm run db:seed`. Script dùng `MONGODB_URI` của container, không cần `.env.local`.
-
-## Kiểm tra trước khi deploy
-
+#### 1. Cài đặt môi trường trên VPS
 ```bash
-npx tsc --noEmit
-npm run build
+sudo apt update && sudo apt install -y nodejs npm nginx git
+sudo npm install -g pm2
 ```
 
-## Bảo mật
+#### 2. Clone mã nguồn và Build
+```bash
+cd /var/www
+sudo git clone https://github.com/dragonccm/wtf-FundTracker.git
+cd wtf-FundTracker
+sudo npm ci
+sudo nano .env.local # Nhập các biến môi trường
+sudo npm run build
+```
 
-- Không commit `.env`, `.env.local`, URI MongoDB hoặc Google client secret.
-- Dùng `AUTH_SECRET` riêng, ngẫu nhiên và đủ dài ở production.
-- Chỉ dùng tài khoản seed mặc định cho local development; đổi hoặc xóa trước khi triển khai môi trường công khai.
+#### 3. Khởi chạy tiến trình với PM2
+```bash
+pm2 start npm --name "fund-tracker" -- start
+pm2 save
+pm2 startup
+```
+
+#### 4. Cấu hình Nginx Reverse Proxy
+Tạo file cấu hình `/etc/nginx/sites-available/fundtracker`:
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+Kích hoạt cấu hình và cài SSL với Certbot:
+```bash
+sudo ln -s /etc/nginx/sites-available/fundtracker /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com
+```
+
+---
+
+## 🔑 6. Hướng dẫn Cấu hình Google OAuth 2.0 (Đăng nhập bằng Google)
+
+Nếu muốn cho phép người dùng đăng nhập nhanh bằng tài khoản Google:
+
+1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
+2. Tạo một **Project mới** (ví dụ: `Fund Tracker Production`).
+3. Điều hướng tới **APIs & Services** > **OAuth consent screen**:
+   - Chọn **External** > Điền tên ứng dụng, email hỗ trợ.
+4. Điều hướng tới **APIs & Services** > **Credentials**:
+   - Bấm **Create Credentials** > Chọn **OAuth client ID**.
+   - Application type: Chọn **Web application**.
+   - **Authorized JavaScript origins**:
+     - `http://localhost:3000` (dành cho local)
+     - `https://your-domain.com` (domain production thật)
+   - **Authorized redirect URIs**:
+     - `http://localhost:3000/api/auth/callback/google` (dành cho local)
+     - `https://your-domain.com/api/auth/callback/google` (domain production thật)
+5. Nhận `Client ID` và `Client Secret`, sau đó điền vào biến môi trường:
+   ```env
+   NEXT_PUBLIC_GOOGLE_CLIENT_ID=xxxxxx.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxx
+   ```
+
+---
+
+## 📂 7. Cấu trúc Thư mục Dự án
+
+```text
+wtf-FundTracker/
+├── src/
+│   ├── app/                      # Next.js App Router Pages & API Routes
+│   │   ├── (auth)/login/         # Màn hình Đăng nhập & Đăng ký
+│   │   ├── api/auth/             # API đăng ký, đăng nhập, Google OAuth callback
+│   │   ├── api/funds/auto-sync/  # API tự động đồng bộ NAV 68+ quỹ từ Fmarket
+│   │   ├── api/user/sync/        # API đồng bộ dữ liệu MongoDB theo User
+│   │   ├── dashboard/            # Dashboard tổng quan tài sản, PnL, phân bổ
+│   │   ├── funds/                # Quản lý danh sách quỹ & tra cứu Fmarket
+│   │   ├── transactions/         # Quản lý & ghi nhận giao dịch CCQ
+│   │   ├── portfolio/            # Quản lý danh mục & phân bổ đầu tư
+│   │   ├── performance/          # Báo cáo hiệu suất, tính toán chỉ số XIRR
+│   │   ├── goals/                # Quản lý mục tiêu tài chính
+│   │   ├── import-export/        # Nhập/Xuất file Excel và CSV
+│   │   ├── timeline/             # Dòng thời gian lịch sử hoạt động
+│   │   └── settings/             # Cài đặt người dùng & bảo mật
+│   ├── components/               # React Components tái sử dụng
+│   │   ├── navigation/           # Thanh điều hướng Bottom Nav / Sidebar M3
+│   │   ├── transactions/         # Modal Thêm/Sửa giao dịch chuẩn Material 3
+│   │   ├── feedback/             # Toast notifications & dialogs
+│   │   └── charts/               # Biểu đồ tài chính
+│   ├── lib/
+│   │   ├── store/appStore.tsx    # State Management trung tâm (Context + Sync)
+│   │   ├── models/               # MongoDB Mongoose Models (User, Transaction, Fund...)
+│   │   ├── db/                   # MongoDB Connection Handler
+│   │   └── utils/                # Thuật toán tài chính, XIRR, formatters
+│   ├── styles/                   # CSS Tokens theo chuẩn Google Material Design 3
+│   └── types/                    # TypeScript interfaces & domain types
+├── scripts/
+│   └── seed.ts                   # Script khởi tạo dữ liệu mẫu
+├── public/                       # Favicon, icons, manifest PWA
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## 🔒 8. Quy định Bảo mật & Vận hành
+
+1. **Tuyệt đối không lưu trữ thông tin nhạy cảm vào Git**:
+   - Không commit file `.env`, `.env.local` hoặc các thông tin `AUTH_SECRET`, MongoDB URI có chứa mật khẩu.
+2. **Khóa bảo mật `AUTH_SECRET`**:
+   - Trên môi trường Production, luôn tạo một khóa bí mật ngẫu nhiên và an toàn (sử dụng lệnh `openssl rand -base64 32`).
+3. **Sao lưu Cơ sở dữ liệu định kỳ**:
+   - Sử dụng công cụ `mongodump` hoặc tính năng Automated Backup của MongoDB Atlas để đảm bảo an toàn dữ liệu khách hàng.
+
+---
+
+## 📞 9. Bàn giao & Hỗ trợ Kỹ thuật
+
+- **Người thực hiện**: Antigravity Pair Programming Engine & Developer Team
+- **Hỗ trợ kỹ thuật**: Mọi thắc mắc trong quá trình triển khai, cài đặt hoặc bảo trì hệ thống, vui lòng liên hệ trực tiếp qua kênh bàn giao dự án.
