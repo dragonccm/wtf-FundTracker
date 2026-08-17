@@ -905,6 +905,23 @@ textarea:focus-visible {
   resize: vertical;
 }
 
+.journal-field input[type="date"] {
+  min-height: 50px;
+  height: 50px;
+  line-height: 48px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.journal-field input[type="date"]::-webkit-date-and-time-value {
+  text-align: left !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
 .journal-field input:focus,
 .journal-field select:focus,
 .journal-field textarea:focus {
