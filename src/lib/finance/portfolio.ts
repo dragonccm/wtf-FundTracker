@@ -1,6 +1,30 @@
 import { Transaction, Holding, Fund, PerformanceMetrics, FinancialGoal } from '@/types';
 import { calculateXIRR, CashFlow } from './xirr';
 
+function compareTransactionsChronologically(a: Transaction, b: Transaction) {
+  const dateOrder = a.date.localeCompare(b.date);
+  return dateOrder || a.id.localeCompare(b.id);
+}
+
+export function findOversoldTransaction(transactions: Transaction[]): Transaction | null {
+  const positions = new Map<string, number>();
+  for (const transaction of [...transactions].sort(compareTransactionsChronologically)) {
+    const key = `${transaction.portfolioId}|${transaction.fundCode}`;
+    const available = positions.get(key) || 0;
+    if (transaction.type === 'BUY' || transaction.type === 'DEPOSIT') {
+      positions.set(key, available + transaction.units);
+      continue;
+    }
+    if ((transaction.type === 'SELL' || transaction.type === 'WITHDRAWAL') && transaction.units > available + 0.000001) {
+      return transaction;
+    }
+    if (transaction.type === 'SELL' || transaction.type === 'WITHDRAWAL') {
+      positions.set(key, Math.max(0, available - transaction.units));
+    }
+  }
+  return null;
+}
+
 export function calculateHoldings(transactions: Transaction[], funds: Fund[]): Holding[] {
   const fundMap = new Map<string, Fund>();
   funds.forEach((f) => fundMap.set(f.id, f));
@@ -18,9 +42,7 @@ export function calculateHoldings(transactions: Transaction[], funds: Fund[]): H
   >();
 
   // Sort transactions chronologically
-  const sortedTx = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedTx = [...transactions].sort(compareTransactionsChronologically);
 
   sortedTx.forEach((tx) => {
     const existing = holdingMap.get(tx.fundCode) || {
@@ -98,9 +120,7 @@ export function calculatePerformanceMetrics(
   // Track realized PnL across history with exact weighted average cost basis
   const tempHoldings = new Map<string, { units: number; cost: number }>();
 
-  const sortedTx = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedTx = [...transactions].sort(compareTransactionsChronologically);
 
   sortedTx.forEach((tx) => {
     const cur = tempHoldings.get(tx.fundCode) || { units: 0, cost: 0 };
@@ -112,7 +132,8 @@ export function calculatePerformanceMetrics(
       const avgCost = cur.units > 0 ? cur.cost / cur.units : 0;
       const unitsSold = Math.min(tx.units, cur.units);
       const soldCost = unitsSold * avgCost;
-      const proceeds = tx.amount - (tx.fee || 0);
+      const saleRatio = tx.units > 0 ? unitsSold / tx.units : 0;
+      const proceeds = (tx.amount - (tx.fee || 0)) * saleRatio;
       realizedPnL += proceeds - soldCost;
       cur.units = Math.max(0, cur.units - unitsSold);
       cur.cost = Math.max(0, cur.cost - soldCost);
@@ -303,9 +324,7 @@ export function calculateTransactionPnLMap(
   funds.forEach((f) => fundMap.set(f.id, f));
 
   // Sort chronologically to compute running cost basis for SELL orders
-  const sortedTx = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
+  const sortedTx = [...transactions].sort(compareTransactionsChronologically);
 
   const runningHoldings = new Map<string, { units: number; cost: number }>();
 
@@ -336,9 +355,10 @@ export function calculateTransactionPnLMap(
     } else if (tx.type === 'SELL' || tx.type === 'WITHDRAWAL') {
       // Cost basis per unit at the moment of sale
       const avgCostBasisAtSale = cur.units > 0 ? cur.cost / cur.units : (fund?.nav || tx.unitPrice);
-      const unitsSold = tx.units;
+      const unitsSold = Math.min(tx.units, cur.units);
       const soldCost = unitsSold * avgCostBasisAtSale;
-      const netProceeds = tx.amount - (tx.fee || 0);
+      const saleRatio = tx.units > 0 ? unitsSold / tx.units : 0;
+      const netProceeds = (tx.amount - (tx.fee || 0)) * saleRatio;
       const realizedPnL = netProceeds - soldCost;
       const realizedPnLPercent = soldCost > 0 ? (realizedPnL / soldCost) * 100 : 0;
 
@@ -374,7 +394,9 @@ export function calculateLiveGoals(
 
   return goals.map((goal) => {
     // Find all transactions linked to this goal
-    const goalTx = transactions.filter((tx) => tx.goalId === goal.id);
+    const goalTx = transactions
+      .filter((tx) => tx.goalId === goal.id)
+      .sort(compareTransactionsChronologically);
 
     // Calculate active holdings value contributed to this goal
     const goalFundUnits = new Map<string, number>();
@@ -400,9 +422,8 @@ export function calculateLiveGoals(
 
     // If transactions exist for this goal, live amount is the current market value of its holdings (or net contributions)
     // If base amount exists, add to it
-    const effectiveAmount = goalTx.length > 0
-      ? (liveMarketValue > 0 ? liveMarketValue : Math.max(0, netContributedCash))
-      : goal.currentAmount;
+    const linkedValue = liveMarketValue > 0 ? liveMarketValue : Math.max(0, netContributedCash);
+    const effectiveAmount = goalTx.length > 0 ? goal.currentAmount + linkedValue : goal.currentAmount;
 
     return {
       ...goal,

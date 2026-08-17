@@ -85,7 +85,7 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
       return;
     }
 
-    updateTransaction(transaction.id, {
+    const wasUpdated = updateTransaction(transaction.id, {
       portfolioId,
       fundId: selectedFund?.id || transaction.fundId,
       fundCode,
@@ -99,8 +99,10 @@ export default function EditTransactionModal({ transaction, onClose }: EditTrans
       notes,
     });
 
-    showToast('success', 'Đã cập nhật giao dịch.');
-    onClose();
+    if (wasUpdated) {
+      showToast('success', 'Đã cập nhật giao dịch.');
+      onClose();
+    }
   };
 
   return (

@@ -17,7 +17,7 @@ import {
   initialTransactions,
   initialGoals,
 } from './initialData';
-import { calculateHoldings, calculatePerformanceMetrics, calculateLiveGoals } from '../finance/portfolio';
+import { calculateHoldings, calculatePerformanceMetrics, calculateLiveGoals, findOversoldTransaction } from '../finance/portfolio';
 import { useToast } from '@/components/feedback/ToastProvider';
 
 export function getOptimalNavSyncIntervalMs(): number {
@@ -56,8 +56,8 @@ interface AppContextType {
   login: (email: string, name?: string, avatarUrl?: string) => void;
   logout: () => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
-  addTransaction: (tx: Omit<Transaction, 'id'>) => void;
-  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  addTransaction: (tx: Omit<Transaction, 'id'>) => boolean;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => boolean;
   deleteTransaction: (id: string) => void;
   addBulkTransactions: (txs: Omit<Transaction, 'id'>[]) => void;
   addPortfolio: (portfolio: Omit<Portfolio, 'id' | 'createdAt'>) => void;
@@ -112,6 +112,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const lastNavSyncAtRef = useRef<number | null>(lastNavSyncAt);
   const isSyncingNavRef = useRef<boolean>(false);
   const activeEmailRef = useRef<string>('');
+  const syncVersionRef = useRef<number>(0);
 
   useEffect(() => {
     fundsRef.current = funds;
@@ -249,6 +250,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setPortfolios(remotePortfolios);
         setGoals(remoteGoals);
         setFunds(remoteFunds);
+        syncVersionRef.current = Number(data.data.syncVersion) || 0;
 
         setHasLoadedRemote(true);
         hasReportedSyncError.current = false;
@@ -289,12 +291,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           transactions,
           goals,
           funds,
+          syncVersion: syncVersionRef.current,
         }),
       })
         .then(async (response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const data = await response.json();
           if (!data?.success) throw new Error('Sync rejected');
+          syncVersionRef.current = Number(data.syncVersion) || syncVersionRef.current;
           hasReportedSyncError.current = false;
         })
         .catch((err) => {
@@ -495,13 +499,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...txData,
       id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
     };
+    const oversold = findOversoldTransaction([...transactions, newTx]);
+    if (oversold?.id === newTx.id) {
+      showToast('error', `Không thể bán ${newTx.units} CCQ ${newTx.fundCode}: số dư khả dụng không đủ.`);
+      return false;
+    }
     setTransactions((prev) => [newTx, ...prev]);
     showToast('success', `Đã thêm giao dịch ${txData.type === 'BUY' ? 'mua' : 'bán'} ${txData.fundCode}.`);
+    return true;
   };
 
   const updateTransaction = (id: string, updates: Partial<Transaction>) => {
-    setTransactions((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
+    const nextTransactions = transactions.map((transaction) => (
+      transaction.id === id ? { ...transaction, ...updates } : transaction
+    ));
+    const oversold = findOversoldTransaction(nextTransactions);
+    if (oversold) {
+      showToast('error', `Không thể lưu: giao dịch ${oversold.fundCode} ngày ${oversold.date} sẽ bán vượt số CCQ đang có.`);
+      return false;
+    }
+    setTransactions(nextTransactions);
     showToast('success', 'Đã cập nhật giao dịch.');
+    return true;
   };
 
   const deleteTransaction = (id: string) => {

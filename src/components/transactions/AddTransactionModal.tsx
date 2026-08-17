@@ -87,7 +87,7 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
       return;
     }
 
-    addTransaction({
+    const wasAdded = addTransaction({
       portfolioId,
       fundId: selectedFund?.id || 'f_' + fundCode.toLowerCase(),
       fundCode,
@@ -101,8 +101,10 @@ export default function AddTransactionModal({ onClose }: { onClose: () => void }
       notes,
     });
 
-    showToast('success', 'Đã lưu giao dịch thành công.');
-    onClose();
+    if (wasAdded) {
+      showToast('success', 'Đã lưu giao dịch thành công.');
+      onClose();
+    }
   };
 
   return (

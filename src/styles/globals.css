@@ -822,6 +822,18 @@ button, input, select, textarea {
   font-family: inherit;
   font-size: 13px;
   padding: 10px 12px;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  line-height: 1.2;
+}
+
+/* Fix iOS Safari date input intrinsic min-height issue */
+.m3-input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  height: auto;
+  line-height: normal;
+  margin: 0;
 }
 
 .m3-select {

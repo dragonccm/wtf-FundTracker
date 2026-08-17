@@ -8,6 +8,7 @@ export interface IUser extends Document {
   avatarUrl?: string;
   currency: 'VND' | 'USD';
   dateFormat: 'DD/MM/YYYY' | 'YYYY-MM-DD';
+  syncVersion: number;
   provider: 'local' | 'google';
   createdAt: Date;
   updatedAt: Date;
@@ -22,6 +23,7 @@ const UserSchema = new Schema<IUser>(
     avatarUrl: { type: String },
     currency: { type: String, default: 'VND' },
     dateFormat: { type: String, default: 'DD/MM/YYYY' },
+    syncVersion: { type: Number, default: 0 },
     provider: { type: String, default: 'local' },
   },
   { timestamps: true }

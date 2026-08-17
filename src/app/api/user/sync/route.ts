@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ClientSession } from 'mongoose';
 import { readSessionEmail } from '@/lib/auth/serverAuth';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { FundModel } from '@/lib/db/models/Fund';
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
           avatarUrl: user.avatarUrl,
           currency: user.currency,
           dateFormat: user.dateFormat,
+          syncVersion: user.syncVersion || 0,
           createdAt: user.createdAt?.toISOString(),
         } : null,
         transactions: transactions.map(({ _id, userEmail, __v, ...transaction }) => transaction),
@@ -80,38 +82,63 @@ export async function POST(req: NextRequest) {
     const connection = await connectToDatabase();
     if (!connection) return NextResponse.json({ success: false, error: 'Cơ sở dữ liệu chưa sẵn sàng.' }, { status: 503 });
 
-    const { transactions = [], portfolios = [], goals = [], funds = [], profile } = await req.json();
+    const { transactions = [], portfolios = [], goals = [], funds = [], profile, syncVersion } = await req.json();
     if (![transactions, portfolios, goals, funds].every(Array.isArray)) {
       return NextResponse.json({ success: false, error: 'Dữ liệu đồng bộ không hợp lệ.' }, { status: 400 });
     }
 
-    if (profile) {
-      const avatarUrl = getAvatarUrl(profile.avatarUrl);
-      await UserModel.updateOne({ email }, {
-        $set: {
-          name: String(profile.name || '').trim(),
-          avatarUrl,
-          currency: profile.currency === 'USD' ? 'USD' : 'VND',
-          dateFormat: profile.dateFormat === 'YYYY-MM-DD' ? 'YYYY-MM-DD' : 'DD/MM/YYYY',
-        },
-      });
+    const expectedSyncVersion = Number(syncVersion);
+    if (!Number.isSafeInteger(expectedSyncVersion) || expectedSyncVersion < 0) {
+      return NextResponse.json({ success: false, error: 'Invalid sync version.' }, { status: 400 });
     }
 
-    await syncPortfolios(email, portfolios);
-    await syncTransactions(email, transactions);
-    await syncGoals(email, goals);
-    await syncFunds(email, funds);
+    const session = await connection.startSession();
+    let nextSyncVersion = expectedSyncVersion;
+    try {
+      await session.withTransaction(async () => {
+        const profileUpdate = profile ? {
+          name: String(profile.name || '').trim(),
+          avatarUrl: getAvatarUrl(profile.avatarUrl),
+          currency: profile.currency === 'USD' ? 'USD' : 'VND',
+          dateFormat: profile.dateFormat === 'YYYY-MM-DD' ? 'YYYY-MM-DD' : 'DD/MM/YYYY',
+        } : {};
+        const user = await UserModel.findOneAndUpdate(
+          { email, syncVersion: expectedSyncVersion },
+          { $set: profileUpdate, $inc: { syncVersion: 1 } },
+          { new: true, session }
+        );
+        if (!user) {
+          const latest = await UserModel.findOne({ email }).select('syncVersion').session(session).lean();
+          const conflict: Error & { code?: string; syncVersion?: number } = new Error('Sync conflict');
+          conflict.code = 'SYNC_CONFLICT';
+          conflict.syncVersion = latest?.syncVersion || 0;
+          throw conflict;
+        }
+        nextSyncVersion = user.syncVersion;
+        await syncPortfolios(email, portfolios, session);
+        await syncTransactions(email, transactions, session);
+        await syncGoals(email, goals, session);
+        await syncFunds(email, funds, session);
+      });
+    } catch (error) {
+      if ((error as { code?: string }).code === 'SYNC_CONFLICT') {
+        return NextResponse.json({ success: false, error: 'Data changed elsewhere.', syncVersion: (error as { syncVersion?: number }).syncVersion }, { status: 409 });
+      }
+      throw error;
+    } finally {
+      await session.endSession();
+    }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, syncVersion: nextSyncVersion });
   } catch (error) {
     console.error('Data sync POST Error:', error);
     return NextResponse.json({ success: false, error: 'Không thể lưu dữ liệu.' }, { status: 500 });
   }
 }
 
-async function syncPortfolios(email: string, items: any[]) {
+async function syncPortfolios(email: string, items: any[], session: ClientSession) {
   const ids = items.map((item) => String(item.id));
-  await PortfolioModel.deleteMany({ userEmail: email, id: { $nin: ids } });
+  await PortfolioModel.deleteMany({ userEmail: email, id: { $nin: ids } }, { session });
   if (!items.length) return;
   await PortfolioModel.bulkWrite(items.map((item) => ({ updateOne: {
     filter: { userEmail: email, id: String(item.id) },
@@ -124,12 +151,12 @@ async function syncPortfolios(email: string, items: any[]) {
       isDefault: Boolean(item.isDefault),
     } },
     upsert: true,
-  } })));
+  } })), { session });
 }
 
-async function syncTransactions(email: string, items: any[]) {
+async function syncTransactions(email: string, items: any[], session: ClientSession) {
   const ids = items.map((item) => String(item.id));
-  await TransactionModel.deleteMany({ userEmail: email, id: { $nin: ids } });
+  await TransactionModel.deleteMany({ userEmail: email, id: { $nin: ids } }, { session });
   if (!items.length) return;
   await TransactionModel.bulkWrite(items.map((item) => ({ updateOne: {
     filter: { userEmail: email, id: String(item.id) },
@@ -149,12 +176,12 @@ async function syncTransactions(email: string, items: any[]) {
       notes: String(item.notes || ''),
     } },
     upsert: true,
-  } })));
+  } })), { session });
 }
 
-async function syncGoals(email: string, items: any[]) {
+async function syncGoals(email: string, items: any[], session: ClientSession) {
   const ids = items.map((item) => String(item.id));
-  await GoalModel.deleteMany({ userEmail: email, id: { $nin: ids } });
+  await GoalModel.deleteMany({ userEmail: email, id: { $nin: ids } }, { session });
   if (!items.length) return;
   await GoalModel.bulkWrite(items.map((item) => ({ updateOne: {
     filter: { userEmail: email, id: String(item.id) },
@@ -170,12 +197,12 @@ async function syncGoals(email: string, items: any[]) {
       notes: String(item.notes || ''),
     } },
     upsert: true,
-  } })));
+  } })), { session });
 }
 
-async function syncFunds(email: string, items: any[]) {
+async function syncFunds(email: string, items: any[], session: ClientSession) {
   const ids = items.map((item) => String(item.id));
-  await FundModel.deleteMany({ userEmail: email, id: { $nin: ids } });
+  await FundModel.deleteMany({ userEmail: email, id: { $nin: ids } }, { session });
   if (!items.length) return;
   await FundModel.bulkWrite(items.map((item) => ({ updateOne: {
     filter: { userEmail: email, id: String(item.id) },
@@ -195,5 +222,5 @@ async function syncFunds(email: string, items: any[]) {
       navHistory: Array.isArray(item.navHistory) ? item.navHistory : [],
     } },
     upsert: true,
-  } })));
+  } })), { session });
 }

@@ -45,10 +45,13 @@ export async function GET(req: NextRequest) {
 
     const connection = await connectToDatabase();
     if (connection) {
+      const existingUser = await UserModel.findOne({ email }).select('avatarUrl').lean();
+      const profileUpdate: Record<string, string> = { name, provider: 'google' };
+      if (!existingUser?.avatarUrl) profileUpdate.avatarUrl = avatarUrl;
       await UserModel.findOneAndUpdate(
         { email },
         {
-          $set: { name, avatarUrl, provider: 'google' },
+          $set: profileUpdate,
           $setOnInsert: { id: `usr_g_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
