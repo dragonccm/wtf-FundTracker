@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
+    "next:dev": "next dev",
     "db:local": "node scripts/local-mongodb.mjs",
     "db:seed": "node scripts/seed-local-data.mjs",
     "build": "next build",

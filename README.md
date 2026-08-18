@@ -85,18 +85,20 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 ```
 
-### Bước 4: Khởi tạo dữ liệu mẫu (Seed Database)
-Hệ thống cung cấp sẵn script khởi tạo dữ liệu mẫu (quỹ, danh mục, giao dịch mẫu):
-```bash
-# Khởi tạo tài khoản demo mặc định (demo@nhatkyquy.local / NhatKyQuy2026!)
-npm run db:seed
-```
-
-### Bước 5: Chạy ứng dụng ở chế độ phát triển (Development Mode)
+### Bước 4: Chạy ứng dụng (Chỉ 1 thao tác duy nhất)
 ```bash
 npm run dev
 ```
-Mở trình duyệt và truy cập: **`http://localhost:3000`** (hoặc port được hiển thị trên màn hình).
+> 💡 **Tự động hóa hoàn toàn**: Bạn **chỉ cần gõ 1 lệnh duy nhất `npm run dev`**. Hệ thống sẽ tự động phát hiện và khởi động luôn cả MongoDB Local (nếu trên máy chưa có sẵn) và chạy song song cùng Web App.
+>
+> Mở trình duyệt và truy cập: **`http://localhost:3000`**
+
+### Bước 5 (Tùy chọn): Nạp dữ liệu mẫu Demo
+Nếu muốn có sẵn dữ liệu 4 quỹ và 12 giao dịch mẫu để trải nghiệm ngay:
+```bash
+npm run db:seed
+```
+*Tài khoản demo: `demo@nhatkyquy.local` / Mật khẩu: `NhatKyQuy2026!`*
 
 ---
 
