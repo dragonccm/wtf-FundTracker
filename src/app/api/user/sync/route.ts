@@ -23,6 +23,19 @@ function getAvatarUrl(value: unknown) {
   return avatarUrl;
 }
 
+function supportsTransactions(connection: any): boolean {
+  try {
+    const topology = connection?.connection?.client?.topology || connection?.client?.topology;
+    const type = topology?.description?.type;
+    if (type === 'Single') {
+      return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const email = readSessionEmail(req);
@@ -100,16 +113,12 @@ export async function POST(req: NextRequest) {
     } : {};
 
     let nextSyncVersion = expectedSyncVersion;
-    let session: ClientSession | null = null;
+    const canUseTransactions = supportsTransactions(connection);
 
-    try {
-      session = await connection.startSession();
-    } catch {
-      session = null;
-    }
-
-    if (session) {
+    if (canUseTransactions) {
+      let session: ClientSession | null = null;
       try {
+        session = await connection.startSession();
         await session.withTransaction(async () => {
           nextSyncVersion = await executeSyncOperations(
             email,
@@ -130,7 +139,12 @@ export async function POST(req: NextRequest) {
         const isReplicaSetError =
           err?.code === 20 ||
           err?.codeName === 'IllegalOperation' ||
-          String(err?.message || '').includes('replica set');
+          err?.originalError?.code === 20 ||
+          err?.originalError?.codeName === 'IllegalOperation' ||
+          String(err?.message || '').toLowerCase().includes('replica set') ||
+          String(err?.message || '').toLowerCase().includes('retryable writes') ||
+          String(err?.originalError?.message || '').toLowerCase().includes('replica set') ||
+          String(err?.originalError?.message || '').toLowerCase().includes('retryable writes');
 
         if (isReplicaSetError) {
           nextSyncVersion = await executeSyncOperations(
@@ -146,9 +160,12 @@ export async function POST(req: NextRequest) {
           throw err;
         }
       } finally {
-        await session.endSession();
+        if (session) {
+          await session.endSession();
+        }
       }
     } else {
+      // Standalone MongoDB (e.g. localhost) without Replica Set
       nextSyncVersion = await executeSyncOperations(
         email,
         profileUpdate,
@@ -181,8 +198,12 @@ async function executeSyncOperations(
   session?: ClientSession
 ): Promise<number> {
   const findOptions = session ? { new: true, session } : { new: true };
+  const versionFilter = expectedSyncVersion === 0
+    ? { $or: [{ syncVersion: 0 }, { syncVersion: { $exists: false } }] }
+    : { syncVersion: expectedSyncVersion };
+
   const user = await UserModel.findOneAndUpdate(
-    { email, syncVersion: expectedSyncVersion },
+    { email, ...versionFilter },
     { $set: profileUpdate, $inc: { syncVersion: 1 } },
     findOptions
   );
