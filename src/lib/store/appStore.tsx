@@ -250,7 +250,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setPortfolios(remotePortfolios);
         setGoals(remoteGoals);
         setFunds(remoteFunds);
-        syncVersionRef.current = Number(data.data.syncVersion) || 0;
+        syncVersionRef.current = Number(data.data.user?.syncVersion ?? data.data.syncVersion) || 0;
 
         setHasLoadedRemote(true);
         hasReportedSyncError.current = false;
@@ -295,10 +295,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }),
       })
         .then(async (response) => {
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const data = await response.json();
+          const data = await response.json().catch(() => null);
+          if (!response.ok) {
+            if (response.status === 409 && typeof data?.syncVersion === 'number') {
+              syncVersionRef.current = data.syncVersion;
+            }
+            throw new Error(`HTTP ${response.status}`);
+          }
           if (!data?.success) throw new Error('Sync rejected');
-          syncVersionRef.current = Number(data.syncVersion) || syncVersionRef.current;
+          if (typeof data.syncVersion === 'number') {
+            syncVersionRef.current = data.syncVersion;
+          }
           hasReportedSyncError.current = false;
         })
         .catch((err) => {

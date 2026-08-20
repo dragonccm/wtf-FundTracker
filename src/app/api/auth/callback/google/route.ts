@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
           $set: profileUpdate,
           $setOnInsert: { id: `usr_g_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` },
         },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
       );
     } else {
       console.warn('Google login is continuing with local persistence because MongoDB is unavailable.');

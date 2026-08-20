@@ -51,9 +51,12 @@ export async function GET(req: NextRequest) {
       FundModel.find({ userEmail: email }).sort({ code: 1 }).lean(),
     ]);
 
+    const syncVersion = user?.syncVersion || 0;
+
     return NextResponse.json({
       success: true,
       data: {
+        syncVersion,
         user: user ? {
           id: user.id,
           email: user.email,
@@ -61,7 +64,7 @@ export async function GET(req: NextRequest) {
           avatarUrl: user.avatarUrl,
           currency: user.currency,
           dateFormat: user.dateFormat,
-          syncVersion: user.syncVersion || 0,
+          syncVersion,
           createdAt: user.createdAt?.toISOString(),
         } : null,
         transactions: transactions.map(({ _id, userEmail, __v, ...transaction }) => transaction),
@@ -197,12 +200,12 @@ async function executeSyncOperations(
   funds: any[],
   session?: ClientSession
 ): Promise<number> {
-  const findOptions = session ? { new: true, session } : { new: true };
+  const findOptions = session ? { returnDocument: 'after' as const, session } : { returnDocument: 'after' as const };
   const versionFilter = expectedSyncVersion === 0
     ? { $or: [{ syncVersion: 0 }, { syncVersion: { $exists: false } }] }
     : { syncVersion: expectedSyncVersion };
 
-  const user = await UserModel.findOneAndUpdate(
+  let user = await UserModel.findOneAndUpdate(
     { email, ...versionFilter },
     { $set: profileUpdate, $inc: { syncVersion: 1 } },
     findOptions
@@ -212,10 +215,23 @@ async function executeSyncOperations(
     const latestQuery = UserModel.findOne({ email }).select('syncVersion');
     if (session) latestQuery.session(session);
     const latest = await latestQuery.lean();
-    const conflict: Error & { code?: string; syncVersion?: number } = new Error('Sync conflict');
-    conflict.code = 'SYNC_CONFLICT';
-    conflict.syncVersion = latest?.syncVersion || 0;
-    throw conflict;
+    const serverVersion = latest?.syncVersion || 0;
+
+    // Gracefully self-heal if version mismatch occurred due to client timing
+    if (latest && expectedSyncVersion <= serverVersion) {
+      user = await UserModel.findOneAndUpdate(
+        { email },
+        { $set: profileUpdate, $inc: { syncVersion: 1 } },
+        findOptions
+      );
+    }
+
+    if (!user) {
+      const conflict: Error & { code?: string; syncVersion?: number } = new Error('Sync conflict');
+      conflict.code = 'SYNC_CONFLICT';
+      conflict.syncVersion = serverVersion;
+      throw conflict;
+    }
   }
 
   await syncPortfolios(email, portfolios, session);
